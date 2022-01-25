@@ -1,7 +1,7 @@
 import sys
 from time import sleep
 import RPi.GPIO
-from MFRC522 import SimpleMFRC522 as Reader
+from mfrc522 import SimpleMFRC522 as Reader
 
 class App:
     def __init__(self) -> None:
