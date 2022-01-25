@@ -10,20 +10,34 @@ class App:
             print("App.init", file=sys.stderr)
         self.running = True
         self.reader = Reader()
+        self.id = None
+        self.text = None
 
     def __del__(self):
         if self.debug:
             print("App.del", file=sys.stderr)
         RPi.GPIO.cleanup()
     def main(self):
+        self.read()
+        self.write()
         while self.running:
             self.update()
     def update(self):
         if self.debug:
             print("App.update", file=sys.stderr)
-        id, text = self.reader.read()
-        print(f"id : {id}, text : {text}")
+        
+    def write(self):
+        if self.debug:
+            print("App.write", file=sys.stderr)
+        if self.id == 483985410385:
+            self.reader.write("Ceci est un test d’écriture")
+    def read(self):
+        if self.debug:
+            print("App.read", file=sys.stderr)
+        self.id, self.text = self.reader.read()
+        print(f"id : {self.id}, text : {self.text}")
         sleep(5)
+
 
 def main():
     app = App()
