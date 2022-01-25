@@ -19,6 +19,8 @@ class App:
         while self.running:
             self.update()
     def update(self):
+        if self.debug:
+            print("App.update", file=sys.stderr)
         id, text = self.reader.read()
         print(f"id : {id}, text : {text}")
         sleep(5)
