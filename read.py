@@ -30,7 +30,7 @@ class App:
         if self.debug:
             print("App.write", file=sys.stderr)
         if self.id == 483985410385:
-            self.reader.write("Ceci est un test d’écriture")
+            self.reader.write("Ceci est un test d'écriture")
     def read(self):
         if self.debug:
             print("App.read", file=sys.stderr)
