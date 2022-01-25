@@ -8,7 +8,7 @@ class App:
         self.debug = True
         if self.debug:
             print("App.init", file=sys.stderr)
-        self.running = True
+        self.running = False
         self.reader = Reader()
         self.id = None
         self.text = None
