@@ -19,7 +19,7 @@ class App:
         RPi.GPIO.cleanup()
     def main(self):
         self.read()
-        self.write()
+       # self.write()
         while self.running:
             self.update()
     def update(self):
