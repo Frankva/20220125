@@ -1,9 +1,13 @@
 import sys
 from time import sleep
+from datetime import datetime
 import RPi.GPIO
 from mfrc522 import SimpleMFRC522 as Reader
+import mariadb
+import model
 
-class App:
+
+class Rfid:
     def __init__(self) -> None:
         self.debug = True
         if self.debug:
@@ -17,11 +21,13 @@ class App:
         if self.debug:
             print("App.del", file=sys.stderr)
         RPi.GPIO.cleanup()
+    
     def main(self):
         self.read()
        # self.write()
         while self.running:
             self.update()
+    
     def update(self):
         if self.debug:
             print("App.update", file=sys.stderr)
@@ -31,17 +37,12 @@ class App:
             print("App.write", file=sys.stderr)
         if self.id == 483985410385:
             self.reader.write("Ceci est un test d'ecriture")
+    
     def read(self):
         if self.debug:
             print("App.read", file=sys.stderr)
         self.id, self.text = self.reader.read()
-        print(f"id : {self.id}, text : {self.text}")
+        if self.debug:
+            print(f"id : {self.id}, text : {self.text}")
         sleep(5)
 
-
-def main():
-    app = App()
-    app.main()
-
-if __name__ == "__main__":
-    main()

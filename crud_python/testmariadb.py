@@ -1,14 +1,14 @@
 import mariadb
 
 conn_params = {}
-conn_params["user"] = "root"
-conn_params["password"] = ""
+conn_params["user"] = "admin"
+conn_params["password"] = "1806"
 conn_params["host"] = "localhost"
-conn_params["database"] = "ci_crud_base"
+conn_params["database"] = "timbreuse2022"
 
 connection = mariadb.connect(**conn_params)
 cursor = connection.cursor()
-cursor.execute("SELECT name from item;")
+cursor.execute("create table log(id int, date datetime);")
 
-for i in cursor:
-    print(i)
+#for i in cursor:
+#    print(i)
