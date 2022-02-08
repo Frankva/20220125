@@ -1,10 +1,10 @@
 import sys
 from time import sleep
-from datetime import datetime
+
 import RPi.GPIO
 from mfrc522 import SimpleMFRC522 as Reader
-import mariadb
-import model
+
+
 
 
 class Rfid:
@@ -22,7 +22,7 @@ class Rfid:
             print("App.del", file=sys.stderr)
         RPi.GPIO.cleanup()
     
-    def main(self):
+    def load(self):
         self.read()
        # self.write()
         while self.running:
@@ -33,6 +33,9 @@ class Rfid:
             print("App.update", file=sys.stderr)
         
     def write(self):
+        '''
+        try to write on a badge with 48… id
+        '''
         if self.debug:
             print("App.write", file=sys.stderr)
         if self.id == 483985410385:
@@ -44,5 +47,8 @@ class Rfid:
         self.id, self.text = self.reader.read()
         if self.debug:
             print(f"id : {self.id}, text : {self.text}")
-        sleep(5)
+        
 
+if __name__ == "__main__":
+    rfid = Rfid()
+    rfid.load()

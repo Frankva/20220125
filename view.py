@@ -20,19 +20,51 @@ class Button:
         self.h = 10 * (y / 12)
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
+class Scene:
+    def __init__(self):
+        print("init Scene")
+        self.font = pygame.font.SysFont(None, 24)
+
+class SceneSelect(Scene):
+    def __init__(self):
+        
+        super().__init__()
+        self.buttons = list()
+        print("SceneSelect load")
+        self.buttons.append(Button())
+        self.buttons.append(Button())
+        self.buttons[1].set_red_pos()
+   
+
+
+    def draw(self, screen):
+        
+        for button in self.buttons:
+            pygame.draw.rect(screen, button.color, button.rect)
+            
+class SceneWait(Scene):
+    def __init__(self):
+        
+        super().__init__()
+        self.texts = list()
+        self.texts.append(self.font.render("Attente badge RFID", True, pygame.Color("white")))
+
+
+    def draw(self, screen):
+        screen.blit(self.texts[0], (0,0))
 
 class View:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((800, 400))#pygame.FULLSCREEN
         self.running = True
-        self.buttons = list()
-        
+        self.scenes = list()
+        self.current_scene = 0
 
     def load(self):
-        self.buttons.append(Button())
-        self.buttons.append(Button())
-        self.buttons[0].set_red_pos()
+        self.scenes.append(SceneSelect())
+        self.scenes.append(SceneWait())
+       
         pygame.display.set_caption("test")
         while self.running:
             for event in pygame.event.get():
@@ -51,8 +83,7 @@ class View:
 
     def draw(self):
         self.screen.fill(pygame.Color("black"))
-        for button in self.buttons:
-            pygame.draw.rect(self.screen, button.color, button.rect)
+        self.scenes[self.current_scene].draw(self.screen)
         pygame.display.flip()
 
 view = View()
