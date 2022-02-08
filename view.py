@@ -10,6 +10,8 @@ class Button:
         
         self.color = pygame.Color("blue")
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+    def set_red_pos(self):
+
 
 
 class View:
@@ -35,7 +37,8 @@ class View:
         pygame.quit()
 
     def update(self):
-        pass
+        if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+            self.running = False
 
     def draw(self):
         self.screen.fill(pygame.Color("black"))
