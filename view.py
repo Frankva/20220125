@@ -11,7 +11,7 @@ class Button:
         self.color = pygame.Color("blue")
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
     def set_red_pos(self):
-
+        pass
 
 
 class View:
