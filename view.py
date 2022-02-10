@@ -49,6 +49,10 @@ class SceneSelect(Scene):
         if View.debug:
             print("SceneSelect load", file=sys.stderr)
         super().__init__(screen)
+
+        self.choice = dict()
+       
+
         self.buttons = list()
         self.buttons.append(Button(self.screen)) # blue right
         self.buttons.append(Button(self.screen)) # red left
@@ -57,12 +61,14 @@ class SceneSelect(Scene):
     def update(self):
         if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
             if View.debug:
-                print("blue right pressed")
+                print("blue right pressed", file=sys.stderr)
+                self.take_choice_dict(True, View.stream)
+
         
         if pygame.mouse.get_pressed()[0] and self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()):
             if View.debug:
-                print("red left pressed")
-                
+                print("red left pressed", file=sys.stderr)
+                self.take_choice_dict(False, View.stream)
 
 
 
@@ -71,6 +77,20 @@ class SceneSelect(Scene):
         super().draw(screen)
         for button in self.buttons:
             pygame.draw.rect(screen, button.color, button.rect)
+
+    @staticmethod
+    def take_choice(choice):
+
+        return  (choice, datetime.datetime.today())
+    @classmethod
+    def take_choice_dict(cls, choice, dict):
+        '''
+        get the choice in a dict in args
+        '''
+        dict["in"], dict["time"] = cls.take_choice(choice)
+
+
+
             
 class SceneWait(Scene):
     def __init__(self, screen):
@@ -89,6 +109,7 @@ class SceneWait(Scene):
 
 class View:
     debug = True
+    stream = dict()
     def __init__(self):
         pygame.init()
         if os.name != "nt":
