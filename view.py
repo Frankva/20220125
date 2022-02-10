@@ -1,4 +1,5 @@
 
+from distutils.log import debug
 import pygame
 import sys
 import os
@@ -49,10 +50,21 @@ class SceneSelect(Scene):
             print("SceneSelect load", file=sys.stderr)
         super().__init__(screen)
         self.buttons = list()
-        self.buttons.append(Button(self.screen))
-        self.buttons.append(Button(self.screen))
+        self.buttons.append(Button(self.screen)) # blue right
+        self.buttons.append(Button(self.screen)) # red left
         self.buttons[1].set_red_pos()
+    
+    def update(self):
+        if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+            if View.debug:
+                print("blue right pressed")
         
+        if pygame.mouse.get_pressed()[0] and self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()):
+            if View.debug:
+                print("red left pressed")
+                
+
+
 
 
     def draw(self, screen):
@@ -76,7 +88,7 @@ class SceneWait(Scene):
         screen.blit(self.texts[0], (0,0))
 
 class View:
-    debug = False
+    debug = True
     def __init__(self):
         pygame.init()
         if os.name != "nt":
@@ -113,14 +125,16 @@ class View:
         sys.exit()
 
     def update(self):
-        for scene in self.scenes:
-            self.scenes[scene].update()
+        
+        self.scenes[self.current_scene].update()
 
+        
 
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
             self.running = False
-        if pygame.key.get_pressed()[pygame.K_j]:
 
+        if pygame.key.get_pressed()[pygame.K_j]:
+            #change scene ;  debug
 
             if self.current_scene != "select":
                 self.current_scene = "select"
