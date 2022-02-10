@@ -3,15 +3,13 @@ import threading
 import view 
 
 import os
+import rfid
 
 class App:
     '''
     controle view script, rfid script, model script
     '''
-    rasp = os.name != "nt"
-    if rasp:
-        import rfid
-        print("raspberry")
+
 
     def __init__(self):
             
