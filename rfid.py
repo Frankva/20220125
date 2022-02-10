@@ -1,5 +1,5 @@
 import sys
-from time import sleep
+
 
 import RPi.GPIO
 from mfrc522 import SimpleMFRC522 as Reader
@@ -41,13 +41,20 @@ class Rfid:
         if self.id == 483985410385:
             self.reader.write("Ceci est un test d'ecriture")
     
-    def read(self):
+    def read(self) -> int:
         if self.debug:
             print("App.read", file=sys.stderr)
         self.id, self.text = self.reader.read()
         if self.debug:
-            print(f"id : {self.id}, text : {self.text}")
-        
+            print(f"id : {self.id}, typeid :  {type(self.id)}, text : {self.text}")
+        return self.id
+    def read_list(self, result):
+        '''
+        put id in a list in arg
+        '''
+        result.append(self.read())
+    
+    
 
 if __name__ == "__main__":
     rfid = Rfid()

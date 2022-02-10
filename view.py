@@ -58,12 +58,13 @@ class View:
         pygame.init()
         self.screen = pygame.display.set_mode((800, 400))#pygame.FULLSCREEN
         self.running = True
-        self.scenes = list()
-        self.current_scene = 0
+        
+        self.scenes = dict()
+        self._current_scene = "wait"
 
     def load(self):
-        self.scenes.append(SceneSelect())
-        self.scenes.append(SceneWait())
+        self.scenes["wait"] = SceneWait()
+        self.scenes["select"] = SceneSelect()
        
         pygame.display.set_caption("test")
         while self.running:
@@ -86,5 +87,18 @@ class View:
         self.scenes[self.current_scene].draw(self.screen)
         pygame.display.flip()
 
-view = View()
-view.load()
+    @property
+    def current_scene(self):
+        return self._current_scene
+
+    @current_scene.setter
+    def current_scene(self, newScene):
+        if newScene in self.scenes.keys():
+            self.current_scene = newScene
+        else:
+            raise ValueError("scene in arg doos not exist")
+
+    
+if __name__ == "__main__":
+    view = View()
+    view.load()
