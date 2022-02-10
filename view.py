@@ -2,6 +2,8 @@
 import pygame
 import sys
 import os
+import datetime
+
 class Button:
     def __init__(self, screen):
         if View.debug:
@@ -35,6 +37,12 @@ class Scene:
         self.font = pygame.font.SysFont(None, 24)
         self.screen = screen
 
+    def update(self):
+        pass
+
+    def draw(self, screen):
+        pass
+
 class SceneSelect(Scene):
     def __init__(self, screen):
         if View.debug:
@@ -48,7 +56,7 @@ class SceneSelect(Scene):
 
 
     def draw(self, screen):
-        
+        super().draw(screen)
         for button in self.buttons:
             pygame.draw.rect(screen, button.color, button.rect)
             
@@ -57,10 +65,14 @@ class SceneWait(Scene):
         
         super().__init__(screen)
         self.texts = list()
-        self.texts.append(self.font.render("Attente badge RFID", True, pygame.Color("white")))
+        self.texts.append(self.font.render(f"Attente badge RFID", True, pygame.Color("white")))
 
+    def update(self):
+        super().update()
+        self.texts[0] = self.font.render(f"Attente badge RFID  {datetime.datetime.today()}", True, pygame.Color("white"))
 
     def draw(self, screen):
+        super().draw(screen)
         screen.blit(self.texts[0], (0,0))
 
 class View:
@@ -92,8 +104,8 @@ class View:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                self.update()
-                self.draw()
+            self.update()
+            self.draw()
         pygame.quit()
 
     def __del__(self):
@@ -101,9 +113,15 @@ class View:
         sys.exit()
 
     def update(self):
+        for scene in self.scenes:
+            self.scenes[scene].update()
+
+
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
             self.running = False
         if pygame.key.get_pressed()[pygame.K_j]:
+
+
             if self.current_scene != "select":
                 self.current_scene = "select"
             else:
