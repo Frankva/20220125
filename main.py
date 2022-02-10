@@ -26,9 +26,8 @@ class App:
             self.theard_rfid.start()
             self.theard_rfid.join()
         
-        input()
         self.view.current_scene = "select"
-
+        self.theard_view.join()
 
 def main():
     app = App()
