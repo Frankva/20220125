@@ -18,7 +18,7 @@ class App:
         if self.rasp:
             self.rfid = rfid.Rfid()
             self.id = list()
-            self.theard_rfid = threading.Thread(target=self.rfid.read_list, args=(self.id))
+            self.theard_rfid = threading.Thread(target=self.rfid.read_list, args=(self.id, ))
 
     def load(self):
         self.theard_view.start()
