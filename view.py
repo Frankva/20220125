@@ -1,7 +1,7 @@
-from distutils.debug import DEBUG
+
 import pygame
 import sys
-
+import os
 class Button:
     def __init__(self, screen):
         if View.debug:
@@ -67,7 +67,10 @@ class View:
     debug = False
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((800, 400))#pygame.FULLSCREEN
+        if os.name != "nt":
+            self.screen = pygame.display.set_mode((800, 400),pygame.FULLSCREEN)#pygame.FULLSCREEN
+        else:
+            self.screen = pygame.display.set_mode((800, 400))
         pygame.display.set_caption("test")
         self.running = True
         
