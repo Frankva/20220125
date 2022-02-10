@@ -9,7 +9,7 @@ class App:
     '''
     controle view script, rfid script, model script
     '''
-
+    rasp = os.name != "nt"
 
     def __init__(self):
             
