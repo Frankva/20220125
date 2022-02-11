@@ -179,12 +179,14 @@ class View:
             raise ValueError(f"scene {newScene} does not exist")
 
     def do_next_scene(self):
+        print("do_next_scene", file=sys.stderr)
         if self.current_scene != "select":
                 self.current_scene = "select"
         else:
             self.current_scene = "wait"
     
     def do_next_scene_dict(self, dict):
+        print("do_next_scene_dict", file=sys.stderr)
         self.do_next_scene()
         View.stream = dict
 

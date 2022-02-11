@@ -28,12 +28,12 @@ class App:
             self.theard_rfid.start()
             self.theard_rfid.join()
             print(self.id)
-            #self.log.write(self.id)
+            self.log.write(self.id)
         self.view.do_next_scene_dict(self.choice)
         while self.choice == dict():
             sleep(1)
         print(self.choice)
-        #self.log.write(self.choice)
+        self.log.write(self.choice)
         #self.view.current_scene = "select"
     
     def __del__(self):
