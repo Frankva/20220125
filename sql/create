@@ -1,0 +1,2 @@
+create table log(id bigint, date datetime, inside bool, primary key (date));
+

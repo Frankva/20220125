@@ -81,7 +81,7 @@ class App:
         self.id = list()
     
     def reset_scene(self):
-        self.view.current_scene = "select"
+        self.view.current_scene = "wait"
 
     def reset(self):
         self.reset_stream()
