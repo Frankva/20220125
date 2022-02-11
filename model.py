@@ -35,6 +35,7 @@ class Model:
         txt = ""
         for i in dict:
             txt += str(i) + ", "
+            txt = "'" + txt + "'"
         return txt[0:-2]
 
     @staticmethod    
@@ -45,6 +46,7 @@ class Model:
         txt = ""
         for i in dict:
             txt += str(dict[i]) + ", "
+            txt = "'" + txt + "'"
         return txt[0:-2]
 
 
