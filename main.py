@@ -70,7 +70,7 @@ class App:
         '''
         d = dict()
         d["id"] = self.id[0]
-        d["date"] = self.choice["date"]
+        d["date"] = "'" + str(self.choice["date"]) + "'"
         d["inside"] = self.choice["inside"]
         return d
     def reset_stream(self):
