@@ -45,11 +45,11 @@ class App:
         self.log.write(str(self.choice))
         
         #self.model.insert(self.tableName, self.create_dict_model())
+        self.theard_model = threading.Thread(target=self.model.insert, args=(self.tableName, self.create_dict_model()))
         try:
             self.theard_model.join()
         except Exception():
             pass
-        self.theard_model = threading.Thread(target=self.model.insert, args=(self.tableName, self.create_dict_model()))
         self.theard_model.start()
         self.reset()
 
