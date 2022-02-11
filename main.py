@@ -31,11 +31,11 @@ class App:
             self.view.stream = self.choice
             #self.view.do_next_scene_dict(self.choice)
             print(self.id)
-            self.log.write(self.id)
+            self.log.write(str(self.id))
         while self.choice == dict():
             sleep(1)
         print(self.choice)
-        self.log.write(self.choice)
+        self.log.write(str(self.choice))
     
     def __del__(self):
         self.log.close()
