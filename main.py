@@ -20,7 +20,6 @@ class App:
        
         self.rfid = rfid.Rfid()
         self.id = list()
-        self.theard_rfid = threading.Thread(target=self.rfid.read_list, args=(self.id, ))
         self.choice = dict()
 
         self.model = model.Model()
@@ -35,6 +34,7 @@ class App:
             self.update()
 
     def update(self):
+        self.theard_rfid = threading.Thread(target=self.rfid.read_list, args=(self.id, ))
         self.theard_rfid.start()
         self.theard_rfid.join()
         self.do_next_scene()
@@ -45,9 +45,12 @@ class App:
         self.log.write(str(self.choice))
         
         #self.model.insert(self.tableName, self.create_dict_model())
+        try:
+            if self.theard_model.is_alive():
+                self.theard_model.join()
+        except:
+            pass
         self.theard_model = threading.Thread(target=self.model.insert, args=(self.tableName, self.create_dict_model()))
-        if self.theard_model.is_alive():
-            self.theard_model.join()
         self.theard_model.start()
         self.reset()
 
