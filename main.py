@@ -46,10 +46,8 @@ class App:
         
         #self.model.insert(self.tableName, self.create_dict_model())
         self.theard_model = threading.Thread(target=self.model.insert, args=(self.tableName, self.create_dict_model()))
-        try:
+        if self.theard_model.is_alive():
             self.theard_model.join()
-        except Exception():
-            pass
         self.theard_model.start()
         self.reset()
 
