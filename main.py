@@ -27,14 +27,15 @@ class App:
         if self.rasp:
             self.theard_rfid.start()
             self.theard_rfid.join()
+            self.view.current_scene = "select"
+            self.view.stream = self.choice
+            #self.view.do_next_scene_dict(self.choice)
             print(self.id)
             self.log.write(self.id)
-        self.view.do_next_scene_dict(self.choice)
         while self.choice == dict():
             sleep(1)
         print(self.choice)
         self.log.write(self.choice)
-        #self.view.current_scene = "select"
     
     def __del__(self):
         self.log.close()
