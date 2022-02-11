@@ -185,6 +185,7 @@ class View:
                 self.current_scene = "select"
         else:
             self.current_scene = "wait"
+    
     def do_next_scene_dict(self, dict):
         self.do_next_scene()
         View.stream = dict
