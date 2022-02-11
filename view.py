@@ -87,7 +87,7 @@ class SceneSelect(Scene):
         '''
         get the choice in a dict in args
         '''
-        dict["in"], dict["time"] = cls.take_choice(choice)
+        dict["inside"], dict["date"] = cls.take_choice(choice)
 
 
 
