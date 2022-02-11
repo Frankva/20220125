@@ -180,6 +180,15 @@ class View:
             print(self.scenes.keys(), file=sys.stderr)
             raise ValueError(f"scene {newScene} does not exist")
 
+    def do_next_scene(self):
+        if self.current_scene != "select":
+                self.current_scene = "select"
+        else:
+            self.current_scene = "wait"
+    def do_next_scene_dict(self, dict):
+        self.do_next_scene()
+        View.stream = dict
+
     
 if __name__ == "__main__":
     view = View()
