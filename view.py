@@ -133,7 +133,8 @@ class View:
 
         while self.running:
             if View.debug:
-                print("loop", file=sys.stderr)
+                #print("loop", file=sys.stderr)
+                pass
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -157,11 +158,8 @@ class View:
         if pygame.key.get_pressed()[pygame.K_j]:
             #change scene ;  debug
 
-            if self.current_scene != "select":
-                self.current_scene = "select"
-            else:
-                self.current_scene = "wait"
-
+            self.do_next_scene()
+        
     def draw(self):
         self.screen.fill(pygame.Color("black"))
         self.scenes[self.current_scene].draw(self.screen)

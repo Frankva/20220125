@@ -3,7 +3,7 @@ import threading
 import view 
 from time import sleep
 
-#import rfid
+import rfid
 
 class App:
     '''
