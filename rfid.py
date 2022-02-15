@@ -1,4 +1,5 @@
 import sys
+from typing import Iterable
 
 
 import RPi.GPIO
@@ -17,22 +18,22 @@ class Rfid:
         self.id = None
         self.text = None
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self.debug:
             print("Rfid.del", file=sys.stderr)
         RPi.GPIO.cleanup()
     
-    def load(self):
+    def load(self) -> None:
         self.read()
        # self.write()
         while self.running:
             self.update()
     
-    def update(self):
+    def update(self) -> None:
         if self.debug:
             print("Rfid.update", file=sys.stderr)
         
-    def write(self):
+    def write(self) -> None:
         '''
         try to write on a badge with 48… id
         '''
@@ -41,19 +42,29 @@ class Rfid:
         if self.id == 483985410385:
             self.reader.write("Ceci est un test d'ecriture")
     
-    def read(self) -> int:
+    def read_obj(self) -> int:
+        '''
+        read rfid, 
+        '''
         if self.debug:
             print("Rfid.read", file=sys.stderr)
         self.id, self.text = self.reader.read()
         if self.debug:
             print(f"id : {self.id}, typeid :  {type(self.id)}, text : {self.text}")
-        return self.id
+
+
+    def read(self) -> int:
+        '''
+        read rfid, return the id
+        '''
+        id, _ = self.reader.read()
+        return id
     
-    def read_list(self, result):
+    def read_pipe(self, result:dict)-> None :
         '''
-        put id in a list in arg
+        put id in a dict in arg
         '''
-        result.append(self.read())
+        result["id"] = self.read()
     
     
 

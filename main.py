@@ -10,17 +10,17 @@ class App:
     '''
     controle view script, rfid script, model script
     '''
-  
+
 
     def __init__(self):
-            
+      
         self.view = view.View
         self.theard_view = threading.Thread(target=self.view)
         self.log = open("main_log.txt", "a")
        
         self.rfid = rfid.Rfid()
-        self.id = list()
-        self.choice = dict()
+       
+        self.pipe = dict()
 
         self.model = model.Model()
         self.tableName = "log"
@@ -34,15 +34,14 @@ class App:
             self.update()
 
     def update(self):
-        self.theard_rfid = threading.Thread(target=self.rfid.read_list, args=(self.id, ))
+        self.theard_rfid = threading.Thread(target=self.rfid.read_pipe, args=(self.pipe, ))
         self.theard_rfid.start()
         self.theard_rfid.join()
         self.do_next_scene()
-        print(self.id)
-        self.log.write(str(self.id))
+
         self.wait_choice()
-        print(self.choice)
-        self.log.write(str(self.choice))
+        print(self.pipe)
+        self.log.write(str(self.pipe))
         
         #self.model.insert(self.tableName, self.create_dict_model())
         try:
@@ -50,7 +49,8 @@ class App:
                 self.theard_model.join()
         except:
             pass
-        self.theard_model = threading.Thread(target=self.model.insert, args=(self.tableName, self.create_dict_model()))
+
+        self.theard_model = threading.Thread(target=self.model.insert, args=(self.tableName, self.pipe))
         self.theard_model.start()
         self.reset()
 
@@ -65,10 +65,12 @@ class App:
         in view
         '''
         self.view.current_scene = "select"
-        self.view.stream = self.choice
+        self.view.pipe = self.choice
 
     def create_dict_model(self):
         '''
+        depreciated
+        
         create a dict to give to a sql request
         '''
         d = dict()
@@ -76,15 +78,16 @@ class App:
         d["date"] = "'" + str(self.choice["date"]) + "'"
         d["inside"] = self.choice["inside"]
         return d
-    def reset_stream(self):
-        self.choice = dict()
-        self.id = list()
+
+    def reset_pipe(self):
+        self.pipe = dict()
+        
     
     def reset_scene(self):
         self.view.current_scene = "wait"
 
     def reset(self):
-        self.reset_stream()
+        self.reset_pipe()
         self.reset_scene()
 
 

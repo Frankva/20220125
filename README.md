@@ -1,5 +1,7 @@
 # rfid pytfon raspberry pi
 [mfrc522 PyPI](https://pypi.org/project/mfrc522/#description)  
+[mariadb PyPI](https://pypi.org/project/mariadb/)
+[pygame]
 
 github developer settings personal access tokens  
 
@@ -10,3 +12,15 @@ php-mysql
 mariadb-server
 phpmyadmin
 ```
+
+## À rajouter ?
+- voir le nom attribué à l’id
+- sur l’écran d’attente voir les derniers pointages
+- avoir une scène de confirmation récapitulatif
+- 
+
+
+## sécurité
+- stockage temporaire des noms
+- chiffrement de la connexion avec la base de données
+- 

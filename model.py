@@ -1,5 +1,9 @@
+from typing import Iterable
 import mariadb
 import os
+
+
+import datetime # to remove
 
 class Model:
     def __init__(self) -> None:
@@ -22,29 +26,64 @@ class Model:
     #    self.cursor.execute(f"insert into log(id, datetime) values(1, '{now}');")
     #    self.connection.commit()
 
-    def insert(self, table, dict) -> None:
+    def insert_old(self, table, dict) -> None:
+        '''
+        depreciated
+        '''
+        
         print(f"insert into {table}({self.format_name_column(dict)}) values({self.format_value_column(dict)})")
         self.cursor.execute(f"insert into {table}({self.format_name_column(dict)}) values({self.format_value_column(dict)})")
         self.connection.commit()
 
+    def insert(self, table_name: str, d: dict) -> None:
+        '''
+        execute insert sql
+        '''
+        sql = f"insert into {table_name}({self.format_name_column(d)}) values({self.give_quationmark(d)})"
+        self.cursor.execute(sql, tuple(d.values()))
+        self.connection.commit()
+    
+    
     @staticmethod
-    def format_name_column(dict) -> str:
+    def give_quationmark(d: dict):
+        return (len(d) * "?, ")[0:-2]
+
+    @staticmethod
+    def format_name_column(d: dict) -> str:
         '''
         format a dictionary key in a, b, c
         '''
         txt = ""
-        for i in dict:
+        for i in d:
             txt += str(i) + ", "
         return txt[0:-2]
 
     @staticmethod    
-    def format_value_column(dict) -> str:
+    def format_value_column(d: dict) -> str:
         '''
         format a dictionary value in a, b, c
         '''
         txt = ""
-        for i in dict:
-            txt += str(dict[i]) + ", "
+        for i in d:
+            txt += str(d[i]) + ", "
         return txt[0:-2]
 
+    @staticmethod
+    def format_date_dict(dict, key):
+        dict[key] = "'" + dict[key] + "'"
 
+
+
+def test():
+    model = Model()
+    d = dict()
+    d["id"] = 2
+    d["date"] = datetime.datetime.today()
+    d["inside"] = True
+
+    model.insert("log", d)
+    
+
+
+if __name__ == "__main__":
+    test()

@@ -35,13 +35,13 @@ class Scene:
     def __init__(self, screen):
         if View.debug:
             print("init Scene", file=sys.stderr)
-        self.font = pygame.font.SysFont(None, 24)
+        
         self.screen = screen
 
     def update(self):
         pass
 
-    def draw(self, screen):
+    def draw(self):
         pass
 
 class SceneSelect(Scene):
@@ -62,21 +62,21 @@ class SceneSelect(Scene):
         if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
             if View.debug:
                 print("blue right pressed", file=sys.stderr)
-                self.take_choice_dict(True, View.stream)
+                self.take_choice_dict(True, View.pipe)
 
         
         if pygame.mouse.get_pressed()[0] and self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()):
             if View.debug:
                 print("red left pressed", file=sys.stderr)
-                self.take_choice_dict(False, View.stream)
+                self.take_choice_dict(False, View.pipe)
 
 
 
 
-    def draw(self, screen):
-        super().draw(screen)
+    def draw(self):
+        super().draw()
         for button in self.buttons:
-            pygame.draw.rect(screen, button.color, button.rect)
+            pygame.draw.rect(self.screen, button.color, button.rect)
 
     @staticmethod
     def take_choice(choice):
@@ -96,22 +96,28 @@ class SceneWait(Scene):
     def __init__(self, screen):
         
         super().__init__(screen)
+
         self.texts = list()
-        self.texts.append(self.font.render(f"Attente badge RFID", True, pygame.Color("white")))
+        self.texts.append(Text(0, 0, 30, "", pygame.Color("white")))
 
     def update(self):
         super().update()
-        self.texts[0] = self.font.render(f"Attente badge RFID  {datetime.datetime.today()}", True, pygame.Color("white"))
+        self.texts[0].txt = f"Attente badge RFID  {datetime.datetime.today()}"
+        for txt in self.texts:
+            txt.update()
 
-    def draw(self, screen):
-        super().draw(screen)
-        screen.blit(self.texts[0], (0,0))
+    def draw(self):
+        super().draw()
+        for txt in self.texts:
+            txt.draw(self.screen)
+        
 
 class View:
     debug = True
-    stream = dict()
-    def __init__(self):
+    pipe = dict()
+    def __init__(self)-> None:
         pygame.init()
+        
         if os.name != "nt":
             self.screen = pygame.display.set_mode((800, 400),pygame.FULLSCREEN)#pygame.FULLSCREEN
         else:
@@ -124,7 +130,7 @@ class View:
 
         self.load()
 
-    def load(self):
+    def load(self)-> None:
         '''
         start pygame loop
         '''
@@ -142,12 +148,14 @@ class View:
             self.draw()
         pygame.quit()
 
-    def __del__(self):
+    def __del__(self)-> None:
         pygame.quit()
         sys.exit()
 
-    def update(self):
-        
+    def update(self)-> None:
+        '''
+        is called each frame
+        '''
         self.scenes[self.current_scene].update()
 
         
@@ -160,17 +168,20 @@ class View:
 
             self.do_next_scene()
         
-    def draw(self):
+    def draw(self)-> None:
+        '''
+        is called each frame. containt fonction to show
+        '''
         self.screen.fill(pygame.Color("black"))
-        self.scenes[self.current_scene].draw(self.screen)
+        self.scenes[self.current_scene].draw()
         pygame.display.flip()
 
     @property
-    def current_scene(self):
+    def current_scene(self) -> Scene:
         return self._current_scene
 
     @current_scene.setter
-    def current_scene(self, newScene):
+    def current_scene(self, newScene: str)-> None:
        
         if newScene in self.scenes.keys():
             self._current_scene = newScene
@@ -178,19 +189,56 @@ class View:
             print(self.scenes.keys(), file=sys.stderr)
             raise ValueError(f"scene {newScene} does not exist")
 
-    def do_next_scene(self):
+    def do_next_scene(self)-> None:
+        '''
+        change the current scene
+        '''
+
         print("do_next_scene", file=sys.stderr)
         if self.current_scene != "select":
                 self.current_scene = "select"
         else:
             self.current_scene = "wait"
     
-    def do_next_scene_dict(self, dict):
+    def do_next_scene_dict(self, dict: dict):
+        '''
+        change the current scene and change the reference of View.pipe
+        '''
         print("do_next_scene_dict", file=sys.stderr)
         self.do_next_scene()
-        View.stream = dict
+        View.pipe = dict
+
+class Text:
+    def __init__(self, x:float, y:float, size: float, txt: str, color: pygame.Color)-> None:
+        '''
+        text with position, size and color
+        '''
+        self.txt = txt
+        self.pos = pygame.math.Vector2(x, y)
+        self.size = size
+        self.font = pygame.font.SysFont("Arial", self.size)
+        self.color = color
+        self.img = self.font.render(self.txt, True, self.color)
+        print(self.font)
+
+
+    def update(self)-> None:
+        '''
+        is called each frame
+        '''
+        self.font = pygame.font.SysFont(None, self.size)
+        self.img = self.font.render(self.txt, True, self.color)
+        
+    
+    def draw(self, screen)-> None:
+        '''
+        is called each frame. containt function to show
+        '''
+        screen.blit(self.img, self.pos)
+
 
     
+
 if __name__ == "__main__":
     view = View()
     #view.load()
