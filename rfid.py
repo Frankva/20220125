@@ -1,11 +1,9 @@
 import sys
-from typing import Iterable
+
 
 
 import RPi.GPIO
 from mfrc522 import SimpleMFRC522 as Reader
-
-
 
 
 class Rfid:
@@ -22,17 +20,17 @@ class Rfid:
         if self.debug:
             print("Rfid.del", file=sys.stderr)
         RPi.GPIO.cleanup()
-    
+
     def load(self) -> None:
         self.read()
        # self.write()
         while self.running:
             self.update()
-    
+
     def update(self) -> None:
         if self.debug:
             print("Rfid.update", file=sys.stderr)
-        
+
     def write(self) -> None:
         '''
         try to write on a badge with 48… id
@@ -41,7 +39,7 @@ class Rfid:
             print("Rfid.write", file=sys.stderr)
         if self.id == 483985410385:
             self.reader.write("Ceci est un test d'ecriture")
-    
+
     def read_obj(self) -> int:
         '''
         read rfid, 
@@ -50,8 +48,8 @@ class Rfid:
             print("Rfid.read", file=sys.stderr)
         self.id, self.text = self.reader.read()
         if self.debug:
-            print(f"id : {self.id}, typeid :  {type(self.id)}, text : {self.text}")
-
+            print(
+                f"id : {self.id}, typeid :  {type(self.id)}, text : {self.text}")
 
     def read(self) -> int:
         '''
@@ -59,14 +57,13 @@ class Rfid:
         '''
         id, _ = self.reader.read()
         return id
-    
-    def read_pipe(self, result:dict)-> None :
+
+    def read_pipe(self, result: dict) -> None:
         '''
         put id in a dict in arg
         '''
         result["id"] = self.read()
-    
-    
+
 
 if __name__ == "__main__":
     rfid = Rfid()

@@ -1,32 +1,29 @@
 
 import threading
-import view 
+import view
 from time import sleep
 
 import rfid
 import model
+
 
 class App:
     '''
     controle view script, rfid script, model script
     '''
 
-
     def __init__(self):
-      
+
         self.view = view.View
         self.theard_view = threading.Thread(target=self.view)
         self.log = open("main_log.txt", "a")
-       
+
         self.rfid = rfid.Rfid()
-       
+
         self.pipe = dict()
 
         self.model = model.Model()
         self.tableName = "log"
-        
-        
-
 
     def load(self):
         self.theard_view.start()
@@ -34,7 +31,8 @@ class App:
             self.update()
 
     def update(self):
-        self.theard_rfid = threading.Thread(target=self.rfid.read_pipe, args=(self.pipe, ))
+        self.theard_rfid = threading.Thread(
+            target=self.rfid.read_pipe, args=(self.pipe, ))
         self.theard_rfid.start()
         self.theard_rfid.join()
         self.do_next_scene()
@@ -42,22 +40,24 @@ class App:
         self.wait_choice()
         print(self.pipe)
         self.log.write(str(self.pipe))
-        
+
         #self.model.insert(self.tableName, self.create_dict_model())
+        self.wait_insertion()
+
+        self.theard_model = threading.Thread(
+            target=self.model.insert, args=(self.tableName, self.pipe))
+        self.theard_model.start()
+        self.reset()
+
+    def wait_insertion(self):
         try:
             if self.theard_model.is_alive():
                 self.theard_model.join()
         except:
             pass
 
-        self.theard_model = threading.Thread(target=self.model.insert, args=(self.tableName, self.pipe))
-        self.theard_model.start()
-        self.reset()
-
-
-
     def wait_choice(self):
-         while self.choice == dict():
+        while self.pipe["inside"] == None:
             sleep(1)
 
     def do_next_scene(self):
@@ -65,12 +65,13 @@ class App:
         in view
         '''
         self.view.current_scene = "select"
-        self.view.pipe = self.choice
+        self.view.pipe = self.pipe
+    
 
     def create_dict_model(self):
         '''
         depreciated
-        
+
         create a dict to give to a sql request
         '''
         d = dict()
@@ -80,9 +81,10 @@ class App:
         return d
 
     def reset_pipe(self):
-        self.pipe = dict()
-        
-    
+        self.pipe["id"] = None
+        self.pipe["date"] = None
+        self.pipe["inside"] = None
+
     def reset_scene(self):
         self.view.current_scene = "wait"
 
@@ -90,10 +92,9 @@ class App:
         self.reset_pipe()
         self.reset_scene()
 
-
-
     def __del__(self):
         self.log.close()
+
 
 def main():
     app = App()

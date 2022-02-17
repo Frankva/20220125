@@ -1,15 +1,16 @@
-from typing import Iterable
+
 import mariadb
 import os
 
 
-import datetime # to remove
+import datetime  # to remove
+
 
 class Model:
     def __init__(self) -> None:
         self.conn_params = dict()
         if os.name != "nt":
-           
+
             self.conn_params["user"] = "admin"
             self.conn_params["password"] = "1806"
             self.conn_params["host"] = "localhost"
@@ -22,7 +23,7 @@ class Model:
         self.connection = mariadb.connect(**self.conn_params)
         self.cursor = self.connection.cursor()
 
-    #def createLog(self, ):
+    # def createLog(self, ):
     #    self.cursor.execute(f"insert into log(id, datetime) values(1, '{now}');")
     #    self.connection.commit()
 
@@ -30,9 +31,11 @@ class Model:
         '''
         depreciated
         '''
-        
-        print(f"insert into {table}({self.format_name_column(dict)}) values({self.format_value_column(dict)})")
-        self.cursor.execute(f"insert into {table}({self.format_name_column(dict)}) values({self.format_value_column(dict)})")
+
+        print(
+            f"insert into {table}({self.format_name_column(dict)}) values({self.format_value_column(dict)})")
+        self.cursor.execute(
+            f"insert into {table}({self.format_name_column(dict)}) values({self.format_value_column(dict)})")
         self.connection.commit()
 
     def insert(self, table_name: str, d: dict) -> None:
@@ -42,8 +45,7 @@ class Model:
         sql = f"insert into {table_name}({self.format_name_column(d)}) values({self.give_quationmark(d)})"
         self.cursor.execute(sql, tuple(d.values()))
         self.connection.commit()
-    
-    
+
     @staticmethod
     def give_quationmark(d: dict):
         return (len(d) * "?, ")[0:-2]
@@ -58,7 +60,7 @@ class Model:
             txt += str(i) + ", "
         return txt[0:-2]
 
-    @staticmethod    
+    @staticmethod
     def format_value_column(d: dict) -> str:
         '''
         format a dictionary value in a, b, c
@@ -73,7 +75,6 @@ class Model:
         dict[key] = "'" + dict[key] + "'"
 
 
-
 def test():
     model = Model()
     d = dict()
@@ -82,7 +83,6 @@ def test():
     d["inside"] = True
 
     model.insert("log", d)
-    
 
 
 if __name__ == "__main__":

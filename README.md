@@ -1,7 +1,7 @@
-# rfid pytfon raspberry pi
+# rfid pyton raspberry pi
 [mfrc522 PyPI](https://pypi.org/project/mfrc522/#description)  
-[mariadb PyPI](https://pypi.org/project/mariadb/)
-[pygame]
+[mariadb PyPI](https://pypi.org/project/mariadb/)  
+[pygame](https://pypi.org/project/pygame/)
 
 github developer settings personal access tokens  
 
@@ -10,7 +10,7 @@ apache2
 php
 php-mysql
 mariadb-server
-phpmyadmin
+
 ```
 
 ## À rajouter ?
