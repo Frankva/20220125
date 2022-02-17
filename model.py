@@ -47,7 +47,7 @@ class Model:
         self.connection.commit()
 
     @staticmethod
-    def give_quationmark(d: dict):
+    def give_quationmark(d: dict) -> str:
         return (len(d) * "?, ")[0:-2]
 
     @staticmethod
@@ -71,8 +71,8 @@ class Model:
         return txt[0:-2]
 
     @staticmethod
-    def format_date_dict(dict, key):
-        dict[key] = "'" + dict[key] + "'"
+    def format_date_dict(d: dict, key):
+        d[key] = "'" + d[key] + "'"
 
 
 def test():
