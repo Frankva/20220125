@@ -7,7 +7,11 @@ import datetime
 
 
 class Button:
-    def __init__(self, screen):
+    '''
+    button show with rect and unique color
+    '''
+
+    def __init__(self, screen: pygame.surfarray) -> None:
         if View.debug:
             print("Button.init", file=sys.stderr)
         self.screen = screen
@@ -20,7 +24,10 @@ class Button:
         self.color = pygame.Color("blue")
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
-    def set_red_pos(self):
+    def set_red_pos(self) -> None:
+        '''
+        preset for a red button
+        '''
         if View.debug:
             print("Button.set_red_pos", file=sys.stderr)
         x, y = self.screen.get_size()
@@ -33,20 +40,32 @@ class Button:
 
 
 class Scene:
-    def __init__(self, screen):
+    '''
+    scene containt text and button
+    '''
+    def __init__(self, screen) -> None:
         if View.debug:
             print("init Scene", file=sys.stderr)
 
         self.screen = screen
 
-    def update(self):
+    def update(self) -> None:
+        '''
+        is called each frame
+        '''
         pass
 
-    def draw(self):
+    def draw(self) -> None:
+        '''
+        is called each frame. containt function to show
+        '''
         pass
 
 
 class SceneSelect(Scene):
+    '''
+    is the scene with buttons
+    '''
     def __init__(self, screen):
         if View.debug:
             print("SceneSelect load", file=sys.stderr)
@@ -76,12 +95,14 @@ class SceneSelect(Scene):
             pygame.draw.rect(self.screen, button.color, button.rect)
 
     @staticmethod
-    def take_choice(choice):
-
+    def take_choice(choice: bool) -> tuple:
+        '''
+        return arg and date time
+        '''
         return (choice, datetime.datetime.today())
 
     @classmethod
-    def take_choice_dict(cls, choice, dict):
+    def take_choice_dict(cls, choice, dict) -> None:
         '''
         get the choice in a dict in args
         '''
@@ -89,6 +110,9 @@ class SceneSelect(Scene):
 
 
 class SceneWait(Scene):
+    '''
+    is the waiting screen with time
+    '''
     def __init__(self, screen):
 
         super().__init__(screen)
@@ -109,6 +133,9 @@ class SceneWait(Scene):
 
 
 class View:
+    '''
+    contain scene, pygame proprety,…
+    '''
     debug = True
     pipe = dict()
 
@@ -225,7 +252,7 @@ class Text:
         self.font = pygame.font.SysFont(None, self.size)
         self.img = self.font.render(self.txt, True, self.color)
 
-    def draw(self, screen) -> None:
+    def draw(self, screen: pygame.Surface) -> None:
         '''
         is called each frame. containt function to show
         '''

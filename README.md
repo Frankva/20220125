@@ -22,5 +22,6 @@ mariadb-server
 
 ## sécurité
 - stockage temporaire des noms
+- hacher (sha2) les ids des badges
 - chiffrement de la connexion avec la base de données
 - 
