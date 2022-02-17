@@ -58,6 +58,7 @@ class App:
 
     def wait_choice(self):
         while self.pipe["inside"] == None:
+            print("wait")
             sleep(1)
 
     def do_next_scene(self):
