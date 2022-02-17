@@ -21,7 +21,7 @@ class App:
         self.rfid = rfid.Rfid()
 
         self.pipe = dict()
-
+        self.reset_pipe()
         self.model = model.Model()
         self.tableName = "log"
 
