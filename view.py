@@ -140,8 +140,6 @@ class View:
     pipe = dict()
 
     def __init__(self) -> None:
-        pygame.init()
-
         if os.name != "nt":
             self.screen = pygame.display.set_mode(
                 (800, 400), pygame.FULLSCREEN)  # pygame.FULLSCREEN
@@ -159,6 +157,10 @@ class View:
         '''
         start pygame loop
         '''
+        pygame.init()
+
+        
+        
         self.scenes["wait"] = SceneWait(self.screen)
         self.scenes["select"] = SceneSelect(self.screen)
 
@@ -223,13 +225,13 @@ class View:
         else:
             self.current_scene = "wait"
 
-    def do_next_scene_dict(self, dict: dict):
+    def do_next_scene_dict(self, d: dict):
         '''
         change the current scene and change the reference of View.pipe
         '''
         print("do_next_scene_dict", file=sys.stderr)
         self.do_next_scene()
-        View.pipe = dict
+        View.pipe = d
 
 
 class Text:

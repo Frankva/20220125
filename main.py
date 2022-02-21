@@ -14,8 +14,8 @@ class App:
 
     def __init__(self):
 
-        self.view = view.View
-        self.theard_view = threading.Thread(target=self.view)
+        self.view = view.View()
+        self.theard_view = threading.Thread(target=self.view.load)
         self.log = open("main_log.txt", "a")
 
         self.rfid = rfid.Rfid()
@@ -35,7 +35,8 @@ class App:
             target=self.rfid.read_pipe, args=(self.pipe, ))
         self.theard_rfid.start()
         self.theard_rfid.join()
-        self.do_next_scene()
+        #self.do_next_scene()
+        self.view.do_next_scene_dict(self.pipe)
 
         self.wait_choice()
         print(self.pipe)
