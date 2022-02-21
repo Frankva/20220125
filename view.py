@@ -140,6 +140,8 @@ class View:
     pipe = dict()
 
     def __init__(self) -> None:
+        if View.debug:
+            print("View.init", file=sys.stderr)
         if os.name != "nt":
             self.screen = pygame.display.set_mode(
                 (800, 400), pygame.FULLSCREEN)  # pygame.FULLSCREEN
@@ -157,6 +159,8 @@ class View:
         '''
         start pygame loop
         '''
+        if View.debug:
+            print("View.load", file=sys.stderr)
         pygame.init()
 
         
