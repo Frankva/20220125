@@ -17,13 +17,49 @@ class Button:
         self.screen = screen
         x, y = self.screen.get_size()
         self.x = 7 * (x / 12)
-        self.y = 1 * (y / 12)
+        self.y = 4 * (y / 12)
         self.w = 4 * (x / 12)
-        self.h = 10 * (y / 12)
+        self.h = 7 * (y / 12)
 
-        self.color = pygame.Color("blue")
+        self.color = pygame.Color("#005BA9") # blue
+        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+    
+    def __init__(self, screen: pygame.surfarray, x, y, w, h, color) -> None:
+        if View.debug:
+            print("Button.init", file=sys.stderr)
+        self.screen = screen
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+
+        self.color = color
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
+    @staticmethod
+    def inside_button(screen):
+        
+        cx, cy = screen.get_size()
+        x = 7 * (cx / 12)
+        y = 4 * (cy / 12)
+        w = 4 * (cx / 12)
+        h = 7 * (cy / 12)
+
+        color = pygame.Color("#005BA9") # blue
+        return Button(screen, x, y, w, h, color)
+   
+    @staticmethod
+    def outside_button(screen):
+        
+        cx, cy = screen.get_size()
+        x = 1 * (cx / 12)
+        y = 4 * (cy / 12)
+        w = 4 * (cx / 12)
+        h = 7 * (cy / 12)
+
+        color = pygame.Color("#DD1C1A") # red
+        return Button(screen, x, y, w, h, color)
+   
     def set_red_pos(self) -> None:
         '''
         preset for a red button
@@ -31,12 +67,16 @@ class Button:
         if View.debug:
             print("Button.set_red_pos", file=sys.stderr)
         x, y = self.screen.get_size()
-        self.color = pygame.Color("red")
-        self.x = x / 12
-        self.y = y / 12
+        self.color = pygame.Color("#DD1C1A") # red
+        self.x = 1 * x / 12
+        self.y = 4 * y / 12
         self.w = 4 * (x / 12)
-        self.h = 10 * (y / 12)
+        self.h = 7 * (y / 12)
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+
+    @classmethod
+    def setting_button(cls):
+        return cls.__init__()
 
 
 class Scene:
@@ -74,9 +114,9 @@ class SceneSelect(Scene):
         self.choice = dict()
 
         self.buttons = list()
-        self.buttons.append(Button(self.screen))  # blue right
-        self.buttons.append(Button(self.screen))  # red left
-        self.buttons[1].set_red_pos()
+        self.buttons.append(Button.inside_button(self.screen))  # blue right
+        self.buttons.append(Button.outside_button(self.screen))  # red left
+        #self.buttons[1].set_red_pos()
 
     def update(self):
         if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
@@ -118,7 +158,7 @@ class SceneWait(Scene):
         super().__init__(screen)
 
         self.texts = list()
-        self.texts.append(Text(0, 0, 30, "", pygame.Color("white")))
+        self.texts.append(Text(0, 0, 30, "", pygame.Color("#001B33")))
 
     def update(self):
         super().update()
@@ -195,7 +235,7 @@ class View:
         '''
         is called each frame. containt fonction to show
         '''
-        self.screen.fill(pygame.Color("black"))
+        self.screen.fill(pygame.Color("#DBCEB1"))
         self.scenes[self.current_scene].draw()
         pygame.display.flip()
 

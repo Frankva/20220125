@@ -1,0 +1,104 @@
+{
+    "window.titleBarStyle": "custom",
+    "window.customMenuBarAltFocus": false,
+    "vim.useCtrlKeys": true,
+    "vim.handleKeys": {
+        "<C-a>": false,
+        "<C-f>": false,
+        "<C-z>": false,
+        "<C-w>": false,
+        "<C-c>": false,
+        "<C-v>": false,
+        "<C-x>": false
+    },
+    "vim.statusBarColorControl": true,
+    "vim.statusBarColors" : {
+        "normal": "#005f5f",
+        "insert": "#5f0000",
+        "visual": "#5f00af",
+        "visualline": "#005f87",
+        "visualblock": "#86592d",
+        "replace": "#000000"
+    },
+    "vim.otherModesKeyBindingsNonRecursive": [
+        {
+            "before": ["é"],
+            "after": ["w"]
+        },
+        {
+            "before": ["É"],
+            "after": ["W"]
+        },
+        {
+            "before": ["t"],
+            "after": ["h"]
+        },
+        {
+            "before": ["n"],
+            "after": ["l"]
+        },
+        {
+            "before": ["s"],
+            "after": ["j"]
+        },
+        {
+            "before": ["r"],
+            "after": ["k"]
+        },
+        {
+            "before": ["T"],
+            "after": ["H"]
+        },
+        {
+            "before": ["N"],
+            "after": ["L"]
+        },
+        {
+            "before": ["S"],
+            "after": ["J"]
+        },
+        {
+            "before": ["R"],
+            "after": ["K"]
+        },
+        {
+            "before": ["j"],
+            "after": ["s"]
+        },
+        {
+            "before": ["J"],
+            "after": ["S"]
+        },
+        {
+            "before": ["l"],
+            "after": ["t"]
+        },
+        {
+            "before": ["T"],
+            "after": ["T"]
+        },
+        {
+            "before": ["h"],
+            "after": ["n"]
+        },
+        {
+            "before": ["H"],
+            "after": ["N"]
+        },
+        {
+            "before": ["k"],
+            "after": ["r"]
+        },
+        {
+            "before": ["K"],
+            "after": ["R"]
+        },
+        {
+            "before": ["<C-_>"],
+            "after": ["g", "B"]
+            /*"commands": [
+                {"command": "editor.action.commentLine"}
+            ]*/
+        }
+],
+}

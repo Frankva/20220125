@@ -25,3 +25,13 @@ mariadb-server
 - hacher (sha2) les ids des badges
 - chiffrement de la connexion avec la base de données
 - 
+
+## à ajouté
+- 10 dernières décroisant
+- nom, prénom
+- temps limite
+- couleur de orif 
+    - #005BA9 bannière, titre
+    - #DBCEB1 fond
+    - #AE9B70 text
+    - #FFFFFF

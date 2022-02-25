@@ -35,6 +35,7 @@ class App:
             target=self.rfid.read_pipe, args=(self.pipe, ))
         self.theard_rfid.start()
         self.theard_rfid.join()
+        # self.theard_model_update = threading.Thread(target=)
         self.do_next_scene()
 
         self.wait_choice()
@@ -44,15 +45,15 @@ class App:
         #self.model.insert(self.tableName, self.create_dict_model())
         self.wait_insertion()
 
-        self.theard_model = threading.Thread(
+        self.theard_model_insert = threading.Thread(
             target=self.model.insert, args=(self.tableName, self.pipe))
-        self.theard_model.start()
+        self.theard_model_insert.start()
         self.reset()
 
     def wait_insertion(self):
         try:
-            if self.theard_model.is_alive():
-                self.theard_model.join()
+            if self.theard_model_insert.is_alive():
+                self.theard_model_insert.join()
         except:
             pass
 
