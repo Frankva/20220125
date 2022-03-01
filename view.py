@@ -1,5 +1,6 @@
 
 
+import re
 import pygame
 import sys
 import os
@@ -117,8 +118,12 @@ class SceneSelect(Scene):
         self.buttons.append(Button.inside_button(self.screen))  # blue right
         self.buttons.append(Button.outside_button(self.screen))  # red left
         #self.buttons[1].set_red_pos()
+        self.texts = list()
+        self.texts.append(Text(0, 0, 31, '', pygame.Color('black')))
+
 
     def update(self):
+        super().update()
         if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
             if View.debug:
                 print("blue right pressed", file=sys.stderr)
@@ -128,11 +133,15 @@ class SceneSelect(Scene):
             if View.debug:
                 print("red left pressed", file=sys.stderr)
                 self.take_choice_dict(False, View.pipe)
+        self.texts[0](View.pipe['surname'] + ' ' + View.pipe['name']) # must be optimised, not all frame
+
 
     def draw(self):
         super().draw()
         for button in self.buttons:
             pygame.draw.rect(self.screen, button.color, button.rect)
+        for text in self.texts:
+            text.draw(self.screen)
 
     @staticmethod
     def take_choice(choice: bool) -> tuple:
@@ -171,6 +180,24 @@ class SceneWait(Scene):
         for txt in self.texts:
             txt.draw(self.screen)
 
+class SceneLog(Scene):
+    '''
+    scene show logs
+    '''
+    def __init__(self, screen) -> None:
+        super().__init__(screen)
+        self.texts = list()
+        nb_log = 10
+        size_txt = 30
+        for i in range(nb_log):
+            self.texts.append(Text(0, 0, size_txt + size_txt * i, "", pygame.Color('black')))
+
+    def update(self):
+        super().update()
+
+    def draw(self):
+        super().draw()
+
 
 class View:
     '''
@@ -178,6 +205,9 @@ class View:
     '''
     debug = True
     pipe = dict()
+    pipe['name'] = 'Name'
+    pipe['surname'] = 'Surname'
+    pipe['log'] = dict()
 
     def __init__(self) -> None:
         pygame.init()
@@ -277,7 +307,7 @@ class Text:
         '''
         text with position, size and color
         '''
-        self.txt = txt
+        self.__txt = txt
         self.pos = pygame.math.Vector2(x, y)
         self.size = size
         self.font = pygame.font.SysFont("Arial", self.size)
@@ -298,7 +328,31 @@ class Text:
         '''
         screen.blit(self.img, self.pos)
 
+    def __str__(self) -> str:
+        return self.txt
+    
+    @property
+    def txt(self) -> str:
+        return self.__txt
+    
+    @txt.setter
+    def txt(self, txt: str):
+        if isinstance(txt, str):
+            self.__txt = txt
+        else:
+            raise ValueError("'must be str")
+        
+    def __call__(self, txt):
+        self.txt = txt
+        self.update()
+    
+        
+
+
+def test1():
+    view = View()
 
 if __name__ == "__main__":
-    view = View()
+    # view = View()
     # view.load()
+    test1()

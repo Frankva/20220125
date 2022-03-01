@@ -138,7 +138,7 @@ def testselect():
     print(txt)
     txt2 = model.select(("name", "surname"), "user", "id_user", (1,))
     print(txt2)
-    txt3 = model.select_log(("date", "inside"), "log", "id_badge", (483985410385,), "date", 5)
+    txt3 = model.select_log(("date", "inside"), "log", "id_badge", (483985410385,), "date", 10)
     txt4 = model.cursor_to_dict_in_list(("date", "inside"), txt3)
     print(txt4)
 

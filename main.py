@@ -35,7 +35,7 @@ class App:
             target=self.rfid.read_pipe, args=(self.pipe, ))
         self.theard_rfid.start()
         self.theard_rfid.join()
-        # self.theard_model_update = threading.Thread(target=)
+        self.theard_model_update = threading.Thread(target=self.model.read_name_log, args=(self.pipe))
         self.do_next_scene()
 
         self.wait_choice()
