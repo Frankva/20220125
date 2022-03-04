@@ -134,8 +134,33 @@ class Scene:
         '''
         pass
 
+class SceneTime(Scene):
+    def __init__(self, screen, view) -> None:
+        super().__init__(screen, view)
+        self.entry_time = datetime.datetime.today()
 
-class SceneSelect(Scene):
+    def update(self) -> None:
+        '''
+        is called each frame
+        '''
+        super().update()
+        self.do_cancel()
+
+    def check_time(self, minute: int) -> bool:
+        '''
+        check time with now and entry_time proprety 
+        '''
+        return datetime.datetime.today() - self.entry_time > datetime.timedelta(minutes=minute)
+            
+    def do_cancel(self) -> None:
+        if self.check_time(1):
+            self.view.cancel()
+    
+    def reset_entry_time(self) -> None:
+        self.entry_time = datetime.datetime.today()
+
+
+class SceneSelect(SceneTime):
     '''
     is the scene with buttons
     '''
@@ -173,6 +198,7 @@ class SceneSelect(Scene):
             self.take_choice_dict(False, View.pipe)
 
         if pygame.mouse.get_pressed()[0] and self.buttons[2].rect.collidepoint(pygame.mouse.get_pos()):
+            self.reset_entry_time()
             # access parent instance
             self.view.do_log_scene(View.pipe['log'])
 
@@ -222,7 +248,7 @@ class SceneWait(Scene):
             txt.draw(self.screen)
 
 
-class SceneLog(Scene):
+class SceneLog(SceneTime):
     '''
     scene show logs
     '''
@@ -256,6 +282,7 @@ class SceneLog(Scene):
 
     def do_press_button(self):
         if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+            self.reset_entry_time()
             # access parent instance
             self.view.current_scene = 'select'
             # add reset timer
@@ -307,10 +334,7 @@ class View:
         '''
         start pygame loop
         '''
-        self.scenes["wait"] = SceneWait(self.screen, self)
-        self.scenes["select"] = SceneSelect(self.screen, self)
-        self.scenes["log"] = SceneLog(self.screen, self)
-
+        self.load_scene() 
         while self.running:
             if View.debug:
                 #print("loop", file=sys.stderr)
@@ -322,6 +346,11 @@ class View:
             self.draw()
         pygame.quit()
 
+    def load_scene(self) -> None:
+        self.scenes["wait"] = SceneWait(self.screen, self)
+        self.scenes["select"] = SceneSelect(self.screen, self)
+        self.scenes["log"] = SceneLog(self.screen, self)
+
     def __del__(self) -> None:
         pygame.quit()
         sys.exit()
@@ -331,7 +360,9 @@ class View:
         is called each frame
         '''
         self.scenes[self.current_scene].update()
+        self.debug_command()
 
+    def debug_command(self):
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
             self.running = False
 
@@ -389,6 +420,18 @@ class View:
         if self.current_scene == 'select':
             self.current_scene = 'log'
             self.scenes['log'].set_text(log)
+    
+    def cancel(self):
+        '''
+        when time expire
+        '''
+        self.current_scene = 'wait'
+        self.load_scene()
+        View.pipe['cancel'] = True
+
+
+
+
 
 
 class Text:
