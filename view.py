@@ -74,6 +74,18 @@ class Button:
         return Button(screen, x, y, w, h, color)
 
     @staticmethod
+    def cancel_button(screen):
+
+        cx, cy = screen.get_size()
+        x = 1 * (cx / 12)
+        y = 1 * (cy / 12)
+        w = 1 * (cx / 12)
+        h = 1 * (cy / 12)
+
+        color = pygame.Color("#3C362A")  # gray
+        return Button(screen, x, y, w, h, color)
+
+    @staticmethod
     def return_button(screen):
 
         cx, cy = screen.get_size()
@@ -176,6 +188,7 @@ class SceneSelect(SceneTime):
         self.buttons.append(Button.inside_button(self.screen))  # blue right
         self.buttons.append(Button.outside_button(self.screen))  # red left
         self.buttons.append(Button.log_button(self.screen))  # red left
+        self.buttons.append(Button.cancel_button(self.screen))  # red left
         #self.buttons[1].set_red_pos()
         self.texts = list()
         self.texts.append(Text(0, 0, 30, '', pygame.Color('black')))
@@ -187,20 +200,24 @@ class SceneSelect(SceneTime):
         self.texts[0](View.pipe['surname'] + ' ' + View.pipe['name'])
 
     def do_press_button(self):
-        if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+        if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'): 
             if View.debug:
                 print("blue right pressed", file=sys.stderr)
             self.take_choice_dict(True, View.pipe)
 
-        if pygame.mouse.get_pressed()[0] and self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()):
+        if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'):
             if View.debug:
                 print("red left pressed", file=sys.stderr)
             self.take_choice_dict(False, View.pipe)
 
-        if pygame.mouse.get_pressed()[0] and self.buttons[2].rect.collidepoint(pygame.mouse.get_pos()):
+        if self.buttons[2].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'):
             self.reset_entry_time()
             # access parent instance
             self.view.do_log_scene(View.pipe['log'])
+
+        if self.buttons[3].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'):
+            # access parent instance
+            self.view.cancel()
 
     def draw(self):
         super().draw()
@@ -281,7 +298,7 @@ class SceneLog(SceneTime):
         self.do_press_button()
 
     def do_press_button(self):
-        if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+        if self.view.mouse.release('left') and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
             self.reset_entry_time()
             # access parent instance
             self.view.current_scene = 'select'
@@ -294,6 +311,24 @@ class SceneLog(SceneTime):
 
         for button in self.buttons:
             button.draw(self.screen)
+
+class Mouse:
+    def __init__(self) -> None:
+        self.left = False
+        self.old_left = False
+    
+    def update(self):
+        self.old_left = self.left
+        self.left = pygame.mouse.get_pressed()[0]
+    
+    def release(self, button: str):
+        '''
+        detect release click
+        up click
+        
+        '''
+        return (not getattr(self, button)) and (getattr(self, f"old_{button}"))
+
 
 
 class View:
@@ -327,7 +362,7 @@ class View:
 
         self.scenes = dict()
         self._current_scene = "wait"
-
+        self.mouse = Mouse()
         self.load()
 
     def load(self) -> None:
@@ -359,6 +394,7 @@ class View:
         '''
         is called each frame
         '''
+        self.mouse.update()
         self.scenes[self.current_scene].update()
         self.debug_command()
 
@@ -445,7 +481,6 @@ class Text:
         self.font = pygame.font.SysFont("Arial", self.size)
         self.color = color
         self.img = self.font.render(self.text, True, self.color)
-        print(self.font)
 
     def update(self) -> None:
         '''
