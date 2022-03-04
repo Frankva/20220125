@@ -27,7 +27,7 @@ mariadb-server
 - 
 
 ## à ajouté
-- 10 dernières décroisant
+- 5 dernières décroisant
 - nom, prénom
 - temps limite
 - couleur de orif 
@@ -35,3 +35,4 @@ mariadb-server
     - #DBCEB1 fond
     - #AE9B70 text
     - #FFFFFF
+    https://coolors.co/005ba9-dd1c1a-dbceb1-386641-3c362a

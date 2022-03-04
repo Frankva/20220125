@@ -12,19 +12,19 @@ class Button:
     button show with rect and unique color
     '''
 
-    def __init__(self, screen: pygame.surfarray) -> None:
-        if View.debug:
-            print("Button.init", file=sys.stderr)
-        self.screen = screen
-        x, y = self.screen.get_size()
-        self.x = 7 * (x / 12)
-        self.y = 4 * (y / 12)
-        self.w = 4 * (x / 12)
-        self.h = 7 * (y / 12)
-
-        self.color = pygame.Color("#005BA9") # blue
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
-    
+#    def __init__(self, screen: pygame.surfarray) -> None:
+#        if View.debug:
+#            print("Button.init", file=sys.stderr)
+#        self.screen = screen
+#        x, y = self.screen.get_size()
+#        self.x = 7 * (x / 12)
+#        self.y = 4 * (y / 12)
+#        self.w = 4 * (x / 12)
+#        self.h = 7 * (y / 12)
+#
+#        self.color = pygame.Color("#005BA9") # blue
+#        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+#
     def __init__(self, screen: pygame.surfarray, x, y, w, h, color) -> None:
         if View.debug:
             print("Button.init", file=sys.stderr)
@@ -39,56 +39,88 @@ class Button:
 
     @staticmethod
     def inside_button(screen):
-        
+
         cx, cy = screen.get_size()
         x = 7 * (cx / 12)
         y = 4 * (cy / 12)
         w = 4 * (cx / 12)
         h = 7 * (cy / 12)
 
-        color = pygame.Color("#005BA9") # blue
+        color = pygame.Color("#005BA9")  # blue
         return Button(screen, x, y, w, h, color)
-   
+
     @staticmethod
     def outside_button(screen):
-        
+
         cx, cy = screen.get_size()
         x = 1 * (cx / 12)
         y = 4 * (cy / 12)
         w = 4 * (cx / 12)
         h = 7 * (cy / 12)
 
-        color = pygame.Color("#DD1C1A") # red
+        color = pygame.Color("#DD1C1A")  # red
         return Button(screen, x, y, w, h, color)
-   
-    def set_red_pos(self) -> None:
-        '''
-        preset for a red button
-        '''
-        if View.debug:
-            print("Button.set_red_pos", file=sys.stderr)
-        x, y = self.screen.get_size()
-        self.color = pygame.Color("#DD1C1A") # red
-        self.x = 1 * x / 12
-        self.y = 4 * y / 12
-        self.w = 4 * (x / 12)
-        self.h = 7 * (y / 12)
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
-    @classmethod
-    def setting_button(cls):
-        return cls.__init__()
+    @staticmethod
+    def log_button(screen):
+
+        cx, cy = screen.get_size()
+        x = 10 * (cx / 12)
+        y = 1 * (cy / 12)
+        w = 1 * (cx / 12)
+        h = 1 * (cy / 12)
+
+        color = pygame.Color("#3C362A")  # gray
+        return Button(screen, x, y, w, h, color)
+
+    @staticmethod
+    def return_button(screen):
+
+        cx, cy = screen.get_size()
+        x = 1 * (cx / 12)
+        y = 1 * (cy / 12)
+        w = 1 * (cx / 12)
+        h = 1 * (cy / 12)
+
+        color = pygame.Color("#3C362A")  # gray
+        return Button(screen, x, y, w, h, color)
+
+#    def set_red_pos(self) -> None:
+#        '''
+#        obselete
+#        preset for a red button
+#        '''
+#        if View.debug:
+#            print("Button.set_red_pos", file=sys.stderr)
+#        x, y = self.screen.get_size()
+#        self.color = pygame.Color("#DD1C1A") # red
+#        self.x = 1 * x / 12
+#        self.y = 4 * y / 12
+#        self.w = 4 * (x / 12)
+#        self.h = 7 * (y / 12)
+#        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+#
+
+ #   @classmethod
+ #   def setting_button(cls):
+ #
+ #       return cls.__init__()
+ #
+    def draw(self, screen) -> None:
+        pygame.draw.rect(screen, self.color, self.rect)
 
 
 class Scene:
     '''
     scene containt text and button
     '''
-    def __init__(self, screen) -> None:
+
+    def __init__(self, screen, view) -> None:
         if View.debug:
             print("init Scene", file=sys.stderr)
 
         self.screen = screen
+        self.view = view
 
     def update(self) -> None:
         '''
@@ -107,34 +139,42 @@ class SceneSelect(Scene):
     '''
     is the scene with buttons
     '''
-    def __init__(self, screen):
+
+    def __init__(self, screen, view):
         if View.debug:
             print("SceneSelect load", file=sys.stderr)
-        super().__init__(screen)
+        super().__init__(screen, view)
 
         self.choice = dict()
 
         self.buttons = list()
         self.buttons.append(Button.inside_button(self.screen))  # blue right
         self.buttons.append(Button.outside_button(self.screen))  # red left
+        self.buttons.append(Button.log_button(self.screen))  # red left
         #self.buttons[1].set_red_pos()
         self.texts = list()
-        self.texts.append(Text(0, 0, 31, '', pygame.Color('black')))
-
+        self.texts.append(Text(0, 0, 30, '', pygame.Color('black')))
 
     def update(self):
         super().update()
+        self.do_press_button()
+        # must be optimised, not all frame
+        self.texts[0](View.pipe['surname'] + ' ' + View.pipe['name'])
+
+    def do_press_button(self):
         if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
             if View.debug:
                 print("blue right pressed", file=sys.stderr)
-                self.take_choice_dict(True, View.pipe)
+            self.take_choice_dict(True, View.pipe)
 
         if pygame.mouse.get_pressed()[0] and self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()):
             if View.debug:
                 print("red left pressed", file=sys.stderr)
-                self.take_choice_dict(False, View.pipe)
-        self.texts[0](View.pipe['surname'] + ' ' + View.pipe['name']) # must be optimised, not all frame
+            self.take_choice_dict(False, View.pipe)
 
+        if pygame.mouse.get_pressed()[0] and self.buttons[2].rect.collidepoint(pygame.mouse.get_pos()):
+            # access parent instance
+            self.view.do_log_scene(View.pipe['log'])
 
     def draw(self):
         super().draw()
@@ -162,16 +202,17 @@ class SceneWait(Scene):
     '''
     is the waiting screen with time
     '''
-    def __init__(self, screen):
 
-        super().__init__(screen)
+    def __init__(self, screen, view):
+
+        super().__init__(screen, view)
 
         self.texts = list()
         self.texts.append(Text(0, 0, 30, "", pygame.Color("#001B33")))
 
     def update(self):
         super().update()
-        self.texts[0].txt = f"Attente badge RFID  {datetime.datetime.today()}"
+        self.texts[0].text = f"Attente badge RFID  {datetime.datetime.today()}"
         for txt in self.texts:
             txt.update()
 
@@ -180,23 +221,52 @@ class SceneWait(Scene):
         for txt in self.texts:
             txt.draw(self.screen)
 
+
 class SceneLog(Scene):
     '''
     scene show logs
     '''
-    def __init__(self, screen) -> None:
-        super().__init__(screen)
+
+    def __init__(self, screen, view) -> None:
+        super().__init__(screen, view)
         self.texts = list()
-        nb_log = 10
-        size_txt = 30
-        for i in range(nb_log):
-            self.texts.append(Text(0, 0, size_txt + size_txt * i, "", pygame.Color('black')))
+        #nb_log = 10
+        self.size_text = 20
+#        for i in range(nb_log):
+#            self.texts.append(Text(0, 0, size_txt + size_txt * i, "", pygame.Color('black')))
+
+        self.buttons = list()
+        self.buttons.append(Button.return_button(screen))
+
+    def set_text(self, logs: list):
+        print('SceneLog.set_text')
+
+        cx, cy = self.screen.get_size()
+        x = 1 * cx / 12
+        y = 2 * cy / 12
+        self.texts = list()
+        for index, log in enumerate(logs):
+            text_log = f"{log['date']} {log['inside']}"
+            self.texts.append(Text(x, y + index * self.size_text,
+                              self.size_text, text_log, pygame.Color('black')))
 
     def update(self):
         super().update()
+        self.do_press_button()
+
+    def do_press_button(self):
+        if pygame.mouse.get_pressed()[0] and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+            # access parent instance
+            self.view.current_scene = 'select'
+            # add reset timer
 
     def draw(self):
         super().draw()
+        for text in self.texts:
+            text.draw(self.screen)
+
+        for button in self.buttons:
+            button.draw(self.screen)
 
 
 class View:
@@ -204,10 +274,18 @@ class View:
     contain scene, pygame proprety,…
     '''
     debug = True
+
     pipe = dict()
-    pipe['name'] = 'Name'
-    pipe['surname'] = 'Surname'
-    pipe['log'] = dict()
+    # test value
+    pipe['name'] = 'Bob'
+    pipe['surname'] = 'Leta'
+    pipe['log'] = list()
+    pipe['log'].append(dict())
+    pipe['log'].append(dict())
+    pipe['log'][0]['date'] = datetime.datetime(2022, 2, 18, 15, 28, 49)
+    pipe['log'][1]['date'] = datetime.datetime(2022, 1, 19, 16, 30, 51)
+    pipe['log'][0]['inside'] = True
+    pipe['log'][1]['inside'] = False
 
     def __init__(self) -> None:
         pygame.init()
@@ -229,8 +307,9 @@ class View:
         '''
         start pygame loop
         '''
-        self.scenes["wait"] = SceneWait(self.screen)
-        self.scenes["select"] = SceneSelect(self.screen)
+        self.scenes["wait"] = SceneWait(self.screen, self)
+        self.scenes["select"] = SceneSelect(self.screen, self)
+        self.scenes["log"] = SceneLog(self.screen, self)
 
         while self.running:
             if View.debug:
@@ -260,6 +339,11 @@ class View:
             # change scene ;  debug
 
             self.do_next_scene()
+
+        if pygame.key.get_pressed()[pygame.K_k]:
+            # change scene ;  debug
+
+            self.do_log_scene(View.pipe['log'])
 
     def draw(self) -> None:
         '''
@@ -301,18 +385,23 @@ class View:
         self.do_next_scene()
         View.pipe = dict
 
+    def do_log_scene(self, log) -> None:
+        if self.current_scene == 'select':
+            self.current_scene = 'log'
+            self.scenes['log'].set_text(log)
+
 
 class Text:
-    def __init__(self, x: float, y: float, size: float, txt: str, color: pygame.Color) -> None:
+    def __init__(self, x: float, y: float, size: float, text: str, color: pygame.Color) -> None:
         '''
         text with position, size and color
         '''
-        self.__txt = txt
+        self.__text = text
         self.pos = pygame.math.Vector2(x, y)
         self.size = size
         self.font = pygame.font.SysFont("Arial", self.size)
         self.color = color
-        self.img = self.font.render(self.txt, True, self.color)
+        self.img = self.font.render(self.text, True, self.color)
         print(self.font)
 
     def update(self) -> None:
@@ -320,7 +409,7 @@ class Text:
         is called each frame
         '''
         self.font = pygame.font.SysFont(None, self.size)
-        self.img = self.font.render(self.txt, True, self.color)
+        self.img = self.font.render(self.text, True, self.color)
 
     def draw(self, screen: pygame.Surface) -> None:
         '''
@@ -329,28 +418,27 @@ class Text:
         screen.blit(self.img, self.pos)
 
     def __str__(self) -> str:
-        return self.txt
-    
+        return self.text
+
     @property
-    def txt(self) -> str:
-        return self.__txt
-    
-    @txt.setter
-    def txt(self, txt: str):
+    def text(self) -> str:
+        return self.__text
+
+    @text.setter
+    def text(self, txt: str):
         if isinstance(txt, str):
-            self.__txt = txt
+            self.__text = txt
         else:
             raise ValueError("'must be str")
-        
-    def __call__(self, txt):
-        self.txt = txt
+
+    def __call__(self, text):
+        self.text = text
         self.update()
-    
-        
 
 
 def test1():
     view = View()
+
 
 if __name__ == "__main__":
     # view = View()
