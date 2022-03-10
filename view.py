@@ -339,15 +339,15 @@ class View:
 
     pipe = dict()
     # test value
-    pipe['name'] = 'Bob'
-    pipe['surname'] = 'Leta'
-    pipe['log'] = list()
-    pipe['log'].append(dict())
-    pipe['log'].append(dict())
-    pipe['log'][0]['date'] = datetime.datetime(2022, 2, 18, 15, 28, 49)
-    pipe['log'][1]['date'] = datetime.datetime(2022, 1, 19, 16, 30, 51)
-    pipe['log'][0]['inside'] = True
-    pipe['log'][1]['inside'] = False
+#    pipe['name'] = 'Bob'
+#    pipe['surname'] = 'Leta'
+#    pipe['log'] = list()
+#    pipe['log'].append(dict())
+#    pipe['log'].append(dict())
+#    pipe['log'][0]['date'] = datetime.datetime(2022, 2, 18, 15, 28, 49)
+#    pipe['log'][1]['date'] = datetime.datetime(2022, 1, 19, 16, 30, 51)
+#    pipe['log'][0]['inside'] = True
+#    pipe['log'][1]['inside'] = False
 
     def __init__(self) -> None:
         pygame.init()

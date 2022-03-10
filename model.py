@@ -51,6 +51,7 @@ class Model:
         pipe['name'], pipe['surname'] = self.select(('name', 'surname'), 'user', 'id_user', (id_user, ))
         clog = self.select_log(('date', 'inside'), 'log', 'id_badge', (pipe['id_badge'], ), 'date', 5)
         pipe['log'] = self.cursor_to_dict_in_list(('date', 'inside'), clog)
+        print(pipe)
         
     def select_one(self, select_name, table_name: str, where_name: str, value: tuple):
         #sql = f"select id_user from badge where id_badge=483985410385;"
