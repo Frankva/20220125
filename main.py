@@ -14,8 +14,8 @@ class App:
 
     def __init__(self, is_rfid=True):
         self.is_rfid = is_rfid
-        self.view = view.View
-        self.theard_view = threading.Thread(target=self.view)
+        self.view = view.View()
+        self.theard_view = threading.Thread(target=self.view.load)
         self.log = open("main_log.txt", "a")
 
 
@@ -86,7 +86,7 @@ class App:
 
     def wait_choice(self):
         while self.pipe["inside"] == None:
-            print("wait")
+            print("wait_choice")
             sleep(1)
 
     def do_next_scene(self):
@@ -115,11 +115,14 @@ class App:
         self.pipe["inside"] = None
         self.pipe["name"] = ''
         self.pipe["surname"] = ''
+        self.pipe['id_badge'] = None
 
     def reset_scene(self):
         self.view.current_scene = "wait"
+        print(self.view.current_scene)
 
     def reset(self):
+        print('reset()')
         self.reset_pipe()
         self.reset_scene()
 
@@ -131,6 +134,7 @@ class App:
         to test the script when no rfid scanner
         '''
         print('fake_rfid()')
+        sleep(10)
         self.pipe['id_badge'] = 483985410385
     
 
@@ -140,7 +144,7 @@ def main():
     app = App()
     app.load()
 
-def test0():
+def test1():
     app = App(False)
     app.load()
 
@@ -149,4 +153,4 @@ if __name__ == "__main__":
     if mode == 0:
         main()
     elif mode == 1:
-        test0()
+        test1()

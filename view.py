@@ -196,8 +196,11 @@ class SceneSelect(SceneTime):
     def update(self):
         super().update()
         self.do_press_button()
-        # must be optimised, not all frame
-        self.texts[0](View.pipe['surname'] + ' ' + View.pipe['name'])
+        try:
+            # must be optimised, not all frame
+            self.texts[0](View.pipe['surname'] + ' ' + View.pipe['name'])
+        except not KeyboardInterrupt:
+            pass
 
     def do_press_button(self):
         if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'): 
@@ -338,18 +341,16 @@ class View:
     debug = True
 
     pipe = dict()
-    # test value
-#    pipe['name'] = 'Bob'
-#    pipe['surname'] = 'Leta'
-#    pipe['log'] = list()
-#    pipe['log'].append(dict())
-#    pipe['log'].append(dict())
-#    pipe['log'][0]['date'] = datetime.datetime(2022, 2, 18, 15, 28, 49)
-#    pipe['log'][1]['date'] = datetime.datetime(2022, 1, 19, 16, 30, 51)
-#    pipe['log'][0]['inside'] = True
-#    pipe['log'][1]['inside'] = False
 
-    def __init__(self) -> None:
+    def __init__(self, pipe=None) -> None:
+        self.running = True
+
+        self.scenes = dict()
+        self._current_scene = "wait"
+        if pipe != None:
+            View.pipe = pipe
+    
+    def load_pygame(self):
         pygame.init()
 
         if os.name != "nt":
@@ -357,18 +358,15 @@ class View:
                 (800, 400), pygame.FULLSCREEN)  # pygame.FULLSCREEN
         else:
             self.screen = pygame.display.set_mode((800, 400))
-        pygame.display.set_caption("test")
-        self.running = True
-
-        self.scenes = dict()
-        self._current_scene = "wait"
+        pygame.display.set_caption("timbreuse")
         self.mouse = Mouse()
-        self.load()
+
 
     def load(self) -> None:
         '''
         start pygame loop
         '''
+        self.load_pygame()
         self.load_scene() 
         while self.running:
             if View.debug:
@@ -426,6 +424,7 @@ class View:
 
     @current_scene.setter
     def current_scene(self, newScene: str) -> None:
+        print('current_scene.setter', self._current_scene, newScene, file=sys.stderr)
 
         if newScene in self.scenes.keys():
             self._current_scene = newScene
@@ -515,10 +514,26 @@ class Text:
 
 
 def test1():
+    # test value
+    pipe = dict()
+    pipe['name'] = 'Bob'
+    pipe['surname'] = 'Leta'
+    pipe['log'] = list()
+    pipe['log'].append(dict())
+    pipe['log'].append(dict())
+    pipe['log'][0]['date'] = datetime.datetime(2022, 2, 18, 15, 28, 49)
+    pipe['log'][1]['date'] = datetime.datetime(2022, 1, 19, 16, 30, 51)
+    pipe['log'][0]['inside'] = True
+    pipe['log'][1]['inside'] = False
+    view = View(pipe)
+    view.load()
+
+def main():
     view = View()
 
-
 if __name__ == "__main__":
-    # view = View()
-    # view.load()
-    test1()
+    mode = 1
+    if mode == 0:
+        main()
+    elif mode == 1:
+        test1()
