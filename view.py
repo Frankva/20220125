@@ -532,7 +532,7 @@ def main():
     view = View()
 
 if __name__ == "__main__":
-    mode = 0
+    mode = 1
     if mode == 0:
         main()
     elif mode == 1:
