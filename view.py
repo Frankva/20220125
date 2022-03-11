@@ -443,13 +443,13 @@ class View:
         else:
             self.current_scene = "wait"
 
-    def do_next_scene_dict(self, dict: dict):
+    def do_next_scene_dict(self, pipe: dict):
         '''
         change the current scene and change the reference of View.pipe
         '''
         print("do_next_scene_dict", file=sys.stderr)
         self.do_next_scene()
-        View.pipe = dict
+        View.pipe = pipe
 
     def do_log_scene(self, log) -> None:
         if self.current_scene == 'select':
@@ -458,7 +458,7 @@ class View:
     
     def cancel(self):
         '''
-        when time expire
+        when time expire or press quit button
         '''
         self.current_scene = 'wait'
         self.load_scene()
@@ -532,7 +532,7 @@ def main():
     view = View()
 
 if __name__ == "__main__":
-    mode = 1
+    mode = 0
     if mode == 0:
         main()
     elif mode == 1:

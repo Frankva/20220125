@@ -1,4 +1,5 @@
 
+from cgitb import reset
 import threading
 import view
 from time import sleep
@@ -24,6 +25,7 @@ class App:
 
 
         self.pipe = dict()
+        self.pipe['cancel'] = False
         self.reset_pipe()
         self.model = model.Model()
         self.tableName = "log"
@@ -38,9 +40,12 @@ class App:
     def update(self):
         self.do_rfid()
         print(self.pipe)
-        self.do_next_scene()
+        #self.do_next_scene()
+        self.view.do_next_scene_dict(self.pipe)
         self.do_model_request()
         self.wait_choice()
+        if self.cancel():
+            return
         print(self.pipe)
         self.log.write(str(self.pipe))
 
@@ -53,6 +58,12 @@ class App:
             target=self.model.insert, args=(self.tableName, self.filterInsert()))
         self.theard_model_insert.start()
         self.reset()
+    def cancel(self):
+        if self.pipe['cancel']:
+            self.reset_pipe()
+            return True
+        else:
+            return False
 
     def do_rfid(self):
         print('do_rfid()')
@@ -85,7 +96,7 @@ class App:
             pass
 
     def wait_choice(self):
-        while self.pipe["inside"] == None:
+        while (self.pipe["inside"] == None) and (not self.pipe['cancel']):
             print("wait_choice")
             sleep(1)
 
@@ -116,15 +127,13 @@ class App:
         self.pipe["name"] = ''
         self.pipe["surname"] = ''
         self.pipe['id_badge'] = None
+        self.pipe['cancel'] = False
 
-    def reset_scene(self):
-        self.view.current_scene = "wait"
-        print(self.view.current_scene)
 
     def reset(self):
         print('reset()')
         self.reset_pipe()
-        self.reset_scene()
+        self.view.do_next_scene()
 
     def __del__(self):
         self.log.close()
