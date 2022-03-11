@@ -355,9 +355,9 @@ class View:
 
         if os.name != "nt":
             self.screen = pygame.display.set_mode(
-                (800, 400), pygame.FULLSCREEN)  # pygame.FULLSCREEN
+                (800, 480), pygame.FULLSCREEN)  # pygame.FULLSCREEN
         else:
-            self.screen = pygame.display.set_mode((800, 400))
+            self.screen = pygame.display.set_mode((800, 480))
         pygame.display.set_caption("timbreuse")
         self.mouse = Mouse()
 
