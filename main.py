@@ -1,5 +1,4 @@
 
-from cgitb import reset
 import threading
 import view
 from time import sleep
