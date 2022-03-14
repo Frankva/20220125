@@ -1,5 +1,4 @@
 
-from types import NoneType
 import mariadb
 import os
 
