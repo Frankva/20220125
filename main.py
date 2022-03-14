@@ -41,7 +41,7 @@ class App:
         self.view.do_select_scene_dict(self.pipe)
         self.do_model_request()
         # check unknown
-
+        self.check_unknown()
         self.wait_choice()
         if self.cancel():
             return
@@ -143,11 +143,13 @@ class App:
         '''
         print('fake_rfid()')
         sleep(10)
-        self.pipe['id_badge'] = 483985410385
+        #self.pipe['id_badge'] = 483985410385
+        self.pipe['id_badge'] = 183985410385
 
     def check_unknown(self):
-        if self.pipe['id_user'] is None:
-            self.pipe['name'], self.pipe['surname'] = 'inconnu'
+        print(self.pipe)
+        if self.pipe['name'] == '':
+            self.pipe['name'], self.pipe['surname'] = 'inconnu', ''
 
 
 
