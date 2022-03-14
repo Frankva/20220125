@@ -4,7 +4,7 @@ import threading
 import view
 from time import sleep
 
-#import rfid
+import rfid
 import model
 
 
@@ -164,7 +164,7 @@ def test1():
 
 
 if __name__ == "__main__":
-    mode = 1
+    mode = 0
     if mode == 0:
         main()
     elif mode == 1:
