@@ -62,7 +62,7 @@ class Rfid:
         '''
         put id in a dict in arg
         '''
-        result["id"] = self.read()
+        result["id_badge"] = self.read()
 
 
 if __name__ == "__main__":
