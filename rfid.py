@@ -1,7 +1,6 @@
 import sys
 
 
-
 import RPi.GPIO
 from mfrc522 import SimpleMFRC522 as Reader
 
@@ -49,7 +48,7 @@ class Rfid:
         self.id, self.text = self.reader.read()
         if self.debug:
             print(
-                f"id : {self.id}, typeid :  {type(self.id)}, text : {self.text}")
+            f"id : {self.id}, typeid :  {type(self.id)}, text : {self.text}")
 
     def read(self) -> int:
         '''

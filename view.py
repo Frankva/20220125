@@ -146,6 +146,7 @@ class Scene:
         '''
         pass
 
+
 class SceneTime(Scene):
     def __init__(self, screen, view) -> None:
         super().__init__(screen, view)
@@ -162,12 +163,13 @@ class SceneTime(Scene):
         '''
         check time with now and entry_time proprety 
         '''
-        return datetime.datetime.today() - self.entry_time > datetime.timedelta(minutes=minute)
-            
+        return datetime.datetime.today() - self.entry_time >\
+            datetime.timedelta(minutes=minute)
+
     def do_cancel(self) -> None:
         if self.check_time(1):
             self.view.cancel()
-    
+
     def reset_entry_time(self) -> None:
         self.entry_time = datetime.datetime.today()
 
@@ -203,22 +205,26 @@ class SceneSelect(SceneTime):
             pass
 
     def do_press_button(self):
-        if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'): 
+        if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
+                self.view.mouse.release('left'):
             if View.debug:
                 print("blue right pressed", file=sys.stderr)
             self.take_choice_dict(True, View.pipe)
 
-        if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'):
+        if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and\
+                self.view.mouse.release('left'):
             if View.debug:
                 print("red left pressed", file=sys.stderr)
             self.take_choice_dict(False, View.pipe)
 
-        if self.buttons[2].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'):
+        if self.buttons[2].rect.collidepoint(pygame.mouse.get_pos()) and\
+                self.view.mouse.release('left'):
             self.reset_entry_time()
             # access parent instance
             self.view.do_log_scene(View.pipe['log'])
 
-        if self.buttons[3].rect.collidepoint(pygame.mouse.get_pos()) and self.view.mouse.release('left'):
+        if self.buttons[3].rect.collidepoint(pygame.mouse.get_pos()) and\
+                self.view.mouse.release('left'):
             # access parent instance
             self.view.cancel()
 
@@ -301,7 +307,8 @@ class SceneLog(SceneTime):
         self.do_press_button()
 
     def do_press_button(self):
-        if self.view.mouse.release('left') and self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+        if self.view.mouse.release('left') and\
+                self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
             self.reset_entry_time()
             # access parent instance
             self.view.current_scene = 'select'
@@ -315,15 +322,16 @@ class SceneLog(SceneTime):
         for button in self.buttons:
             button.draw(self.screen)
 
+
 class Mouse:
     def __init__(self) -> None:
         self.left = False
         self.old_left = False
-    
+
     def update(self):
         self.old_left = self.left
         self.left = pygame.mouse.get_pressed()[0]
-    
+
     def release(self, button: str):
         '''
         detect release click
@@ -331,7 +339,6 @@ class Mouse:
         
         '''
         return (not getattr(self, button)) and (getattr(self, f"old_{button}"))
-
 
 
 class View:
@@ -349,7 +356,7 @@ class View:
         self._current_scene = "wait"
         if pipe != None:
             View.pipe = pipe
-    
+
     def load_pygame(self):
         pygame.init()
 
@@ -361,13 +368,12 @@ class View:
         pygame.display.set_caption("timbreuse")
         self.mouse = Mouse()
 
-
     def load(self) -> None:
         '''
         start pygame loop
         '''
         self.load_pygame()
-        self.load_scene() 
+        self.load_scene()
         while self.running:
             if View.debug:
                 #print("loop", file=sys.stderr)
@@ -403,7 +409,7 @@ class View:
         if pygame.key.get_pressed()[pygame.K_j]:
             # change scene ;  debug
 
-            self.do_next_scene()
+            self.do_select_scene()
 
         if pygame.key.get_pressed()[pygame.K_k]:
             # change scene ;  debug
@@ -424,7 +430,8 @@ class View:
 
     @current_scene.setter
     def current_scene(self, newScene: str) -> None:
-        print('current_scene.setter', self._current_scene, newScene, file=sys.stderr)
+        print('current_scene.setter', self._current_scene, newScene,
+              file=sys.stderr)
 
         if newScene in self.scenes.keys():
             self._current_scene = newScene
@@ -432,7 +439,7 @@ class View:
             print(self.scenes.keys(), file=sys.stderr)
             raise ValueError(f"scene {newScene} does not exist")
 
-    def do_next_scene(self) -> None:
+    def do_select_scene(self) -> None:
         '''
         change the current scene
         '''
@@ -443,19 +450,19 @@ class View:
         else:
             self.current_scene = "wait"
 
-    def do_next_scene_dict(self, pipe: dict):
+    def do_select_scene_dict(self, pipe: dict):
         '''
         change the current scene and change the reference of View.pipe
         '''
         print("do_next_scene_dict", file=sys.stderr)
-        self.do_next_scene()
+        self.do_select_scene()
         View.pipe = pipe
 
     def do_log_scene(self, log) -> None:
         if self.current_scene == 'select':
             self.current_scene = 'log'
             self.scenes['log'].set_text(log)
-    
+
     def cancel(self):
         '''
         when time expire or press quit button
@@ -465,12 +472,9 @@ class View:
         View.pipe['cancel'] = True
 
 
-
-
-
-
 class Text:
-    def __init__(self, x: float, y: float, size: float, text: str, color: pygame.Color) -> None:
+    def __init__(self, x: float, y: float, size: float, text: str,
+                 color: pygame.Color) -> None:
         '''
         text with position, size and color
         '''
@@ -528,8 +532,10 @@ def test1():
     view = View(pipe)
     view.load()
 
+
 def main():
     view = View()
+
 
 if __name__ == "__main__":
     mode = 0
