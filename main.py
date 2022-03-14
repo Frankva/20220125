@@ -124,6 +124,7 @@ class App:
         self.pipe["id"] = None
         self.pipe["date"] = None
         self.pipe["inside"] = None
+        self.pipe["log"] = None
         self.pipe["name"] = ''
         self.pipe["surname"] = ''
         self.pipe['id_badge'] = None
