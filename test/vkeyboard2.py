@@ -31,7 +31,6 @@ class App:
                 if event.type == pygame.QUIT:
                     print('Average FPS: ', self.clock.get_fps())
                     exit()
-
             self.keyboard.update(events)
             self.screen.fill((20, 100, 100))
             rects = self.keyboard.draw(self.screen, force=True)

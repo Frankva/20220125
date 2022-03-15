@@ -352,11 +352,18 @@ class SceneModal(SceneTime):
 
 class SceneKeyboard(SceneTime):
     '''
-    scene with keyboard
+    scene with keyboard and two buttons
     '''
     def __init__(self, screen, view) -> None:
         super().__init__(screen, view)
         self.layout = self.layout_CH()
+        cx, cy = screen.get_size()
+        
+        self.buttons = list()
+        self.buttons.append(
+            Button(self.screen, 1 * cx / 12, 0.2 * cy / 12, 1 * cx / 12, 1 * cy / 12, pygame.Color('black')))
+        self.buttons.append(
+            Button(self.screen, 10 * cx / 12, 0.2 * cy / 12, 1 * cx / 12, 1 * cy / 12, pygame.Color('black')))
         self.keyboard = vkboard.VKeyboard(self.screen, self.on_key_event,
             self.layout, renderer=vkboard.VKeyboardRenderer.DARK, 
             special_char_layout=self.layout_special(),
@@ -365,16 +372,22 @@ class SceneKeyboard(SceneTime):
     def on_key_event(self, text):
         print('Current text:', text)
         self.reset_entry_time()
+    def do_press_button(self):
+        if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
+                self.view.mouse.release('left'):
+            # access parent instance
+                self.view.cancel()
+
 
     def update(self):
         super().update()
         self.keyboard.update(self.view.events)
 
-    
     def draw(self):
         super().draw()
         self.keyboard.draw(self.screen, force=True)
-
+        for button in self.buttons:
+            button.draw(self.screen)
         
     @staticmethod
     def layout_CH():
@@ -394,8 +407,6 @@ class SceneKeyboard(SceneTime):
             'ñńöôœðûüùÿ'
         ]
         return vkboard.VKeyboardLayout(model, height_ratio=9/12)
-
-
 
 
 class Mouse:
