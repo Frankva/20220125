@@ -1,3 +1,4 @@
+
 import pygame
 import pygame_vkeyboard as vkboard
 
@@ -9,25 +10,32 @@ def on_key_event(text):
 class App:
     def __init__(self) -> None:
         pygame.init()
-        self.screen = pygame.display.set_mode((500, 400))
+        self.screen = pygame.display.set_mode((800, 480))
+        self.screen.fill((20, 100, 100))
 
         self.layout = App.layout_CH()
         self.keyboard = vkboard.VKeyboard(self.screen, on_key_event,
-            self.layout, special_char_layout=App.layout_special(),
-            show_text=True, renderer=vkboard.VKeyboardRenderer.DARK)
+            self.layout, renderer=vkboard.VKeyboardRenderer.DARK, 
+            special_char_layout=App.layout_special(),
+            show_text=True)
 
         self.clock = pygame.time.Clock()
 
     def load(self):
         while True:
             self.clock.tick(100)
+            events = pygame.event.get()
 
-            for event in pygame.event.get():
-                self.keyboard.on_event(event)
+            for event in events:
+                #self.keyboard.on_event(event)
                 if event.type == pygame.QUIT:
                     print('Average FPS: ', self.clock.get_fps())
                     exit()
 
+            self.keyboard.update(events)
+            self.screen.fill((20, 100, 100))
+            rects = self.keyboard.draw(self.screen, force=True)
+            #pygame.display.update(rects)
             pygame.display.flip()
 
     @staticmethod
@@ -37,7 +45,7 @@ class App:
             'asdfghjkl',
             'yxcvbnm'
         ]
-        return vkboard.VKeyboardLayout(model, height_ratio=1)
+        return vkboard.VKeyboardLayout(model, height_ratio=9/12)
     @staticmethod
     def layout_special():
         model = [
@@ -46,7 +54,7 @@ class App:
             'ĝğîĥïíìįĵł',
             'ñńöôœðûüùÿ'
         ]
-        return vkboard.VKeyboardLayout(model, height_ratio=1)
+        return vkboard.VKeyboardLayout(model, height_ratio=9/12)
 
 def main():
     app = App()

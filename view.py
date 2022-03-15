@@ -2,6 +2,7 @@
 
 import re
 import pygame
+import pygame_vkeyboard as vkboard
 import sys
 import os
 import datetime
@@ -316,11 +317,85 @@ class SceneLog(SceneTime):
 
     def draw(self):
         super().draw()
-        for text in self.texts:
-            text.draw(self.screen)
+        self.text.draw(self.screen)
 
-        for button in self.buttons:
-            button.draw(self.screen)
+        self.button.draw(self.screen)
+
+class SceneModal(SceneTime):
+    '''
+    scene with one text and one button
+    '''
+    def __init__(self, screen, view, text: str, next_scene: str) -> None:
+        super().__init__(screen, view)
+        self.size_text = 20
+        self.text = Text(0, 0, self.size_text, text, pygame.Color('black'))
+        cx, cy = screen.get_size()
+        self.button = Button(self.screen, 4 * cx / 12, 8 * cy / 12,
+                             3 * cx / 12, 3 * cy / 12, pygame.Color('black'))
+        self.next_scene = next_scene
+
+    def update(self):
+        super().update()
+        self.do_press_button()
+
+    def draw(self):
+        super().draw()
+        self.text.draw(self.screen)
+        self.button.draw(self.screen)
+
+    
+    def do_press_button(self):
+        if self.view.mouse.release('left') and \
+                self.button.rect.collidepoint(pygame.mouse.get_pos()):
+            self.reset_entry_time()
+            self.view.current_scene = self.next_scene
+
+class SceneKeyboard(SceneTime):
+    '''
+    scene with keyboard
+    '''
+    def __init__(self, screen, view) -> None:
+        super().__init__(screen, view)
+        self.layout = self.layout_CH()
+        self.keyboard = vkboard.VKeyboard(self.screen, self.on_key_event,
+            self.layout, renderer=vkboard.VKeyboardRenderer.DARK, 
+            special_char_layout=self.layout_special(),
+            show_text=True)
+    
+    def on_key_event(self, text):
+        print('Current text:', text)
+        self.reset_entry_time()
+
+    def update(self):
+        super().update()
+        self.keyboard.update(self.view.events)
+
+    
+    def draw(self):
+        super().draw()
+        self.keyboard.draw(self.screen, force=True)
+
+        
+    @staticmethod
+    def layout_CH():
+        model = [
+            'qwertzuiop',
+            'asdfghjkl',
+            'yxcvbnm'
+        ]
+        return vkboard.VKeyboardLayout(model, height_ratio=9/12)
+
+    @staticmethod
+    def layout_special():
+        model = [
+            '-áàâæãåäąç',
+            'ĉćčďéèêëęě',
+            'ĝğîĥïíìįĵł',
+            'ñńöôœðûüùÿ'
+        ]
+        return vkboard.VKeyboardLayout(model, height_ratio=9/12)
+
+
 
 
 class Mouse:
@@ -360,13 +435,15 @@ class View:
     def load_pygame(self):
         pygame.init()
 
+        self.clock = pygame.time.Clock()
         if os.name != "nt":
             self.screen = pygame.display.set_mode(
                 (800, 480), pygame.FULLSCREEN)  # pygame.FULLSCREEN
         else:
             self.screen = pygame.display.set_mode((800, 480))
-        pygame.display.set_caption("timbreuse")
+        pygame.display.set_caption("Timbreuse")
         self.mouse = Mouse()
+        self.events = pygame.event.get()
 
     def load(self) -> None:
         '''
@@ -378,7 +455,8 @@ class View:
             if View.debug:
                 #print("loop", file=sys.stderr)
                 pass
-            for event in pygame.event.get():
+            self.events = pygame.event.get()
+            for event in self.events:
                 if event.type == pygame.QUIT:
                     self.running = False
             self.update()
@@ -389,6 +467,7 @@ class View:
         self.scenes["wait"] = SceneWait(self.screen, self)
         self.scenes["select"] = SceneSelect(self.screen, self)
         self.scenes["log"] = SceneLog(self.screen, self)
+        self.scenes["keyboard"] = SceneKeyboard(self.screen, self)
 
     def __del__(self) -> None:
         pygame.quit()
@@ -398,6 +477,7 @@ class View:
         '''
         is called each frame
         '''
+        self.clock.tick(60)
         self.mouse.update()
         self.scenes[self.current_scene].update()
         self.debug_command()
@@ -415,6 +495,10 @@ class View:
             # change scene ;  debug
 
             self.do_log_scene(View.pipe['log'])
+
+        if pygame.key.get_pressed()[pygame.K_l]:
+            # change scene ;  debug
+            self.do_unknown_badge()
 
     def draw(self) -> None:
         '''
@@ -462,6 +546,11 @@ class View:
         if self.current_scene == 'select':
             self.current_scene = 'log'
             self.scenes['log'].set_text(log)
+    
+    def do_unknown_badge(self):
+        text = "Le badge est inconnue. Veuille taper votre nom de famille"
+        self.scenes['modal'] = SceneModal(self.screen, self, text, 'keyboard')
+        self.current_scene = 'modal'
 
     def cancel(self):
         '''
@@ -535,10 +624,11 @@ def test1():
 
 def main():
     view = View()
+    view.load()
 
 
 if __name__ == "__main__":
-    mode = 0
+    mode = 1
     if mode == 0:
         main()
     elif mode == 1:
