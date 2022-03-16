@@ -1,6 +1,5 @@
 
-
-import re
+from itertools import product
 import pygame
 import pygame_vkeyboard as vkboard
 import sys
@@ -26,9 +25,9 @@ class Button:
 #        self.color = pygame.Color("#005BA9") # blue
 #        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 #
-    def __init__(self, screen: pygame.surfarray, x, y, w, h, color) -> None:
-        if View.debug:
-            print("Button.init", file=sys.stderr)
+    def __init__(self, screen: pygame.Surface, x, y, w, h, color,
+                 img: str='cancel') -> None:
+        print("Button.init", file=sys.stderr)
         self.screen = screen
         self.x = x
         self.y = y
@@ -37,6 +36,9 @@ class Button:
 
         self.color = color
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        self.img = Loader.load(img)
+        
+       
 
     @staticmethod
     def inside_button(screen):
@@ -121,6 +123,7 @@ class Button:
  #
     def draw(self, screen) -> None:
         pygame.draw.rect(screen, self.color, self.rect)
+        screen.blit(self.img, (self.x, self.y))
 
 
 class Scene:
@@ -232,7 +235,8 @@ class SceneSelect(SceneTime):
     def draw(self):
         super().draw()
         for button in self.buttons:
-            pygame.draw.rect(self.screen, button.color, button.rect)
+            #pygame.draw.rect(self.screen, button.color, button.rect)
+            button.draw(self.screen)
         for text in self.texts:
             text.draw(self.screen)
 
@@ -317,9 +321,11 @@ class SceneLog(SceneTime):
 
     def draw(self):
         super().draw()
-        self.text.draw(self.screen)
+        for text in self.texts:
+            text.draw(self.screen)
 
-        self.button.draw(self.screen)
+        for button in self.buttons:
+            button.draw(self.screen)
 
 class SceneModal(SceneTime):
     '''
@@ -350,38 +356,44 @@ class SceneModal(SceneTime):
             self.reset_entry_time()
             self.view.current_scene = self.next_scene
 
+
 class SceneKeyboard(SceneTime):
     '''
     scene with keyboard and two buttons
     '''
+
     def __init__(self, screen, view) -> None:
         super().__init__(screen, view)
         self.layout = self.layout_CH()
         cx, cy = screen.get_size()
-        
+
         self.buttons = list()
         self.buttons.append(
-            Button(self.screen, 1 * cx / 12, 0.2 * cy / 12, 1 * cx / 12, 1 * cy / 12, pygame.Color('black')))
+            Button(self.screen, 1 * cx / 12, 0.2 * cy / 12, 1 * cx / 12,
+                   1 * cy / 12, pygame.Color('black')))
         self.buttons.append(
-            Button(self.screen, 10 * cx / 12, 0.2 * cy / 12, 1 * cx / 12, 1 * cy / 12, pygame.Color('black')))
+            Button(self.screen, 10 * cx / 12, 0.2 * cy / 12, 1 * cx / 12,
+                   1 * cy / 12, pygame.Color('black')))
         self.keyboard = vkboard.VKeyboard(self.screen, self.on_key_event,
             self.layout, renderer=vkboard.VKeyboardRenderer.DARK, 
             special_char_layout=self.layout_special(),
             show_text=True)
-    
+
     def on_key_event(self, text):
         print('Current text:', text)
         self.reset_entry_time()
+
     def do_press_button(self):
         if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
                 self.view.mouse.release('left'):
             # access parent instance
-                self.view.cancel()
+            self.view.cancel()
 
 
     def update(self):
         super().update()
         self.keyboard.update(self.view.events)
+        self.do_press_button()
 
     def draw(self):
         super().draw()
@@ -615,6 +627,32 @@ class Text:
     def __call__(self, text):
         self.text = text
         self.update()
+    
+    
+class Loader:
+    '''
+    load file 
+    '''
+    paths = dict()
+    paths['cancel'] = 'icons/x-square-fill.png'
+
+    @classmethod
+    def load(cls, name:str):
+        print('Loader.load', file=sys.stderr)
+        return cls.load_img(cls.paths[name]).convert_alpha()
+        
+    
+    @classmethod
+    def load_img(cls, path):
+        return cls.change_color(pygame.image.load(path), pygame.Color('#dc3545'))
+    
+    def change_color(img: pygame.Surface, color: pygame.Color):
+        w, h = img.get_size()
+        r, g, b, _ = color
+        for x, y in product(range(w), range(h)):
+           alpha = img.get_at((x,y))[3]
+           img.set_at((x, y), pygame.Color(r, g, b, alpha))
+        return img
 
 
 def test1():
