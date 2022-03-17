@@ -32,18 +32,20 @@ class Model:
         '''
         depreciated
         '''
-
         print(
-            f"insert into {table}({self.format_name_column(dict)}) values({self.format_value_column(dict)})")
+            f"""insert into {table}({self.format_name_column(dict)}) values({
+                self.format_value_column(dict)})""")
         self.cursor.execute(
-            f"insert into {table}({self.format_name_column(dict)}) values({self.format_value_column(dict)})")
+            f"""insert into {table}({self.format_name_column(dict)}) values({
+                self.format_value_column(dict)})""")
         self.connection.commit()
 
     def insert(self, table_name: str, d: dict) -> None:
         '''
         execute insert sql
         '''
-        sql = f"insert into {table_name}({self.format_name_column(d)}) values({self.give_quationmark(d)})"
+        sql = f"""insert into {table_name}({self.format_name_column(d)
+            }) values({self.give_quationmark(d)})"""
         self.cursor.execute(sql, tuple(d.values()))
         self.connection.commit()
 
@@ -69,13 +71,23 @@ class Model:
 
     def select(self, select_name: tuple, table_name: str, where_name: str, 
                value: tuple) -> tuple:
-        sql = f"select {self.format_tuple(select_name)} from {table_name} where {where_name}=?;"
+        sql = f"""select {self.format_tuple(select_name)} from {table_name
+            } where {where_name}=?;"""
         self.cursor.execute(sql, value)
         return self.cursor_to_tuple(self.cursor)
 
     def select_log(self, select_name: tuple, table_name: str, where_name: str,
                    value: tuple, order: str, limit: int):
-        sql = f"select {self.format_tuple(select_name)} from {table_name} where {where_name}=? order by {order} desc limit {limit}"
+        sql = f"""select {self.format_tuple(select_name)} from {table_name
+            } where {where_name}=? order by {order} desc limit {limit}"""
+        self.cursor.execute(sql, value)
+        return self.cursor
+
+    def select_log_date(self, select_name: tuple, table_name: str,
+                        where_name: str, value: tuple, order: str, limit: int):
+        sql = f"""select {self.format_tuple(select_name)} from {table_name
+            } where {where_name}=? and date >=? order by {order} desc limit {
+                limit}"""
         self.cursor.execute(sql, value)
         return self.cursor
 
