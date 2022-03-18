@@ -728,7 +728,7 @@ class Loader:
     '''
     paths = dict()
     paths['cancel'] = 'icons/x.png'
-    paths['liberation'] = './fonts/LiberationSans-Regular.ttf'
+    paths['liberation'] = 'fonts/LiberationSans-Regular.ttf'
     paths['in'] = 'icons/arrow-up.png'
     paths['out'] = 'icons/arrow-down.png'
     #paths['log'] = 'icons/table.png'
