@@ -58,6 +58,22 @@ class Model:
             clog = self.select_log(('date', 'inside'), 'log',
                                 'id_badge', (pipe['id_badge'], ), 'date', 5)
             pipe['log'] = self.cursor_to_dict_in_list(('date', 'inside'), clog)
+            self.read_work_time(pipe)
+
+    def read_work_time(self, pipe: dict) -> None:
+        old_monday = self.find_last_monday(datetime.date.today(), 1)
+        log2week = self.select_log_date(('date', 'inside'), 'log',
+                                        'id_badge', (pipe['id_badge'],
+                                                        old_monday), 'date')
+        l_log2week = self.cursor_to_list(log2week)
+        last_week, current_week = self.isolate_week(l_log2week)
+        pipe['time_last_week'] = self.calcul_work_time(last_week)
+        pipe['time_current_week'] = self.calcul_work_time(current_week)
+    
+
+
+
+
 
     def select_one(self, select_name, table_name: str, where_name: str, 
                    value: tuple):
@@ -84,10 +100,9 @@ class Model:
         return self.cursor
 
     def select_log_date(self, select_name: tuple, table_name: str,
-                        where_name: str, value: tuple, order: str, limit: int):
+                        where_name: str, value: tuple, order: str):
         sql = f"""select {self.format_tuple(select_name)} from {table_name
-            } where {where_name}=? and date >=? order by {order} desc limit {
-                limit}"""
+            } where {where_name}=? and date >=? order by {order} desc"""
         self.cursor.execute(sql, value)
         return self.cursor
 
@@ -106,6 +121,13 @@ class Model:
             for j in i:
                 l.append(j)
         return tuple(l)
+
+    @staticmethod
+    def cursor_to_list(cursor: mariadb.connection.cursor) -> list:
+        l = list()
+        for i in cursor:
+            l.append(i)
+        return l
 
     @staticmethod
     def format_tuple(t: tuple) -> str:
@@ -141,6 +163,46 @@ class Model:
     @staticmethod
     def format_date_dict(d: dict, key):
         d[key] = "'" + d[key] + "'"
+
+
+    @staticmethod
+    def calcul_work_time(logs: tuple):
+        print('calcul_work_time')
+        time = datetime.timedelta()
+        date_in = None
+        for log in logs[::-1]:
+            if bool(log[1]):
+                if date_in is None:
+                    date_in = log[0]
+            elif date_in is not None:
+                if date_in.day == log[0].day: # ignore time with forgeting 
+                    # outlog in the end of last day
+                    time += log[0] - date_in
+                date_in = None
+        return time
+    
+    @classmethod
+    def isolate_week(cls, logs: list)-> tuple:
+        print('isolate_week')
+        current_week = list()
+        last_week = list()
+        last_monday = cls.find_last_monday(datetime.date.today())
+
+        for log in logs:
+            if cls.find_last_monday(log[0]) == last_monday:
+                current_week.append(log)
+            else:
+                last_week.append(log)
+        return last_week, current_week
+
+    @staticmethod
+    def find_last_monday(date, n=0) -> datetime.date:
+        print('find_last_monday', date)
+        try:
+            return date.date() - datetime.timedelta(date.weekday() + 7*n)
+        except:
+            return date - datetime.timedelta(date.weekday() + 7*n)
+
 
 
 def test():
@@ -181,5 +243,28 @@ def text3():
     model.read_name_log(d)
     print(d)
 
+def text4():
+    model = Model()
+    d = dict()
+    d['id_badge'] = 483985410385
+    today = datetime.date.today()
+    day_old_monday = model.find_last_monday(today, 1)
+    print('day_old_monday', day_old_monday)
+    log = model.select_log_date(('date', 'inside'), 'log', 'id_badge',
+                                (d['id_badge'], day_old_monday), 'date', )
+    l = list()
+    for i in log:
+        l.append(i)
+    last_week, current_week = model.isolate_week(l)
+    print(model.calcul_work_time(last_week))
+    print(model.calcul_work_time(current_week))
+
+def text5():
+    model = Model()
+    d = dict()
+    d['id_badge'] = 483985410385
+    model.read_work_time(d)
+    print(d)
+
 if __name__ == "__main__":
-    text3()
+    text5()

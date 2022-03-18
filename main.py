@@ -2,8 +2,10 @@
 import threading
 import view
 from time import sleep
-
-#import rfid
+try:
+    import rfid
+except:
+    import fake_rfid as rfid
 import model
 
 
@@ -12,14 +14,12 @@ class App:
     controle view script, rfid script, model script
     '''
 
-    def __init__(self, is_rfid=True):
-        self.is_rfid = is_rfid
+    def __init__(self):
         self.view = view.View()
         self.theard_view = threading.Thread(target=self.view.load)
         self.log = open("main_log.txt", "a")
 
-        if self.is_rfid:
-            self.rfid = rfid.Rfid()
+        self.rfid = rfid.Rfid()
 
         self.pipe = dict()
         self.pipe['cancel'] = False
@@ -61,13 +61,10 @@ class App:
 
     def do_rfid(self):
         print('do_rfid()')
-        if self.is_rfid:
-            self.theard_rfid = threading.Thread(target=self.rfid.read_pipe,
-                                                args=(self.pipe, ))
-            self.theard_rfid.start()
-            self.theard_rfid.join()
-        else:
-            self.fake_rfid()
+        self.theard_rfid = threading.Thread(target=self.rfid.read_pipe,
+                                            args=(self.pipe, ))
+        self.theard_rfid.start()
+        self.theard_rfid.join()
 
     def do_model_request(self):
         print('do_model_request()')
@@ -136,15 +133,15 @@ class App:
     def __del__(self):
         self.log.close()
 
-    def fake_rfid(self):
-        '''
-        to test the script when no rfid scanner
-        '''
-        print('fake_rfid()')
-        sleep(10)
-        #self.pipe['id_badge'] = 483985410385
-        self.pipe['id_badge'] = 183985410385
-
+#    def fake_rfid(self):
+#        '''
+#        to test the script when no rfid scanner
+#        '''
+#        print('fake_rfid()')
+#        sleep(10)
+#        #self.pipe['id_badge'] = 483985410385
+#        self.pipe['id_badge'] = 183985410385
+#
     def check_unknown(self):
         print(self.pipe)
         if self.pipe['name'] == '':
@@ -157,14 +154,6 @@ def main():
     app.load()
 
 
-def test1():
-    app = App(False)
-    app.load()
-
 
 if __name__ == "__main__":
-    mode = 1
-    if mode == 0:
-        main()
-    elif mode == 1:
-        test1()
+    main()

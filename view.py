@@ -610,6 +610,8 @@ class View:
 
         if newScene in self.scenes.keys():
             self._current_scene = newScene
+            if isinstance(self.scenes[newScene], SceneTime):
+                self.scenes[newScene].reset_entry_time()
         else:
             print(self.scenes.keys(), file=sys.stderr)
             raise ValueError(f"scene {newScene} does not exist")
@@ -709,7 +711,8 @@ class Loader:
     paths['liberation'] = './fonts/LiberationSans-Regular.ttf'
     paths['in'] = 'icons/arrow-up.png'
     paths['out'] = 'icons/arrow-down.png'
-    paths['log'] = 'icons/table.png'
+    #paths['log'] = 'icons/table.png'
+    paths['log'] = 'icons/clock-history.png'
     paths['return'] = 'icons/arrow-left.png'
     paths['more'] = 'icons/three-dots.png'
     paths['confirm'] = 'icons/check.png'
@@ -752,6 +755,8 @@ def test1():
     pipe['log'][1]['date'] = datetime.datetime(2022, 1, 19, 16, 30, 51)
     pipe['log'][0]['inside'] = True
     pipe['log'][1]['inside'] = False
+    pipe['time_last_week'] = datetime.timedelta(seconds=20212)
+    pipe['time_current_week'] = datetime.timedelta(seconds=307)
     view = View(pipe)
     view.load()
 
