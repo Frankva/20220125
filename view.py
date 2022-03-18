@@ -340,7 +340,8 @@ class SceneLog(SceneTime):
                 self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()):
             self.reset_entry_time()
             # access parent instance
-            self.view.current_scene = 'time'
+            self.view.do_work_time()
+            # self.view.current_scene = 'time'
             # add reset timer
 
 
@@ -367,7 +368,21 @@ class SceneWorkTime(SceneTime):
             # access parent instance
             self.view.current_scene = 'log'
             # add reset timer
-    
+
+    def set_text(self):
+        print('SceneWorkTime.set_text')
+        cx, cy = self.screen.get_size()
+        x = 1 * cx / 12
+        y = 4 * cy / 12
+        self.texts = list()
+        self.texts.append(Text(x, y, self.size_text, ''))
+        self.texts.append(Text(x, y + self.size_text, self.size_text, ''))
+        self.texts.append(Text(x, y + 2 * self.size_text, self.size_text, ''))
+        self.texts[0]('Temps de présence : ')
+        self.texts[1]('semaine passée : ' + str(View.pipe['time_last_week']))
+        self.texts[2]('semaine en cours : ' + \
+            str(View.pipe['time_current_week']))
+
     def update(self):
         super().update()
         self.do_press_button()
@@ -639,7 +654,12 @@ class View:
         if self.current_scene == 'select':
             self.current_scene = 'log'
             self.scenes['log'].set_text(log)
-    
+
+    def do_work_time(self) -> None:
+        if self.current_scene == 'log':
+            self.current_scene = 'time'
+            self.scenes['time'].set_text()
+
     def do_unknown_badge(self, twice=False):
         if not twice:
             text = "Le badge est inconnue. Veuille taper votre nom de famille."
