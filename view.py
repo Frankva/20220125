@@ -125,7 +125,7 @@ class Button:
  #       return cls.__init__()
  #
     def draw(self, screen) -> None:
-        pygame.draw.rect(screen, self.color, self.rect)
+        pygame.draw.rect(screen, self.color, self.rect, 0, 10)
         self.draw_img_center(screen)
     
     def draw_img_center(self, screen):
@@ -503,13 +503,17 @@ class SceneKeyboard(SceneTime):
 
 
 class Mouse:
-    def __init__(self) -> None:
+    def __init__(self, event) -> None:
+        self.event = event
+
         self.left = False
         self.old_left = False
 
     def update(self):
         self.old_left = self.left
-        self.left = pygame.mouse.get_pressed()[0]
+        self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERDOWN == 
+        self.event)
+
 
     def release(self, button: str):
         '''
@@ -546,8 +550,8 @@ class View:
         else:
             self.screen = pygame.display.set_mode((800, 480))
         pygame.display.set_caption("Timbreuse")
-        self.mouse = Mouse()
         self.events = pygame.event.get()
+        self.mouse = Mouse(self.events)
         self.background_color = pygame.Color('#ffffff')
 
     def load(self) -> None:
