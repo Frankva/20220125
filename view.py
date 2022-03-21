@@ -125,7 +125,7 @@ class Button:
  #       return cls.__init__()
  #
     def draw(self, screen) -> None:
-        pygame.draw.rect(screen, self.color, self.rect, border_radius=10)
+        pygame.draw.rect(screen, self.color, self.rect)
         self.draw_img_center(screen)
     
     def draw_img_center(self, screen):
