@@ -727,14 +727,14 @@ class Loader:
     load file 
     '''
     paths = dict()
-    paths['cancel'] = 'icons/x.bmp'
+    paths['cancel'] = 'icons/x.png'
     paths['liberation'] = 'fonts/LiberationSans-Regular.ttf'
-    paths['in'] = 'icons/arrow-up.bmp'
-    paths['out'] = 'icons/arrow-down.bmp'
+    paths['in'] = 'icons/arrow-up.png'
+    paths['out'] = 'icons/arrow-down.png'
     paths['log'] = 'icons/clock-history.png'
-    paths['return'] = 'icons/arrow-left.bmp'
-    paths['more'] = 'icons/three-dots.bmp'
-    paths['confirm'] = 'icons/check.bmp'
+    paths['return'] = 'icons/arrow-left.png'
+    paths['more'] = 'icons/three-dots.png'
+    paths['confirm'] = 'icons/check.png'
     
 
     @classmethod
