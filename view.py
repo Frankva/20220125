@@ -539,6 +539,7 @@ class View:
     def load_pygame(self):
         pygame.init()
         pygame.FINGERDOWN = pygame.MOUSEBUTTONDOWN
+        pygame.FINGERUP = pygame.MOUSEBUTTONUP
 
         self.clock = pygame.time.Clock()
         if os.name != "nt":
