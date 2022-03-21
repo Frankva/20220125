@@ -37,7 +37,7 @@ class Mouse:
 
     def update(self, event):
         self.old_left = self.left
-        self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERDOWN in 
+        self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERUP in 
         event)
         print(event)
 
