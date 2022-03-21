@@ -7,6 +7,7 @@ class App:
 
     def load(self):
         self.backgrond_color = pygame.Color('#ffffff')
+        pygame.mouse.set_visible(False)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -15,7 +16,11 @@ class App:
             self.draw()
 
     def update(self):
-        print(pygame.mouse.get_pressed())
+        #print(pygame.mouse.get_pressed())
+        print(pygame._sdl2.touch.get_finger(0, 0))
+        #print(pygame.MOUSEBUTTONDOWN)
+        #print(pygame.MOUSEWHEEL)
+
 
     def draw(self):
         self.screen.fill(self.backgrond_color)
