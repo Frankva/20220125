@@ -503,13 +503,14 @@ class SceneKeyboard(SceneTime):
 
 
 class Mouse:
-    def __init__(self, event) -> None:
-        self.event = event
+    def __init__(self) -> None:
 
+        self.event = None
         self.left = False
         self.old_left = False
 
-    def update(self):
+    def update(self, event):
+        self.event = event
         self.old_left = self.left
         self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERDOWN == 
         self.event)
@@ -551,7 +552,7 @@ class View:
             self.screen = pygame.display.set_mode((800, 480))
         pygame.display.set_caption("Timbreuse")
         self.events = pygame.event.get()
-        self.mouse = Mouse(self.events)
+        self.mouse = Mouse()
         self.background_color = pygame.Color('#ffffff')
 
     def load(self) -> None:
@@ -588,7 +589,7 @@ class View:
         is called each frame
         '''
         self.clock.tick(60)
-        self.mouse.update()
+        self.mouse.update(self.events)
         self.scenes[self.current_scene].update()
         self.debug_command()
 
