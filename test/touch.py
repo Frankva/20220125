@@ -8,8 +8,10 @@ class App:
     def load(self):
         self.backgrond_color = pygame.Color('#ffffff')
         pygame.mouse.set_visible(False)
+        self.mouse = Mouse()
         while True:
-            for event in pygame.event.get():
+            self.event = pygame.event.get()
+            for event in self.event:
                 if event.type == pygame.QUIT:
                     exit()
             self.update()
@@ -17,9 +19,10 @@ class App:
 
     def update(self):
         #print(pygame.mouse.get_pressed())
-        print(pygame.mouse.get_pos())
+      #  print(pygame.mouse.get_pos())
         #print(pygame.MOUSEBUTTONDOWN)
         #print(pygame.MOUSEWHEEL)
+        self.mouse.update(self.event)
 
 
     def draw(self):
@@ -32,9 +35,11 @@ class Mouse:
         self.left = False
         self.old_left = False
 
-    def update(self):
+    def update(self, event):
         self.old_left = self.left
-        self.left = pygame.mouse.get_pressed()[0]
+        self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERDOWN in 
+        event)
+        print(self.left)
 
     def release(self, button: str):
         '''
