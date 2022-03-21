@@ -17,7 +17,7 @@ class App:
 
     def update(self):
         #print(pygame.mouse.get_pressed())
-        print(pygame._sdl2.touch.get_finger(0, 0))
+        print(pygame.mouse.get_pos())
         #print(pygame.MOUSEBUTTONDOWN)
         #print(pygame.MOUSEWHEEL)
 
