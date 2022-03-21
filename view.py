@@ -731,7 +731,7 @@ class Loader:
     paths['liberation'] = 'fonts/LiberationSans-Regular.ttf'
     paths['in'] = 'icons/arrow-up.bmp'
     paths['out'] = 'icons/arrow-down.bmp'
-    paths['log'] = 'icons/clock-history.bmp'
+    paths['log'] = 'icons/clock-history.png'
     paths['return'] = 'icons/arrow-left.bmp'
     paths['more'] = 'icons/three-dots.bmp'
     paths['confirm'] = 'icons/check.bmp'
