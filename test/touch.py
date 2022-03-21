@@ -39,7 +39,7 @@ class Mouse:
         self.old_left = self.left
         self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERDOWN in 
         event)
-        print(self.left)
+        print(event)
 
     def release(self, button: str):
         '''
