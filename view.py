@@ -554,11 +554,11 @@ class View:
 
     def load_pygame(self):
         pygame.init()
-
         self.clock = pygame.time.Clock()
         if os.name != "nt":
             self.screen = pygame.display.set_mode(
-                (800, 480), pygame.FULLSCREEN)  # pygame.FULLSCREEN
+                (800, 480), pygame.FULLSCREEN)
+            pygame.mouse.set_visible(False)
         else:
             self.screen = pygame.display.set_mode((800, 480))
         pygame.display.set_caption("Timbreuse")
