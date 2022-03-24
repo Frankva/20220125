@@ -504,16 +504,27 @@ class SceneKeyboard(SceneTime):
 
 class Mouse:
     def __init__(self) -> None:
-
-        self.event = None
         self.left = False
         self.old_left = False
 
-    def update(self, event):
-        self.event = event
+    def update(self, events):
+        # self.event = event
+        # self.old_left = self.left
+        # self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERDOWN == 
+        # self.event)
         self.old_left = self.left
-        self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERDOWN == 
-        self.event)
+        # self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERUP in 
+        # event)
+        for event in events:
+            if (pygame.MOUSEBUTTONDOWN == event.type) or (pygame.FINGERDOWN == 
+            event.type):
+                self.left = True
+            elif (pygame.MOUSEBUTTONUP == event.type) or (pygame.FINGERUP == 
+            event.type):
+                self.left = False
+        
+        print(self.left, self.old_left)
+
 
 
     def release(self, button: str):

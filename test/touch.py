@@ -35,11 +35,17 @@ class Mouse:
         self.left = False
         self.old_left = False
 
-    def update(self, event):
+    def update(self, events):
         self.old_left = self.left
-        self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERUP in 
-        event)
-        print(event)
+        # self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERUP in 
+        # event)
+        for event in events:
+            if (pygame.MOUSEBUTTONDOWN == event.type) or (pygame.FINGERDOWN == 
+            event.type):
+                self.left = True
+            elif (pygame.MOUSEBUTTONUP == event.type) or (pygame.FINGERUP == 
+            event.type):
+                self.left = False
 
     def release(self, button: str):
         '''
