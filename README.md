@@ -39,4 +39,5 @@ mariadb-server
 
 
 ## à corrigé
-- [ ] scene with unknow badge
+- [x] scene with unknow badge
+- [ ] request log with unknow badge
