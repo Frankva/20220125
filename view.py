@@ -379,9 +379,12 @@ class SceneWorkTime(SceneTime):
         self.texts.append(Text(x, y + self.size_text, self.size_text, ''))
         self.texts.append(Text(x, y + 2 * self.size_text, self.size_text, ''))
         self.texts[0]('Temps de présence : ')
-        self.texts[1]('semaine passée : ' + str(View.pipe['time_last_week']))
-        self.texts[2]('semaine en cours : ' + \
-            str(View.pipe['time_current_week']))
+        try:
+            self.texts[1]('semaine passée : ' + str(View.pipe['time_last_week']))
+            self.texts[2]('semaine en cours : ' + \
+                str(View.pipe['time_current_week']))
+        except KeyError:
+            pass
 
     def update(self):
         super().update()
@@ -523,10 +526,6 @@ class Mouse:
             event.type):
                 self.left = False
         
-        print(self.left, self.old_left)
-
-
-
     def release(self, button: str):
         '''
         detect release click

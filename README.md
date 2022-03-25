@@ -27,12 +27,16 @@ mariadb-server
 - 
 
 ## à ajouté
-- 5 dernières décroisant
-- nom, prénom
-- temps limite
+- [x] 5 dernières décroisant
+- [x] nom, prénom
+- [x] temps limite
 - couleur de orif 
     - #005BA9 bannière, titre
     - #DBCEB1 fond
     - #AE9B70 text
     - #FFFFFF
     https://coolors.co/005ba9-dd1c1a-dbceb1-386641-3c362a
+
+
+## à corrigé
+- [ ] scene with unknow badge
