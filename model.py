@@ -94,8 +94,12 @@ class Model:
 
     def select_log(self, select_name: tuple, table_name: str, where_name: str,
                    value: tuple, order: str, limit: int):
-        sql = f"""select {self.format_tuple(select_name)} from {table_name
-            } where {where_name}=? order by {order} desc limit {limit}"""
+        if limit == 0:
+            sql = f"""select {self.format_tuple(select_name)} from {table_name
+                } where {where_name}=? order by {order} desc"""
+        else:
+            sql = f"""select {self.format_tuple(select_name)} from {table_name
+                } where {where_name}=? order by {order} desc limit {limit}"""
         self.cursor.execute(sql, value)
         return self.cursor
 
@@ -202,6 +206,33 @@ class Model:
             return date.date() - datetime.timedelta(date.weekday() + 7*n)
         except:
             return date - datetime.timedelta(date.weekday() + 7*n)
+    
+    @staticmethod
+    def is_same_day(date: datetime.date, date2: datetime.date) -> bool:
+        print('is_same_day')
+        return ((date.day == date2.day) and (date.month == date2.month) and
+                (date.year == date2.year))
+        
+    @classmethod
+    def isolate_day(cls, logs:list()) -> list:
+        '''
+        return a list with a list for each day
+        '''
+        logs_per_day = list()
+        logs_per_day.append(list())
+        for log in logs:
+            if len(logs_per_day[0]) == 0:
+                logs_per_day[0].append(log)
+            elif cls.is_same_day(log[0], logs_per_day[-1][0][0]):
+                logs_per_day[-1].append(log)
+            else:
+                logs_per_day.append(list())
+                logs_per_day[-1].append(log)
+        return logs_per_day
+
+
+
+
 
 
 
@@ -229,21 +260,21 @@ def testselect():
     print(txt4)
 
 
-def text2():
+def test2():
     model = Model()
     d = dict()
     d['id_badge'] = 483985410385
     model.read_name_log(d)
     print(d)
 
-def text3():
+def test3():
     model = Model()
     d = dict()
     d['id_badge'] = 283985410380
     model.read_name_log(d)
     print(d)
 
-def text4():
+def test4():
     model = Model()
     d = dict()
     d['id_badge'] = 483985410385
@@ -259,12 +290,38 @@ def text4():
     print(model.calcul_work_time(last_week))
     print(model.calcul_work_time(current_week))
 
-def text5():
+def test5():
     model = Model()
     d = dict()
     d['id_badge'] = 483985410385
     model.read_work_time(d)
     print(d)
 
-if __name__ == "__main__":
-    text5()
+def test6():
+    d = dict()
+    d['id_badge'] = 483985410385
+    model = Model()
+    clog = model.select_log(('date', 'inside'), 'log',
+                            'id_badge', (d['id_badge'], ), 'date', 0)
+
+    l_log = model.cursor_to_list(clog)
+    d_log = model.isolate_day(l_log)
+    for day_log in d_log:
+        print(model.calcul_work_time(day_log))
+
+def test7():
+    d = dict()
+    d['id_badge'] = 483985410385
+    model = Model()
+    old_monday = model.find_last_monday(datetime.date.today(), 1)
+    log2week = model.select_log_date(('date', 'inside'), 'log',
+                            'id_badge', (d['id_badge'], old_monday), 'date')
+    l_log2week = model.cursor_to_list(log2week)
+    last_week, current_week = model.isolate_week(l_log2week)
+    print(current_week)
+
+
+
+
+if __name__ == '__main__':
+    test7()
