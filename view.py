@@ -1,4 +1,3 @@
-
 from itertools import product
 import pygame
 import pygame_vkeyboard as vkboard
@@ -132,6 +131,48 @@ class Button:
         screen.blit(self.img, (self.x + self.w/2 - self.img.get_width()/2,
                                self.y + self.h/2 - self.img.get_height()/2))
 
+class ButtonText(Button):
+    def __init__(self, screen: pygame.Surface, x, y, w, h,
+                 color=pygame.Color("#6c767e"), img: str = 'cancel',
+                 text: str = 't') -> None:
+        super().__init__(screen, x, y, w, h, color, img)
+        self.size = 30 
+        self.text = Text(x + w/2, y + h - self.size - 20, self.size,
+                         text, pygame.Color('white'), 'center')
+    
+    def draw(self, screen) -> None:
+        super().draw(screen)
+        self.text.draw(screen)
+
+    @staticmethod
+    def inside_button(screen):
+
+        cx, cy = screen.get_size()
+        x = 7 * (cx / 12)
+        y = 4 * (cy / 12)
+        w = 4 * (cx / 12)
+        h = 7 * (cy / 12)
+        img = 'in'
+        text = 'Sortie'
+
+        color = pygame.Color("#007bff")  # blue
+        return ButtonText(screen, x, y, w, h, color, img, text)
+
+    @staticmethod
+    def outside_button(screen):
+
+        cx, cy = screen.get_size()
+        x = 1 * (cx / 12)
+        y = 4 * (cy / 12)
+        w = 4 * (cx / 12)
+        h = 7 * (cy / 12)
+        img = 'out'
+        text = 'Entrée'
+
+        color = pygame.Color("#Dc3545")  # red
+        return ButtonText(screen, x, y, w, h, color, img, text)
+
+
 
 class Scene:
     '''
@@ -198,8 +239,8 @@ class SceneSelect(SceneTime):
         self.choice = dict()
 
         self.buttons = list()
-        self.buttons.append(Button.inside_button(self.screen))  # blue right
-        self.buttons.append(Button.outside_button(self.screen))  # red left
+        self.buttons.append(ButtonText.inside_button(self.screen))  # blue right
+        self.buttons.append(ButtonText.outside_button(self.screen))  # red left
         self.buttons.append(Button.log_button(self.screen))  # red left
         self.buttons.append(Button.cancel_button(self.screen))  # red left
         #self.buttons[1].set_red_pos()
@@ -212,7 +253,9 @@ class SceneSelect(SceneTime):
         try:
             # must be optimised, not all frame
             self.texts[0](View.pipe['surname'] + ' ' + View.pipe['name'])
-        except not KeyboardInterrupt:
+        except KeyboardInterrupt:
+            exit()
+        except:
             pass
 
     def do_press_button(self):
@@ -546,7 +589,7 @@ class View:
     def __init__(self, pipe=None) -> None:
         self.running = True
 
-        self.scenes = dict()
+        self._scenes = dict()
         self._current_scene = "wait"
         if pipe != None:
             View.pipe = pipe
@@ -645,6 +688,20 @@ class View:
         else:
             print(self.scenes.keys(), file=sys.stderr)
             raise ValueError(f"scene {newScene} does not exist")
+    
+    @property
+    def scenes(self) -> dict:
+        return self._scenes
+    
+    @scenes.setter
+    def scenes(self, tup:tuple) -> None:
+        key = tup[0] # str
+        new_scene = tup[1] # Scene
+        print('View.scenes.setter', file=sys.stderr)
+        if isinstance(key, str) and isinstance(new_scene, Scene):
+            self._scenes[key] = new_scene
+        else:
+            raise TypeError(f'key must be a str and new_scene a Scene')
 
     def do_select_scene(self) -> None:
         '''
@@ -681,7 +738,9 @@ class View:
         else:
             text = "Veuille taper votre prénom."
 
-        self.scenes['modal'] = SceneModal(self.screen, self, text, 'keyboard')
+        #self.scenes['modal'] = SceneModal(self.screen, self, text, 'keyboard')
+        # to corr
+        self.scenes = 'modal', SceneModal(self.screen, self, text, 'keyboard')
         self.current_scene = 'modal'
 
     def cancel(self):
@@ -695,7 +754,7 @@ class View:
 
 class Text:
     def __init__(self, x: float, y: float, size: float, text: str,
-                 color: pygame.Color=pygame.Color('#212529')) -> None:
+                 color: pygame.Color=pygame.Color('#212529'), align='left') -> None:
         '''
         text with position, size and color
         '''
@@ -705,6 +764,12 @@ class Text:
         self.font = Loader.load_txt('liberation', self.size)
         self.color = color
         self.img = self.font.render(self.text, True, self.color)
+        self.align = align
+        self.set_align()
+
+    def set_align(self) -> None:
+        if self.align == 'center':
+            self.pos.x -= self.img.get_width() / 2
 
     def update(self) -> None:
         '''
@@ -744,8 +809,8 @@ class Loader:
     paths = dict()
     paths['cancel'] = 'icons/x.bmp'
     paths['liberation'] = 'fonts/LiberationSans-Regular.ttf'
-    paths['in'] = 'icons/arrow-up.bmp'
-    paths['out'] = 'icons/arrow-down.bmp'
+    paths['in'] = 'icons/box-arrow-in-right.bmp'
+    paths['out'] = 'icons/box-arrow-right.bmp'
     paths['log'] = 'icons/clock-history.bmp'
     paths['return'] = 'icons/arrow-left.bmp'
     paths['more'] = 'icons/three-dots.bmp'
