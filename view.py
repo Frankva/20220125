@@ -403,6 +403,8 @@ class SceneWorkTime(SceneTime):
         self.size_text = 30
         self.buttons = list()
         self.buttons.append(Button.return_button(screen))
+        self.tables = list()
+
 
     def do_press_button(self) -> None:
         if self.view.mouse.release('left') and\
@@ -413,21 +415,45 @@ class SceneWorkTime(SceneTime):
             # add reset timer
 
     def set_text(self):
-        print('SceneWorkTime.set_text')
+        self.texts.append(list())
+        self.texts[0].append('Date')
+        if 'day_current_week' in View.pipe:
+            for date in View.pipe['day_current_week'][0]:
+                self.texts[0].append(date)
+            self.texts.append(list())
+            self.texts[1].append('Temps')
+            for time in View.pipe['day_current_week'][1]:
+                self.texts[1].append(time)
+
+            
+
+#    def set_text(self):
+#        print('SceneWorkTime.set_text')
+#        cx, cy = self.screen.get_size()
+#        x = 1 * cx / 12
+#        y = 4 * cy / 12
+#        self.texts = list()
+#        self.texts.append(Text(x, y, self.size_text, ''))
+#        self.texts.append(Text(x, y + self.size_text, self.size_text, ''))
+#        self.texts.append(Text(x, y + 2 * self.size_text, self.size_text, ''))
+#        self.texts[0]('Semaine en cours')
+#        self.texts[1]('Date    Temps')
+#        # day_last_week, day_current_week, time_last_week, time_current_week
+#        try:
+#            # self.texts[1]('semaine passée : ' + str(View.pipe['time_last_week']))
+#            # self.texts[2]('semaine en cours : ' + \
+#            #     str(View.pipe['time_current_week']))
+#            pass
+#        except KeyError:
+#            pass
+
+    def set_table(self):
         cx, cy = self.screen.get_size()
         x = 1 * cx / 12
-        y = 4 * cy / 12
-        self.texts = list()
-        self.texts.append(Text(x, y, self.size_text, ''))
-        self.texts.append(Text(x, y + self.size_text, self.size_text, ''))
-        self.texts.append(Text(x, y + 2 * self.size_text, self.size_text, ''))
-        self.texts[0]('Temps de présence : ')
-        try:
-            self.texts[1]('semaine passée : ' + str(View.pipe['time_last_week']))
-            self.texts[2]('semaine en cours : ' + \
-                str(View.pipe['time_current_week']))
-        except KeyError:
-            pass
+        y = 2 * cy / 12
+        w = 11 * cx / 12
+        h = 10 * cy / 12
+        self.tables.append(Table(x, y, w, h, self.texts))
 
     def update(self):
         super().update()
@@ -435,11 +461,47 @@ class SceneWorkTime(SceneTime):
 
     def draw(self):
         super().draw()
-        for text in self.texts:
-            text.draw(self.screen)
+#        for text in self.texts:
+#            text.draw(self.screen)
+        for table in self.tables:
+            table.draw(self.screen)
 
         for button in self.buttons:
             button.draw(self.screen)
+
+class Table:
+    def __init__(self, x, y , w, h, cols:list):
+        print('Table.init', file=sys.stderr)
+        self.pos = pygame.Vector2(x, y)
+        self.size = pygame.Vector2(w, h) # pixel
+        self.cols = cols
+        self.update_scaling() # number element in row col
+        self.update_pixel_case() 
+        self.texts = list()
+        self.set_text()
+        
+    def update_scaling(self):
+        len_cols = map(lambda row:len(row), self.cols)
+        self.scaling = pygame.Vector2(len(self.cols), max(len_cols))
+    
+    def update_pixel_case(self):
+        self.pixel_case = pygame.Vector2(self.size.x / self.scaling.x,
+                                         self.size.y / self.scaling.y)
+    def set_text(self):
+        cursor = pygame.Vector2(self.pos.x, self.pos.y)
+        for col in self.cols:
+            for text in col:
+                self.texts.append(Text(cursor.x, cursor.y, self.scaling - 2,
+                                       text))
+                cursor.y += self.pixel_case.y
+            cursor.x += self.pixel_case.x
+            cursor.y = self.pos.y
+    
+    def draw(self, screen) -> None:
+        for text in self.texts:
+            text.draw(screen)
+
+            
 
 
 class SceneModal(SceneTime):
@@ -856,6 +918,18 @@ def test1():
     pipe['log'][1]['inside'] = False
     pipe['time_last_week'] = datetime.timedelta(seconds=20212)
     pipe['time_current_week'] = datetime.timedelta(seconds=307)
+    pipe['day_current_week'] = ((datetime.date(2022, 4, 11), 
+        datetime.timedelta(seconds=28871)), (datetime.date(2022, 4, 12), 
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 13),
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 14),
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 15),
+        datetime.timedelta(seconds=28843)))
+    pipe['day_last_week'] = ((datetime.date(2022, 4, 4), 
+        datetime.timedelta(seconds=28871)), (datetime.date(2022, 4, 5), 
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 6),
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 7),
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 8),
+        datetime.timedelta(seconds=28843)))
     view = View(pipe)
     view.load()
 
