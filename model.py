@@ -197,7 +197,7 @@ class Model:
                 current_week.append(log)
             else:
                 last_week.append(log)
-        return last_week, current_week
+        return tuple(last_week), tuple(current_week)
 
     @staticmethod
     def find_last_monday(date, n=0) -> datetime.date:
@@ -228,7 +228,31 @@ class Model:
             else:
                 logs_per_day.append(list())
                 logs_per_day[-1].append(log)
-        return logs_per_day
+        return tuple(logs_per_day)
+
+    @classmethod
+    def map_work_time(cls, day_logs):
+        return day_logs[0][0].date(), cls.calcul_work_time(day_logs)
+
+    def read_work_time_day(self, pipe:dict) -> None:
+        '''
+        add in dictionary in arg the date and sum work
+        is a tuple. in each index there are a tuple with date [0] and sum time 
+        work of the day [1]
+        '''
+        old_monday = self.find_last_monday(datetime.date.today(), 1)
+        log2week = self.select_log_date(('date', 'inside'), 'log', 'id_badge',
+                                        (pipe['id_badge'], old_monday), 'date')
+        log2week = tuple(self.cursor_to_list(log2week))
+        last_week, current_week = self.isolate_week(log2week)
+        last_week = self.isolate_day(last_week)
+        current_week = self.isolate_day(current_week)
+        print(last_week, current_week, sep='\n')
+        last_week = tuple(map(self.map_work_time, last_week))
+        current_week = tuple(map(self.map_work_time, current_week))
+        print(last_week, current_week, sep='\n')
+        pipe['day_last_week'] = last_week
+        pipe['day_current_week'] = current_week
 
 
 
@@ -316,9 +340,17 @@ def test7():
     old_monday = model.find_last_monday(datetime.date.today(), 1)
     log2week = model.select_log_date(('date', 'inside'), 'log',
                             'id_badge', (d['id_badge'], old_monday), 'date')
-    l_log2week = model.cursor_to_list(log2week)
-    last_week, current_week = model.isolate_week(l_log2week)
-    print(current_week)
+    t_log2week = tuple(model.cursor_to_list(log2week))
+    last_week, current_week = model.isolate_week(t_log2week)
+    day_last_week = model.isolate_day(last_week)
+    day_current_week = model.isolate_day(current_week)
+    print(day_last_week, day_current_week, sep='\n')
+    day_last_week = tuple(map(model.map_work_time, day_last_week))
+    day_current_week = tuple(map(model.map_work_time, day_current_week))
+    print(day_last_week, day_current_week, sep='\n')
+
+
+
 
 
 
