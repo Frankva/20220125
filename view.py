@@ -415,15 +415,23 @@ class SceneWorkTime(SceneTime):
             # add reset timer
 
     def set_text(self):
+        print('SceneWorkTime.set_text', file=sys.stderr)
+        self.texts.clear()
         self.texts.append(list())
         self.texts[0].append('Date')
+        self.texts.append(list())
+        self.texts[1].append('Temps')
+        self.texts.append(list())
+        self.texts[2].append('Détail')
         if 'day_current_week' in View.pipe:
-            for date in View.pipe['day_current_week'][0]:
-                self.texts[0].append(date)
-            self.texts.append(list())
-            self.texts[1].append('Temps')
-            for time in View.pipe['day_current_week'][1]:
-                self.texts[1].append(time)
+            for day in View.pipe['day_current_week']:
+                self.texts[0].append(str(day[0]))
+                self.texts[1].append(str(day[1]))
+            self.texts[0].append('Total : ')
+            self.texts[1].append(str(View.pipe['time_current_week']))
+            self.set_table()
+        print(self.texts, file=sys.stderr)
+        print(View.pipe['day_current_week'])
 
             
 
@@ -450,9 +458,10 @@ class SceneWorkTime(SceneTime):
     def set_table(self):
         cx, cy = self.screen.get_size()
         x = 1 * cx / 12
-        y = 2 * cy / 12
+        y = 4 * cy / 12
         w = 11 * cx / 12
-        h = 10 * cy / 12
+        h = 8 * cy / 12
+        self.tables.clear()
         self.tables.append(Table(x, y, w, h, self.texts))
 
     def update(self):
@@ -472,8 +481,9 @@ class SceneWorkTime(SceneTime):
 class Table:
     def __init__(self, x, y , w, h, cols:list):
         print('Table.init', file=sys.stderr)
+        self.size_text = 30
         self.pos = pygame.Vector2(x, y)
-        self.size = pygame.Vector2(w, h) # pixel
+        self.size = pygame.Vector2(w, h-self.size_text) # pixel
         self.cols = cols
         self.update_scaling() # number element in row col
         self.update_pixel_case() 
@@ -481,17 +491,22 @@ class Table:
         self.set_text()
         
     def update_scaling(self):
+        print('Table.update_scaling', file=sys.stderr)
         len_cols = map(lambda row:len(row), self.cols)
         self.scaling = pygame.Vector2(len(self.cols), max(len_cols))
+        print(self.scaling, file=sys.stderr)
     
     def update_pixel_case(self):
+        print('Table.update_pixel_case', file=sys.stderr)
         self.pixel_case = pygame.Vector2(self.size.x / self.scaling.x,
                                          self.size.y / self.scaling.y)
+        print(self.pixel_case, file=sys.stderr)
+
     def set_text(self):
         cursor = pygame.Vector2(self.pos.x, self.pos.y)
         for col in self.cols:
             for text in col:
-                self.texts.append(Text(cursor.x, cursor.y, self.scaling - 2,
+                self.texts.append(Text(cursor.x, cursor.y, self.size_text,
                                        text))
                 cursor.y += self.pixel_case.y
             cursor.x += self.pixel_case.x
@@ -893,7 +908,11 @@ class Loader:
     @classmethod
     def load_txt(cls, name, size):
         print('load_txt', file=sys.stderr)
-        return pygame.font.Font(cls.paths[name], size)
+        try:
+            return pygame.font.Font(cls.paths[name], size)
+        except TypeError:
+            return pygame.font.Font(cls.paths[name], int(size))
+
     
     def change_color(img: pygame.Surface, color: pygame.Color):
         w, h = img.get_size()
