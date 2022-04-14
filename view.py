@@ -25,19 +25,20 @@ class Button:
 #        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 #
     def __init__(self, screen: pygame.Surface, x, y, w, h,
-                 color=pygame.Color("#6c767e"), img: str = 'cancel') -> None:
+                 color=pygame.Color("#6c767e"), img: str = 'cancel', id=-1) -> None:
         print("Button.init", file=sys.stderr)
         self.screen = screen
         self.x = x
         self.y = y
         self.w = w
         self.h = h
+        self.id = id
 
         self.color = color
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
         self.img = Loader.load_img(img, pygame.Color('#f8f9fa'))
         
-       
+
 
     @staticmethod
     def inside_button(screen):
@@ -127,7 +128,7 @@ class Button:
         pygame.draw.rect(screen, self.color, self.rect, 0, 10)
         self.draw_img_center(screen)
     
-    def draw_img_center(self, screen):
+    def draw_img_center(self, screen: pygame.Surface):
         screen.blit(self.img, (self.x + self.w/2 - self.img.get_width()/2,
                                self.y + self.h/2 - self.img.get_height()/2))
 
@@ -153,7 +154,7 @@ class ButtonText(Button):
         w = 4 * (cx / 12)
         h = 7 * (cy / 12)
         img = 'in'
-        text = 'Sortie'
+        text = 'Entrée'
 
         color = pygame.Color("#007bff")  # blue
         return ButtonText(screen, x, y, w, h, color, img, text)
@@ -167,7 +168,7 @@ class ButtonText(Button):
         w = 4 * (cx / 12)
         h = 7 * (cy / 12)
         img = 'out'
-        text = 'Entrée'
+        text = 'Sortie'
 
         color = pygame.Color("#Dc3545")  # red
         return ButtonText(screen, x, y, w, h, color, img, text)
@@ -405,7 +406,6 @@ class SceneWorkTime(SceneTime):
         self.buttons.append(Button.return_button(screen))
         self.tables = list()
 
-
     def do_press_button(self) -> None:
         if self.view.mouse.release('left') and\
                 self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
@@ -414,7 +414,18 @@ class SceneWorkTime(SceneTime):
             self.view.current_scene = 'log'
             # add reset timer
 
-    def set_text(self):
+    def do_press_table_button(self) -> None:
+        if self.view.mouse.release('left') and\
+                self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+            self.reset_entry_time()
+            # access parent instance
+            self.view.current_scene = 'log'
+            # add reset timer
+            for is_colide_button in self.tables[0].rect.collidepoint(pygame.mouse.get_pos()):
+                pass
+
+
+    def set_content(self):
         print('SceneWorkTime.set_text', file=sys.stderr)
         self.texts.clear()
         self.texts.append(list())
@@ -427,11 +438,11 @@ class SceneWorkTime(SceneTime):
             for day in View.pipe['day_current_week']:
                 self.texts[0].append(str(day[0]))
                 self.texts[1].append(str(day[1]))
+                self.texts[2].append('detail')
             self.texts[0].append('Total : ')
             self.texts[1].append(str(View.pipe['time_current_week']))
             self.set_table()
         print(self.texts, file=sys.stderr)
-        print(View.pipe['day_current_week'])
 
             
 
@@ -483,39 +494,53 @@ class Table:
         print('Table.init', file=sys.stderr)
         self.size_text = 30
         self.pos = pygame.Vector2(x, y)
-        self.size = pygame.Vector2(w, h-self.size_text) # pixel
+        self.size = pygame.Vector2(w, h - self.size_text) # pixel
         self.cols = cols
         self.update_scaling() # number element in row col
         self.update_pixel_case() 
+        self.buttons = list()
         self.texts = list()
-        self.set_text()
-        
+        self.button_color = pygame.Color('#6c767e')
+        self.set_content()
+
     def update_scaling(self):
         print('Table.update_scaling', file=sys.stderr)
+        print(self.cols)
         len_cols = map(lambda row:len(row), self.cols)
         self.scaling = pygame.Vector2(len(self.cols), max(len_cols))
         print(self.scaling, file=sys.stderr)
-    
+
     def update_pixel_case(self):
         print('Table.update_pixel_case', file=sys.stderr)
         self.pixel_case = pygame.Vector2(self.size.x / self.scaling.x,
                                          self.size.y / self.scaling.y)
         print(self.pixel_case, file=sys.stderr)
 
-    def set_text(self):
+    def set_content(self):
         cursor = pygame.Vector2(self.pos.x, self.pos.y)
         for col in self.cols:
             for text in col:
-                self.texts.append(Text(cursor.x, cursor.y, self.size_text,
-                                       text))
+                if text in Loader.paths:
+                    self.buttons.append(Button(None, cursor.x, cursor.y,
+                        self.pixel_case.x * 8 / 12, self.pixel_case.y * 11 / 
+                        12, self.button_color, text)) 
+                else:
+                    self.texts.append(Text(cursor.x, cursor.y,
+                        self.size_text, text))
                 cursor.y += self.pixel_case.y
             cursor.x += self.pixel_case.x
             cursor.y = self.pos.y
-    
+
     def draw(self, screen) -> None:
+        for button in self.buttons:
+            button.draw(screen)
         for text in self.texts:
             text.draw(screen)
 
+    def is_press_button(self):
+        for button in self.buttons:
+            if button.rect.collidepooint(pygame.mouse.get_pos()):
+                return button
             
 
 
@@ -524,15 +549,39 @@ class SceneModal(SceneTime):
     scene with one text and one button
     '''
 
-    def __init__(self, screen, view, text: str, next_scene: str) -> None:
+    def __init__(self, screen, view, texts: list, next_scene: str) -> None:
         super().__init__(screen, view)
-        self.size_text = 20
+        self.size_text = 30
         cx, cy = screen.get_size()
-        self.text = Text(1 * cx / 12, 1 * cx / 12, self.size_text, text,
-                         pygame.Color('black'))
-        self.button = Button(self.screen, 4 * cx / 12, 8 * cy / 12,
-                             3 * cx / 12, 3 * cy / 12, img='confirm')
+        self.texts = list()
+        if isinstance(texts, str):
+            self.texts.append(texts)
+        else:
+            self.texts = texts
+#        self.text = Text(1 * cx / 12, 1 * cx / 12, self.size_text, text,
+#                         pygame.Color('black'))
+        self.button = Button(self.screen, cx / 2 - 3 * cx / 12 /2 , 10 * cy / 12,
+                             3 * cx / 12, 1 * cy / 12, img='confirm')
         self.next_scene = next_scene
+        self.tables = list()
+        self.set_table()
+    
+    def set_text(self):
+           pass 
+
+    def set_table(self):
+        cx, cy = self.screen.get_size()
+        x = 1 * cx / 12
+        y = 1 * cy / 12
+        w = 11 * cx / 12
+        h = 8 * cy / 12
+        self.tables.clear()
+        l = list()
+        l.append(self.texts)
+        self.tables.append(Table(x, y, w, h, l))
+
+        
+
 
     def update(self):
         super().update()
@@ -540,9 +589,9 @@ class SceneModal(SceneTime):
 
     def draw(self):
         super().draw()
-        self.text.draw(self.screen)
+        for table in self.tables:
+            table.draw(self.screen)
         self.button.draw(self.screen)
-
     
     def do_press_button(self):
         if self.view.mouse.release('left') and \
@@ -807,17 +856,19 @@ class View:
     def do_work_time(self) -> None:
         if self.current_scene == 'log':
             self.current_scene = 'time'
-            self.scenes['time'].set_text()
+            self.scenes['time'].set_content()
 
     def do_unknown_badge(self, twice=False):
+        texts = list()
         if not twice:
-            text = "Le badge est inconnue. Veuille taper votre nom de famille."
+            texts.append("Le badge est inconnue.")
+            texts.append("Veuille taper votre nom de famille.")
         else:
-            text = "Veuille taper votre prénom."
+            texts.append("Veuille taper votre prénom.")
 
         #self.scenes['modal'] = SceneModal(self.screen, self, text, 'keyboard')
         # to corr
-        self.scenes = 'modal', SceneModal(self.screen, self, text, 'keyboard')
+        self.scenes = 'modal', SceneModal(self.screen, self, texts, 'keyboard')
         self.current_scene = 'modal'
 
     def cancel(self):
@@ -892,6 +943,7 @@ class Loader:
     paths['return'] = 'icons/arrow-left.bmp'
     paths['more'] = 'icons/three-dots.bmp'
     paths['confirm'] = 'icons/check.bmp'
+    paths['detail'] = 'icons/zoom-in.bmp'
     
 
     @classmethod
@@ -935,8 +987,8 @@ def test1():
     pipe['log'][1]['date'] = datetime.datetime(2022, 1, 19, 16, 30, 51)
     pipe['log'][0]['inside'] = True
     pipe['log'][1]['inside'] = False
-    pipe['time_last_week'] = datetime.timedelta(seconds=20212)
-    pipe['time_current_week'] = datetime.timedelta(seconds=307)
+    pipe['time_last_week'] = datetime.timedelta(seconds=144243)
+    pipe['time_current_week'] = datetime.timedelta(seconds=144243)
     pipe['day_current_week'] = ((datetime.date(2022, 4, 11), 
         datetime.timedelta(seconds=28871)), (datetime.date(2022, 4, 12), 
         datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 13),
