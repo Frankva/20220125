@@ -228,7 +228,11 @@ class Model:
 
     @classmethod
     def map_work_time(cls, day_logs):
-        return day_logs[0][0].date(), cls.calcul_work_time(day_logs)
+        try:
+            return day_logs[0][0].date(), cls.calcul_work_time(day_logs)
+        except IndexError:
+            return None
+
 
     def read_work_time_day(self, pipe:dict, last_week, current_week) -> None:
         '''
@@ -238,6 +242,8 @@ class Model:
         '''
         last_week = self.isolate_day(last_week)
         current_week = self.isolate_day(current_week)
+        pipe['last_week'], pipe['current_week'] = (list(last_week),
+            list(current_week))
         last_week = tuple(map(self.map_work_time, last_week))
         current_week = tuple(map(self.map_work_time, current_week))
         pipe['day_last_week'] = last_week

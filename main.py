@@ -39,6 +39,7 @@ class App:
         #self.do_next_scene()
         self.view.do_select_scene_dict(self.pipe)
         self.do_model_request()
+#        print(self.pipe)
         # check unknown
         self.check_unknown()
         self.wait_choice()
@@ -116,8 +117,8 @@ class App:
 
     def reset_pipe(self):
         self.pipe = dict()
-        self.pipe["id"] = None
-        self.pipe["date"] = None
+#        self.pipe["id"] = None
+#        self.pipe["date"] = None
         self.pipe["inside"] = None
         self.pipe["log"] = list()
         self.pipe["name"] = ''

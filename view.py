@@ -4,6 +4,7 @@ import pygame_vkeyboard as vkboard
 import sys
 import os
 import datetime
+from model import Model
 
 
 class Button:
@@ -201,6 +202,9 @@ class Scene:
 
 
 class SceneTime(Scene):
+    '''
+    'abstrat class', active timer that cancel the session
+    '''
     def __init__(self, screen, view) -> None:
         super().__init__(screen, view)
         self.entry_time = datetime.datetime.today()
@@ -398,6 +402,9 @@ class SceneLog(SceneTime):
             button.draw(self.screen)
 
 class SceneWorkTime(SceneTime):
+    '''
+    scene with a table/grid that show dates and times
+    '''
     def __init__(self, screen, view) -> None:
         super().__init__(screen, view)
         self.texts = list()
@@ -414,15 +421,29 @@ class SceneWorkTime(SceneTime):
             self.view.current_scene = 'log'
             # add reset timer
 
+
     def do_press_table_button(self) -> None:
-        if self.view.mouse.release('left') and\
-                self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
-            self.reset_entry_time()
-            # access parent instance
-            self.view.current_scene = 'log'
-            # add reset timer
-            for is_colide_button in self.tables[0].rect.collidepoint(pygame.mouse.get_pos()):
-                pass
+        if self.view.mouse.release('left'):
+            pressed_button = None
+            for table in self.tables:
+                pressed_button = table.get_press_button()                 
+            if pressed_button is not None:
+                self.reset_entry_time()
+                self.do_modal_scene(pressed_button.id)
+        
+    def do_modal_scene(self, id) -> None:
+        # text_list.append(str(type(View.pipe['day_current_week'][id][0])))
+        date = View.pipe['day_current_week'][id][0]
+        text_list = filter(lambda day: Model.is_same_day(date, day), View.pipe['current_week'])
+
+
+
+        self.view.scenes = 'modal', SceneModal(self.screen, self.view,
+            text_list, 'time')
+        self.view.current_scene = 'modal'
+    
+
+
 
 
     def set_content(self):
@@ -436,6 +457,8 @@ class SceneWorkTime(SceneTime):
         self.texts[2].append('Détail')
         if 'day_current_week' in View.pipe:
             for day in View.pipe['day_current_week']:
+                # day[0] is date
+                # day[1] is sum time
                 self.texts[0].append(str(day[0]))
                 self.texts[1].append(str(day[1]))
                 self.texts[2].append('detail')
@@ -478,6 +501,7 @@ class SceneWorkTime(SceneTime):
     def update(self):
         super().update()
         self.do_press_button()
+        self.do_press_table_button()
 
     def draw(self):
         super().draw()
@@ -490,6 +514,9 @@ class SceneWorkTime(SceneTime):
             button.draw(self.screen)
 
 class Table:
+    '''
+    table/grid with content text or id of img that give a button
+    '''
     def __init__(self, x, y , w, h, cols:list):
         print('Table.init', file=sys.stderr)
         self.size_text = 30
@@ -519,11 +546,11 @@ class Table:
     def set_content(self):
         cursor = pygame.Vector2(self.pos.x, self.pos.y)
         for col in self.cols:
-            for text in col:
+            for nb_line, text in enumerate(col):
                 if text in Loader.paths:
                     self.buttons.append(Button(None, cursor.x, cursor.y,
                         self.pixel_case.x * 8 / 12, self.pixel_case.y * 11 / 
-                        12, self.button_color, text)) 
+                        12, self.button_color, text, nb_line - 1)) 
                 else:
                     self.texts.append(Text(cursor.x, cursor.y,
                         self.size_text, text))
@@ -537,9 +564,12 @@ class Table:
         for text in self.texts:
             text.draw(screen)
 
-    def is_press_button(self):
+    def get_press_button(self):
+        '''
+        get the first press button of the current frame
+        '''
         for button in self.buttons:
-            if button.rect.collidepooint(pygame.mouse.get_pos()):
+            if button.rect.collidepoint(pygame.mouse.get_pos()):
                 return button
             
 
@@ -760,6 +790,7 @@ class View:
         self.scenes["keyboard"] = SceneKeyboard(self.screen, self)
 
     def __del__(self) -> None:
+        print(self.pipe)
         pygame.quit()
         sys.exit()
 
@@ -866,8 +897,9 @@ class View:
         else:
             texts.append("Veuille taper votre prénom.")
 
-        #self.scenes['modal'] = SceneModal(self.screen, self, text, 'keyboard')
+        # self.scenes['modal'] = SceneModal(self.screen, self, texts, 'keyboard')
         # to corr
+        # setter is use
         self.scenes = 'modal', SceneModal(self.screen, self, texts, 'keyboard')
         self.current_scene = 'modal'
 
