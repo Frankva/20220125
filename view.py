@@ -406,20 +406,36 @@ class SceneWorkTime(SceneTime):
     '''
     scene with a table/grid that show dates and times
     '''
-    def __init__(self, screen, view) -> None:
+    def __init__(self, screen, view, week_str='current_week') -> None:
         super().__init__(screen, view)
         self.texts = list()
         self.size_text = 30
         self.buttons = list()
         self.buttons.append(Button.return_button(screen))
+        if week_str == 'current_week':
+            cx, cy = screen.get_size()
+            self.buttons.append(Button(screen, 9 * cx / 12, 1 * cy / 12,
+                                    2 * cx / 12, 2 * cy / 12, img='next'))
         self.tables = list()
+        self.week_str = week_str
 
-    def do_press_button(self) -> None:
+    def do_press_return_button(self) -> None:
         if self.view.mouse.release('left') and\
                 self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
             self.reset_entry_time()
             # access parent instance
-            self.view.current_scene = 'log'
+            if self.week_str == 'current_week':
+                self.view.current_scene = 'log'
+            elif self.week_str == 'last_week':
+                self.view.current_scene = 'time'
+            # add reset timer
+
+    def do_press_next_button(self) -> None:
+        if (self.week_str == 'current_week' and self.view.mouse.release('left')
+            and self.buttons[1].rect.collidepoint(pygame.mouse.get_pos())):
+            self.reset_entry_time()
+            # access parent instance
+            self.view.do_work_time('last_time')
             # add reset timer
 
     def do_press_table_button(self) -> None:
@@ -433,14 +449,14 @@ class SceneWorkTime(SceneTime):
         
     def do_modal_scene(self, id) -> None:
         # text_list.append(str(type(View.pipe['day_current_week'][id][0])))
-        date = View.pipe['day_current_week'][id][0]
+        date = View.pipe[f'day_{self.week_str}'][id][0]
         print('SceneWorkTime.do_modal_scene', date)
         # day all logs of the day
         # day[0] is one log with datetime and bool
         # day[0][0] is one datetime of the log
 
         text_list = tuple(filter(lambda day: Model.is_same_day(date,
-            day[0][0]), View.pipe['current_week']))
+            day[0][0]), View.pipe[self.week_str]))
         def map_func(log):
             if bool(log[1]):
                 return f'{log[0]} entrée'
@@ -449,8 +465,13 @@ class SceneWorkTime(SceneTime):
 
         text_list = tuple(map(map_func, text_list[0]))
 
+        if self.week_str == 'current_week':
+            time = 'time'
+        else:
+            time = 'last_time'
+
         self.view.scenes = 'modal', SceneModal(self.screen, self.view,
-            text_list, 'time')
+            text_list, time)
         self.view.current_scene = 'modal'
     
     def set_content(self):
@@ -462,15 +483,15 @@ class SceneWorkTime(SceneTime):
         self.texts[1].append('Temps')
         self.texts.append(list())
         self.texts[2].append('Détail')
-        if 'day_current_week' in View.pipe:
-            for day in View.pipe['day_current_week']:
+        if f'day_{self.week_str}' in View.pipe:
+            for day in View.pipe[f'day_{self.week_str}']:
                 # day[0] is date
                 # day[1] is sum time
                 self.texts[0].append(str(day[0]))
                 self.texts[1].append(str(day[1]))
                 self.texts[2].append('detail')
             self.texts[0].append('Total : ')
-            self.texts[1].append(str(View.pipe['time_current_week']))
+            self.texts[1].append(str(View.pipe[f'time_{self.week_str}']))
             self.set_table()
         print(self.texts, file=sys.stderr)
     
@@ -485,7 +506,8 @@ class SceneWorkTime(SceneTime):
 
     def update(self):
         super().update()
-        self.do_press_button()
+        self.do_press_return_button()
+        self.do_press_next_button()
         self.do_press_table_button()
 
     def draw(self):
@@ -772,6 +794,8 @@ class View:
         self.scenes["select"] = SceneSelect(self.screen, self)
         self.scenes["log"] = SceneLog(self.screen, self)
         self.scenes["time"] = SceneWorkTime(self.screen, self)
+        self.scenes["last_time"] = SceneWorkTime(self.screen, self,
+            'last_week')
         self.scenes["keyboard"] = SceneKeyboard(self.screen, self)
 
     def __del__(self) -> None:
@@ -869,11 +893,13 @@ class View:
             self.current_scene = 'log'
             self.scenes['log'].set_text(log)
 
-    def do_work_time(self) -> None:
-        if self.current_scene == 'log':
-            self.current_scene = 'time'
-            self.scenes['time'].set_content()
+    def do_work_time(self, time='time') -> None:
+        if ((self.current_scene == 'log' and time == 'time') or
+            (self.current_scene == 'time' and time == 'last_time')):
 
+            self.current_scene = time
+            self.scenes[time].set_content()
+    
     def do_unknown_badge(self, twice=False):
         texts = list()
         if not twice:
@@ -961,6 +987,7 @@ class Loader:
     paths['more'] = 'icons/three-dots.bmp'
     paths['confirm'] = 'icons/check.bmp'
     paths['detail'] = 'icons/zoom-in.bmp'
+    paths['next'] = 'icons/arrow-right.bmp'
     
 
     @classmethod
@@ -1012,11 +1039,11 @@ def test1():
         datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 26),
         datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 25),
         datetime.timedelta(seconds=28843)))
-    pipe['day_last_week'] = ((datetime.date(2022, 4, 4), 
-        datetime.timedelta(seconds=28871)), (datetime.date(2022, 4, 5), 
-        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 6),
-        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 7),
-        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 8),
+    pipe['day_last_week'] = ((datetime.date(2022, 4, 22), 
+        datetime.timedelta(seconds=28871)), (datetime.date(2022, 4, 21), 
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 20),
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 19),
+        datetime.timedelta(seconds=28843)), (datetime.date(2022, 4, 18),
         datetime.timedelta(seconds=28843)))
     pipe['current_week'] = ([(datetime.datetime(2022, 4, 29, 16, 9, 34), 0),
         (datetime.datetime(2022, 4, 29, 15, 38, 54), 0),
@@ -1034,6 +1061,23 @@ def test1():
         (datetime.datetime(2022, 4, 25, 15, 38, 54), 0),
         (datetime.datetime(2022, 4, 25, 15, 38, 43), 1),
         (datetime.datetime(2022, 4, 25, 8, 8, 51), 1)])
+
+    pipe['last_week'] = ([(datetime.datetime(2022, 4, 22, 16, 9, 34), 0),
+        (datetime.datetime(2022, 4, 22, 15, 38, 54), 0),
+        (datetime.datetime(2022, 4, 22, 15, 38, 43), 1),
+        (datetime.datetime(2022, 4, 22, 8, 8, 51), 1)],
+        [(datetime.datetime(2022, 4, 21, 16, 9, 34), 0),
+        (datetime.datetime(2022, 4, 21, 15, 53, 23), 0),
+        (datetime.datetime(2022, 4, 21, 15, 53, 19), 1),
+        (datetime.datetime(2022, 4, 21, 8, 8, 51), 1)],
+        [(datetime.datetime(2022, 4, 20, 16, 9, 34), 0),
+        (datetime.datetime(2022, 4, 20, 8, 8, 51), 1)],
+        [(datetime.datetime(2022, 4, 19, 16, 9, 34), 0),
+        (datetime.datetime(2022, 4, 19, 8, 8, 51), 1)],
+        [(datetime.datetime(2022, 4, 18, 16, 9, 34), 0),
+        (datetime.datetime(2022, 4, 18, 15, 38, 54), 0),
+        (datetime.datetime(2022, 4, 18, 15, 38, 43), 1),
+        (datetime.datetime(2022, 4, 18, 8, 8, 51), 1)])
     view = View(pipe)
     view.load()
 
