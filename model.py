@@ -242,8 +242,7 @@ class Model:
         '''
         last_week = self.isolate_day(last_week)
         current_week = self.isolate_day(current_week)
-        pipe['last_week'], pipe['current_week'] = (list(last_week),
-            list(current_week))
+        pipe['last_week'], pipe['current_week'] = last_week, current_week
         last_week = tuple(map(self.map_work_time, last_week))
         current_week = tuple(map(self.map_work_time, current_week))
         pipe['day_last_week'] = last_week

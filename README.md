@@ -41,3 +41,8 @@ mariadb-server
 ## à corrigé
 - [x] scene with unknow badge
 - [ ] request log with unknow badge
+- [ ] somme heures plus 24 heures
+
+
+## bug
+- plus de 12 logs dans le détail d'un provoque un empilement des caratère
