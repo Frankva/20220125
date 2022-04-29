@@ -487,9 +487,12 @@ class SceneWorkTime(SceneTime):
             for day in View.pipe[f'day_{self.week_str}']:
                 # day[0] is date
                 # day[1] is sum time
-                self.texts[0].append(str(day[0]))
-                self.texts[1].append(str(day[1]))
-                self.texts[2].append('detail')
+                try:
+                    self.texts[0].append(str(day[0]))
+                    self.texts[1].append(str(day[1]))
+                    self.texts[2].append('detail')
+                except TypeError:
+                    pass
             self.texts[0].append('Total : ')
             self.texts[1].append(str(View.pipe[f'time_{self.week_str}']))
             self.set_table()
