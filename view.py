@@ -474,6 +474,13 @@ class SceneWorkTime(SceneTime):
             text_list, time)
         self.view.current_scene = 'modal'
     
+    @staticmethod
+    def format_timedelta(timedelta:datetime.timedelta):
+        hh, ss = divmod(timedelta.seconds, 3600)
+        mm, ss = divmod(ss, 60)
+        hh += timedelta.days*24
+        return f'{hh} h {mm} min'
+
     def set_content(self):
         print('SceneWorkTime.set_text', file=sys.stderr)
         self.texts.clear()
@@ -494,7 +501,7 @@ class SceneWorkTime(SceneTime):
                 except TypeError:
                     pass
             self.texts[0].append('Total : ')
-            self.texts[1].append(str(View.pipe[f'time_{self.week_str}']))
+            self.texts[1].append(self.format_timedelta(View.pipe[f'time_{self.week_str}']))
             self.set_table()
         print(self.texts, file=sys.stderr)
     

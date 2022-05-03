@@ -3,7 +3,7 @@ import mariadb
 import os
 
 
-import datetime  # to remove
+import datetime
 
 
 
