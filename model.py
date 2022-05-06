@@ -65,13 +65,8 @@ class Model:
         pipe['time_last_week'] = self.calcul_work_time(last_week)
         pipe['time_current_week'] = self.calcul_work_time(current_week)
         self.read_work_time_day(pipe, last_week, current_week)
-    
 
-
-
-
-
-    def select_one(self, select_name, table_name: str, where_name: str, 
+    def select_one(self, select_name:str, table_name: str, where_name: str, 
                    value: tuple):
         #sql = f"select id_user from badge where id_badge=483985410385;"
         sql = f"select {select_name} from {table_name} where {where_name}=?;"
@@ -105,6 +100,26 @@ class Model:
             } where {where_name}=? and date >=? order by {order} desc"""
         self.cursor.execute(sql, value)
         return self.cursor
+    
+    def insert_user(self, select_name:str, table_name:str, value:tuple):
+        sql = f'''INSERT INTO {table_name} ({self.format_tuple(select_name)
+        }) VALUES (NULL, ?, ?);'''
+        self.cursor.execute(sql, value)
+        self.connection.commit()
+    
+    def select_new_user(self, value):
+        sql = 'SELECT `id_user` FROM `user` WHERE name=? AND surname=? ORDER \
+            BY `id_user` DESC;'
+        self.cursor.execute(sql, value)
+        return self.cursor.next()[0]
+        
+
+    def insert_badge(self, select_name:str, table_name:str, value:tuple):
+        sql = f'''INSERT INTO {table_name} ({self.format_tuple(select_name)
+        }) VALUES (?, ?);'''
+        self.cursor.execute(sql, value)
+        self.connection.commit()
+
 
     @staticmethod
     def cursor_to_dict_in_list(select_name: tuple,
@@ -255,6 +270,20 @@ class Model:
         log2week = tuple(self.cursor_to_list(log2week))
         return self.isolate_week(log2week)
 
+    def invoke_new_user(self, pipe: dict):
+        model = Model()
+        select_name = ('id_user', 'name', 'surname')
+        table_name = 'user'
+        value = (pipe['name'], pipe['surname'])
+        model.insert_user(select_name, table_name, value)
+        id = model.select_new_user(value)
+        print(id)
+        select_name = ('id_badge', 'id_user')
+        table_name = 'badge'
+        value = (888888888888, id)
+        model.insert_badge(select_name, table_name, value)
+
+
 
 
 
@@ -356,10 +385,23 @@ def test8():
     model.read_work_time(d)
     print('test8', d)
 
+def test9():
+    model = Model()
+    select_name = ('id_user', 'name', 'surname')
+    table_name = 'user'
+    value = ('fakename', 'fakesurname')
+    model.insert_user(select_name, table_name, value)
+    id = model.select_new_user(value)
+    print(id)
+    select_name = ('id_badge', 'id_user')
+    table_name = 'badge'
+    value = (888888888888, id)
+    model.insert_badge(select_name, table_name, value)
+    
 
 
 
 
 
 if __name__ == '__main__':
-    test8()
+    test9()

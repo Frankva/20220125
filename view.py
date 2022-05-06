@@ -448,6 +448,9 @@ class SceneWorkTime(SceneTime):
                 self.do_modal_scene(pressed_button.id)
         
     def do_modal_scene(self, id) -> None:
+        '''
+        id is id of button on table
+        '''
         # text_list.append(str(type(View.pipe['day_current_week'][id][0])))
         date = View.pipe[f'day_{self.week_str}'][id][0]
         print('SceneWorkTime.do_modal_scene', date)
@@ -669,9 +672,11 @@ class SceneKeyboard(SceneTime):
             special_char_layout=self.layout_special(),
             show_text=True)
         self.twice = False 
+        self.input_text = ''
 
     def on_key_event(self, text):
         print('Current text:', text)
+        self.input_text = text
         self.reset_entry_time()
 
     def do_press_button(self):
@@ -685,9 +690,11 @@ class SceneKeyboard(SceneTime):
             if not self.twice:
                 self.twice = True
                 self.view.do_unknown_badge(True)
+                View.pipe['surname'] = self.input_text
             else:
                 View.current_scene = 'select'
                 self.twice = False
+                View.pipe['name'] = self.input_text
 
 
     def update(self):

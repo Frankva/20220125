@@ -28,6 +28,8 @@ class App:
         self.tableName = "log"
         self.theard_model_request = None
         self.theard_model_insert = None
+        self.theard_model_new_user = None
+        self.unknown_badge = False
 
     def load(self):
         self.theard_view.start()
@@ -43,6 +45,8 @@ class App:
         # check unknown
         self.check_unknown()
         self.wait_choice()
+        if self.check_create_account:
+            pass
         if self.cancel():
             return
         self.log.write(str(self.pipe))
@@ -52,6 +56,10 @@ class App:
                                 args=(self.tableName, self.filterInsert()))
         self.theard_model_insert.start()
         self.reset()
+
+    def check_create_account(self):
+        return self.pipe['name'] == 'inconnu'
+
 
     def cancel(self):
         if self.pipe['cancel']:
@@ -74,6 +82,15 @@ class App:
             target=self.model.read_name_log, args=(self.pipe, ))
         self.theard_model_request.start()
         self.theard_model_request.join()
+
+    def do_model_new_user(self):
+        print('do_model_new_user()')
+        self.safe_wait_thread(self.theard_model_new_user)
+        self.theard_model_new_user = threading.Thread(
+            target=self.model.read_name_log, args=(self.pipe, ))
+        self.theard_model_new_user.start()
+        self.theard_model_new_user.join()
+    
 
     def filterInsert(self):
         name = list()
@@ -147,6 +164,7 @@ class App:
         print(self.pipe)
         if self.pipe['name'] == '':
             self.pipe['name'], self.pipe['surname'] = 'inconnu', ''
+            self.unknown_badge = True
 
 
 

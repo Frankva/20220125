@@ -14,8 +14,8 @@ mariadb-server
 ```
 
 ## À rajouter ?
-- voir le nom attribué à l’id
-- sur l’écran d’attente voir les derniers pointages
+- [x] voir le nom attribué à l’id
+- [x] sur l’écran d’attente voir les derniers pointages
 - avoir une scène de confirmation récapitulatif
 - 
 
@@ -41,7 +41,7 @@ mariadb-server
 ## à corrigé
 - [x] scene with unknow badge
 - [ ] request log with unknow badge
-- [ ] somme heures plus 24 heures
+- [x] somme heures plus 24 heures
 
 
 ## bug
