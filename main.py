@@ -87,7 +87,7 @@ class App:
         print('do_model_new_user()')
         self.safe_wait_thread(self.theard_model_new_user)
         self.theard_model_new_user = threading.Thread(
-            target=self.model.read_name_log, args=(self.pipe, ))
+            target=self.model.invoke_new_user, args=(self.pipe, ))
         self.theard_model_new_user.start()
         self.theard_model_new_user.join()
     
