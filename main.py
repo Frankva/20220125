@@ -29,7 +29,7 @@ class App:
         self.theard_model_request = None
         self.theard_model_insert = None
         self.theard_model_new_user = None
-        self.unknown_badge = False
+        self.create_account = False
 
     def load(self):
         self.theard_view.start()
@@ -39,15 +39,23 @@ class App:
     def update(self):
         self.do_rfid()
         #self.do_next_scene()
-        self.view.do_select_scene_dict(self.pipe)
         self.do_model_request()
+        print('unknown', self.is_unknown())
+        if self.is_unknown():
+            self.create_account = True
+            self.view.do_unknown_badge_dict(self.pipe)
+        else:
+            self.view.do_select_scene_dict(self.pipe)
+
 #        print(self.pipe)
         # check unknown
-        self.check_unknown()
         self.wait_choice()
-        if self.check_create_account:
-            pass
-        if self.cancel():
+        if self.create_account:
+            self.do_model_new_user()
+            self.reset()
+            return
+        if self.is_cancel():
+            self.reset()
             return
         self.log.write(str(self.pipe))
         #self.model.insert(self.tableName, self.create_dict_model())
@@ -55,20 +63,19 @@ class App:
         self.theard_model_insert = threading.Thread(target=self.model.insert,
                                 args=(self.tableName, self.filterInsert()))
         self.theard_model_insert.start()
+        self.theard_model_insert.join()
         self.reset()
 
-    def check_create_account(self):
-        return self.pipe['name'] == 'inconnu'
 
 
-    def cancel(self):
-        if self.pipe['cancel']:
-            self.reset_pipe()
-            return True
-        else:
-            return False
+    def is_cancel(self):
+        return self.pipe['cancel']
 
     def do_rfid(self):
+        '''
+        scanne rfid, put id in pipe
+        with a thread
+        '''
         print('do_rfid()')
         self.theard_rfid = threading.Thread(target=self.rfid.read_pipe,
                                             args=(self.pipe, ))
@@ -76,12 +83,17 @@ class App:
         self.theard_rfid.join()
 
     def do_model_request(self):
+        '''
+        read user data from database
+        with a thread
+        '''
         print('do_model_request()')
         self.safe_wait_thread(self.theard_model_request)
         self.theard_model_request = threading.Thread(
             target=self.model.read_name_log, args=(self.pipe, ))
         self.theard_model_request.start()
         self.theard_model_request.join()
+        print('end do_model_request', self.pipe)
 
     def do_model_new_user(self):
         print('do_model_new_user()')
@@ -107,7 +119,7 @@ class App:
             pass
 
     def wait_choice(self):
-        while (self.pipe["inside"] == None) and (not self.pipe['cancel']):
+        while (self.pipe["inside"] == None) and (not self.is_cancel()):
             print("wait_choice")
             sleep(1)
 
@@ -145,8 +157,11 @@ class App:
 
     def reset(self):
         print('reset()')
+        self.create_account = False
         self.reset_pipe()
-        self.view.do_select_scene()
+        self.model.disconnect()
+        self.model.connect()
+        self.view.do_wait_scene()
 
     def __del__(self):
         self.log.close()
@@ -160,11 +175,9 @@ class App:
 #        #self.pipe['id_badge'] = 483985410385
 #        self.pipe['id_badge'] = 183985410385
 #
-    def check_unknown(self):
-        print(self.pipe)
-        if self.pipe['name'] == '':
-            self.pipe['name'], self.pipe['surname'] = 'inconnu', ''
-            self.unknown_badge = True
+    def is_unknown(self):
+        print('name', self.pipe['name'])
+        return self.pipe['name'] == ''
 
 
 

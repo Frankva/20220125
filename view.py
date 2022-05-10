@@ -647,7 +647,10 @@ class SceneModal(SceneTime):
         if self.view.mouse.release('left') and \
                 self.button.rect.collidepoint(pygame.mouse.get_pos()):
             self.reset_entry_time()
-            self.view.current_scene = self.next_scene
+            if self.next_scene == 'cancel':
+                self.view.cancel()
+            else:
+                self.view.current_scene = self.next_scene
 
 
 class SceneKeyboard(SceneTime):
@@ -667,12 +670,16 @@ class SceneKeyboard(SceneTime):
         self.buttons.append(
             Button(self.screen, 10 * cx / 12, 0.2 * cy / 12, 1 * cx / 12,
                    1 * cy / 12, img='confirm'))
+        self.load_keyboard()
+        self.count = 0 
+        self.input_text = ''
+    
+    def load_keyboard(self):
         self.keyboard = vkboard.VKeyboard(self.screen, self.on_key_event,
             self.layout, renderer=vkboard.VKeyboardRenderer.DARK, 
             special_char_layout=self.layout_special(),
             show_text=True)
-        self.twice = False 
-        self.input_text = ''
+
 
     def on_key_event(self, text):
         print('Current text:', text)
@@ -687,14 +694,16 @@ class SceneKeyboard(SceneTime):
         if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and\
                 self.view.mouse.release('left'):
             # access parent instance
-            if not self.twice:
-                self.twice = True
-                self.view.do_unknown_badge(True)
-                View.pipe['surname'] = self.input_text
-            else:
-                View.current_scene = 'select'
-                self.twice = False
-                View.pipe['name'] = self.input_text
+            if  self.count == 0:
+                self.count += 1
+                self.view.do_unknown_badge(self.count)
+                View.pipe['surname'] = self.keyboard.get_text()
+                self.keyboard.set_text('')     
+            elif self.count == 1:
+                self.count += 1
+                self.view.do_unknown_badge(self.count)
+                View.pipe['name'] = self.keyboard.get_text()
+                self.keyboard.set_text('')     
 
 
     def update(self):
@@ -896,14 +905,16 @@ class View:
             self.current_scene = "select"
         else:
             self.current_scene = "wait"
+    def do_wait_scene(self):
+        self.current_scene = 'wait'
 
     def do_select_scene_dict(self, pipe: dict):
         '''
         change the current scene and change the reference of View.pipe
         '''
         print("do_next_scene_dict", file=sys.stderr)
-        self.do_select_scene()
         View.pipe = pipe
+        self.do_select_scene()
 
     def do_log_scene(self, log) -> None:
         if self.current_scene == 'select':
@@ -916,19 +927,30 @@ class View:
 
             self.current_scene = time
             self.scenes[time].set_content()
-    
-    def do_unknown_badge(self, twice=False):
+
+    def do_unknown_badge_dict(self, pipe: dict):
+        View.pipe = pipe
+        self.do_unknown_badge()
+        
+
+    def do_unknown_badge(self, count=0):
         texts = list()
-        if not twice:
+        if count == 0:
             texts.append("Le badge est inconnue.")
             texts.append("Veuille taper votre nom de famille.")
-        else:
+            next_scene = 'keyboard'
+        elif count == 1:
             texts.append("Veuille taper votre prénom.")
+            next_scene = 'keyboard'
+        else:
+            texts.append('Veuillez rescanner votre badge après validation')
+            texts.append('de ce message')
+            next_scene = 'cancel'
 
         # self.scenes['modal'] = SceneModal(self.screen, self, texts, 'keyboard')
         # to corr
         # setter is use
-        self.scenes = 'modal', SceneModal(self.screen, self, texts, 'keyboard')
+        self.scenes = 'modal', SceneModal(self.screen, self, texts, next_scene)
         self.current_scene = 'modal'
 
     def cancel(self):

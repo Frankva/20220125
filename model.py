@@ -21,12 +21,21 @@ class Model:
             self.conn_params["password"] = ""
             self.conn_params["host"] = "localhost"
             self.conn_params["database"] = "timbreuse2022"
-        self.connection = mariadb.connect(**self.conn_params)
-        self.cursor = self.connection.cursor()
+        self.connect()
 
     # def createLog(self, ):
     #    self.cursor.execute(f"insert into log(id, datetime) values(1, '{now}');")
     #    self.connection.commit()
+    def connect(self):
+        self.connection = mariadb.connect(**self.conn_params)
+        self.cursor = self.connection.cursor()
+        print('connect')
+    
+    def disconnect(self):
+        self.connection.commit()
+        self.connection.close()
+        print('disconnect')
+        
 
     def insert_old(self, table, dict) -> None:
         '''
@@ -280,7 +289,7 @@ class Model:
         print(id)
         select_name = ('id_badge', 'id_user')
         table_name = 'badge'
-        value = (888888888888, id)
+        value = (pipe['id_badge'], id)
         model.insert_badge(select_name, table_name, value)
 
 
@@ -397,6 +406,15 @@ def test9():
     table_name = 'badge'
     value = (888888888888, id)
     model.insert_badge(select_name, table_name, value)
+
+def test10():
+    d = dict()
+    d['name'] = 'test'
+    d['surname'] = 'man'
+    d['id_badge'] = 483985410415
+    model = Model()
+    model.invoke_new_user(d)
+
     
 
 
@@ -404,4 +422,4 @@ def test9():
 
 
 if __name__ == '__main__':
-    test9()
+    test10()
