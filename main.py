@@ -43,6 +43,7 @@ class App:
         print('unknown', self.is_unknown())
         if self.is_unknown():
             self.create_account = True
+            self.pipe['cancel'] = False
             self.view.do_unknown_badge_dict(self.pipe)
         else:
             self.view.do_select_scene_dict(self.pipe)
@@ -50,11 +51,11 @@ class App:
 #        print(self.pipe)
         # check unknown
         self.wait_choice()
-        if self.create_account:
-            self.do_model_new_user()
+        if self.is_cancel():
             self.reset()
             return
-        if self.is_cancel():
+        if self.create_account:
+            self.do_model_new_user()
             self.reset()
             return
         self.log.write(str(self.pipe))

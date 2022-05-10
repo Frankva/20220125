@@ -647,8 +647,8 @@ class SceneModal(SceneTime):
         if self.view.mouse.release('left') and \
                 self.button.rect.collidepoint(pygame.mouse.get_pos()):
             self.reset_entry_time()
-            if self.next_scene == 'cancel':
-                self.view.cancel()
+            if self.next_scene == 'end_new_user':
+                self.view.end_new_user()
             else:
                 self.view.current_scene = self.next_scene
 
@@ -690,6 +690,7 @@ class SceneKeyboard(SceneTime):
         if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
                 self.view.mouse.release('left'):
             # access parent instance
+            self.count = 0
             self.view.cancel()
         if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and\
                 self.view.mouse.release('left'):
@@ -930,6 +931,7 @@ class View:
 
     def do_unknown_badge_dict(self, pipe: dict):
         View.pipe = pipe
+        self.scenes['keyboard'].count = 0
         self.do_unknown_badge()
         
 
@@ -945,7 +947,7 @@ class View:
         else:
             texts.append('Veuillez rescanner votre badge après validation')
             texts.append('de ce message')
-            next_scene = 'cancel'
+            next_scene = 'new_user_valid'
 
         # self.scenes['modal'] = SceneModal(self.screen, self, texts, 'keyboard')
         # to corr
@@ -960,6 +962,14 @@ class View:
         self.current_scene = 'wait'
         self.load_scene()
         View.pipe['cancel'] = True
+
+    def end_new_user(self):
+        '''
+        when time expire or press quit button
+        '''
+        self.current_scene = 'wait'
+        self.load_scene()
+        View.pipe['new_user_valid'] = True
 
 
 class Text:
