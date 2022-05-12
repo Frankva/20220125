@@ -17,7 +17,7 @@ class App:
     def __init__(self):
         self.view = view.View()
         self.theard_view = threading.Thread(target=self.view.load)
-        self.log = open("main_log.txt", "a")
+        #self.log = open("main_log.txt", "a")
 
         self.rfid = rfid.Rfid()
 
@@ -25,7 +25,7 @@ class App:
         self.pipe['cancel'] = False
         self.reset_pipe()
         self.model = model.Model()
-        self.tableName = "log"
+        #self.tableName = "log"
         self.theard_model_request = None
         self.theard_model_insert = None
         self.theard_model_new_user = None
@@ -163,7 +163,8 @@ class App:
         self.view.do_wait_scene()
 
     def __del__(self):
-        self.log.close()
+        pass
+        #self.log.close()
 
 #    def fake_rfid(self):
 #        '''
