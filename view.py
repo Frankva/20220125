@@ -647,7 +647,7 @@ class SceneModal(SceneTime):
         if self.view.mouse.release('left') and \
                 self.button.rect.collidepoint(pygame.mouse.get_pos()):
             self.reset_entry_time()
-            if self.next_scene == 'end_new_user':
+            if self.next_scene == 'new_user_valid':
                 self.view.end_new_user()
             else:
                 self.view.current_scene = self.next_scene

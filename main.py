@@ -29,7 +29,6 @@ class App:
         self.theard_model_request = None
         self.theard_model_insert = None
         self.theard_model_new_user = None
-        self.create_account = False
 
     def load(self):
         self.theard_view.start()
@@ -42,8 +41,6 @@ class App:
         self.do_model_request()
         print('unknown', self.is_unknown())
         if self.is_unknown():
-            self.create_account = True
-            self.pipe['cancel'] = False
             self.view.do_unknown_badge_dict(self.pipe)
         else:
             self.view.do_select_scene_dict(self.pipe)
@@ -54,7 +51,7 @@ class App:
         if self.is_cancel():
             self.reset()
             return
-        if self.create_account:
+        if self.pipe['new_user_valid']:
             self.do_model_new_user()
             self.reset()
             return
@@ -120,7 +117,8 @@ class App:
             pass
 
     def wait_choice(self):
-        while (self.pipe["inside"] == None) and (not self.is_cancel()):
+        while (self.pipe["inside"] == None) and (not self.is_cancel()) and \
+                (not self.pipe['new_user_valid']):
             print("wait_choice")
             sleep(1)
 
@@ -155,10 +153,10 @@ class App:
         self.pipe["surname"] = ''
         self.pipe['id_badge'] = None
         self.pipe['cancel'] = False
+        self.pipe['new_user_valid'] = False
 
     def reset(self):
         print('reset()')
-        self.create_account = False
         self.reset_pipe()
         self.model.disconnect()
         self.model.connect()

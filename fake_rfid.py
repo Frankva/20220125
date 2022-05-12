@@ -10,5 +10,5 @@ class Rfid:
         '''
         sleep(3)
         #pipe['id_badge'] = 483985410385
-        pipe['id_badge'] = 483985410395
+        pipe['id_badge'] = 483985410396
         #self.pipe['id_badge'] = 183985410385
