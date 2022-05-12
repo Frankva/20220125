@@ -13,36 +13,39 @@ mariadb-server
 
 ```
 
-## À rajouter ?
+## À ajouter ?
 - [x] voir le nom attribué à l’id
 - [x] sur l’écran d’attente voir les derniers pointages
 - avoir une scène de confirmation récapitulatif
-- 
-
-
-## sécurité
-- stockage temporaire des noms
-- hacher (sha2) les ids des badges
-- chiffrement de la connexion avec la base de données
-- 
-
-## à ajouté
-- [x] 5 dernières décroisant
-- [x] nom, prénom
-- [x] temps limite
 - couleur de orif 
     - #005BA9 bannière, titre
     - #DBCEB1 fond
     - #AE9B70 text
     - #FFFFFF
     https://coolors.co/005ba9-dd1c1a-dbceb1-386641-3c362a
+- wait screen avec rebond du text avec les bords
+- [x] 5 dernières décroisant
+- [x] nom, prénom
+- [x] temps limite
+- horaire d'allumage du Raspberry Pi
+- écran de confirmation du nom d'utilisateur entrer lors de la création
 
+
+
+## sécurité
+- stockage temporaire des noms
+- hacher (sha2) les ids des badges
+- chiffrement de la connexion avec la base de données
 
 ## à corrigé
 - [x] scene with unknow badge
-- [ ] request log with unknow badge
+- [x] request log with unknow badge
 - [x] somme heures plus 24 heures
+- [ ] désactiver la mise en veille de l'écran
+- [ ] les câble ?
 
 
 ## bug
 - plus de 12 logs dans le détail d'un provoque un empilement des caratère
+- Utilisateur peut mettre un nom vide
+- Utilisateur peut mettre un nom à double
