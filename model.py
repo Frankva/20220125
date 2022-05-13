@@ -23,6 +23,10 @@ class Model:
             self.conn_params["database"] = "timbreuse2022"
         self.connect()
 
+    def create_structure(self):
+        with open('sql/timbreuse20220513.sql') as sql:
+            self.cursor.execute(sql)
+
     # def createLog(self, ):
     #    self.cursor.execute(f"insert into log(id, datetime) values(1, '{now}');")
     #    self.connection.commit()
@@ -415,11 +419,32 @@ def test10():
     model = Model()
     model.invoke_new_user(d)
 
+def test11():
+    conn_params = dict()
+    conn_params["user"] = "root"
+    conn_params["password"] = ""
+    conn_params["host"] = "localhost"
+#    conn_params["database"] = "timbreuse2022"
+    connection = mariadb.connect(**conn_params)
+    cursor = connection.cursor()
+    with open('sql/createDB.sql') as sql:
+        for line in sql.readlines():
+            cursor.execute(line)
+
+def test12():
+    conn_params = dict()
+    conn_params["user"] = "root"
+    conn_params["password"] = ""
+    conn_params["host"] = "localhost"
+    conn_params["database"] = "aaatimbreuse2022"
+    try:
+        connection = mariadb.connect(**conn_params)
+    except mariadb.ProgrammingError as E:
+        print(E)
     
 
 
 
 
-
 if __name__ == '__main__':
-    test10()
+    test12()

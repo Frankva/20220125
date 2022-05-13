@@ -1,7 +1,5 @@
-
 import threading
 import view
-from time import sleep
 try:
     import rfid
 except:

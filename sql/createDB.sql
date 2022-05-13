@@ -1,0 +1,12 @@
+CREATE DATABASE `timbreuse2022`;
+USE `timbreuse2022`;
+CREATE TABLE `badge` ( `id_badge` bigint(20) NOT NULL, `id_user` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+CREATE TABLE `log` ( `date` datetime NOT NULL, `id_badge` bigint(20) NOT NULL, `inside` tinyint(1) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+CREATE TABLE `user` ( `id_user` int(11) NOT NULL, `name` text COLLATE utf8_unicode_ci NOT NULL, `surname` text COLLATE utf8_unicode_ci NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+ALTER TABLE `badge` ADD PRIMARY KEY (`id_badge`), ADD UNIQUE KEY `id_user` (`id_user`);
+ALTER TABLE `log` ADD PRIMARY KEY (`date`), ADD KEY `id_badge` (`id_badge`);
+ALTER TABLE `user` ADD PRIMARY KEY (`id_user`);
+ALTER TABLE `user` MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
+ALTER TABLE `badge` ADD CONSTRAINT `badge_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`);
+ALTER TABLE `log` ADD CONSTRAINT `log_ibfk_1` FOREIGN KEY (`id_badge`) REFERENCES `badge` (`id_badge`);
+COMMIT;
