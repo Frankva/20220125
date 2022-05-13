@@ -25,7 +25,7 @@ class App:
         self.pipe['cancel'] = False
         self.reset_pipe()
         self.model = model.Model()
-        #self.tableName = "log"
+        self.tableName = "log"
         self.theard_model_request = None
         self.theard_model_insert = None
         self.theard_model_new_user = None
@@ -55,7 +55,7 @@ class App:
             self.do_model_new_user()
             self.reset()
             return
-        self.log.write(str(self.pipe))
+        #self.log.write(str(self.pipe))
         #self.model.insert(self.tableName, self.create_dict_model())
         self.safe_wait_thread(self.theard_model_insert)
         self.theard_model_insert = threading.Thread(target=self.model.insert,
