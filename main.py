@@ -122,6 +122,8 @@ class App:
         while (self.pipe["inside"] == None) and \
                 (not self.is_cancel()) and (not self.pipe['new_user_valid']):
             wait_thread.wait()
+            print('choice done')
+            wait_thread.release()
 
     def do_next_scene(self):
         '''

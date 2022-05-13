@@ -942,7 +942,7 @@ class View:
     def do_unknown_badge(self, count=0):
         texts = list()
         if count == 0:
-            texts.append("Le badge est inconnue.")
+            texts.append("Le badge est inconnu.")
             texts.append("Veuille taper votre nom de famille.")
             next_scene = 'keyboard'
         elif count == 1:
@@ -966,17 +966,21 @@ class View:
         self.current_scene = 'wait'
         self.load_scene()
         View.pipe['cancel'] = True
+        View.pipe['th_condition'].acquire()
         View.pipe['th_condition'].notify_all()
+        View.pipe['th_condition'].release()
 
 
     def end_new_user(self):
         '''
-        when time expire or press quit button
+        reset for end of new user
         '''
         self.current_scene = 'wait'
         self.load_scene()
         View.pipe['new_user_valid'] = True
+        View.pipe['th_condition'].acquire()
         View.pipe['th_condition'].notify_all()
+        View.pipe['th_condition'].release()
 
 
 class Text:
