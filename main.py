@@ -25,7 +25,7 @@ class App:
         self.pipe['cancel'] = False
         self.reset_pipe()
         self.model = model.Model()
-        #self.tableName = "log"
+        self.tableName = "log"
         self.theard_model_request = None
         self.theard_model_insert = None
         self.theard_model_new_user = None
