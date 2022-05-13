@@ -55,7 +55,7 @@ class App:
             self.do_model_new_user()
             self.reset()
             return
-        self.log.write(str(self.pipe))
+        #self.log.write(str(self.pipe))
         #self.model.insert(self.tableName, self.create_dict_model())
         self.safe_wait_thread(self.theard_model_insert)
         self.theard_model_insert = threading.Thread(target=self.model.insert,
@@ -117,10 +117,11 @@ class App:
             pass
 
     def wait_choice(self):
-        while (self.pipe["inside"] == None) and (not self.is_cancel()) and \
-                (not self.pipe['new_user_valid']):
-            print("wait_choice")
-            sleep(1)
+        wait_thread = self.pipe['th_condition']
+        wait_thread.acquire()
+        while (self.pipe["inside"] == None) and \
+                (not self.is_cancel()) and (not self.pipe['new_user_valid']):
+            wait_thread.wait()
 
     def do_next_scene(self):
         '''
@@ -154,6 +155,7 @@ class App:
         self.pipe['id_badge'] = None
         self.pipe['cancel'] = False
         self.pipe['new_user_valid'] = False
+        self.pipe['th_condition'] = threading.Condition()
 
     def reset(self):
         print('reset()')

@@ -5,6 +5,7 @@ import sys
 import os
 import datetime
 from model import Model
+import threading
 
 
 class Button:
@@ -308,6 +309,9 @@ class SceneSelect(SceneTime):
         get the choice in a dict in args
         '''
         dict["inside"], dict["date"] = cls.take_choice(choice)
+        View.pipe['th_condition'].acquire()
+        View.pipe['th_condition'].notify_all()
+        View.pipe['th_condition'].release()
 
 
 class SceneWait(Scene):
@@ -962,6 +966,8 @@ class View:
         self.current_scene = 'wait'
         self.load_scene()
         View.pipe['cancel'] = True
+        View.pipe['th_condition'].notify_all()
+
 
     def end_new_user(self):
         '''
@@ -970,6 +976,7 @@ class View:
         self.current_scene = 'wait'
         self.load_scene()
         View.pipe['new_user_valid'] = True
+        View.pipe['th_condition'].notify_all()
 
 
 class Text:
