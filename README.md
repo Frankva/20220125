@@ -44,6 +44,7 @@ mariadb-server
 - [ ] désactiver la mise en veille de l'écran
 - [ ] les câbles ?
 - [ ] requête log quand le bouton est appuyé
+- [ ] ferme proprement le script quand la view est fermé
 
 
 ## bug

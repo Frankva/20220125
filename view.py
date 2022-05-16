@@ -614,8 +614,8 @@ class SceneModal(SceneTime):
             self.texts = texts
 #        self.text = Text(1 * cx / 12, 1 * cx / 12, self.size_text, text,
 #                         pygame.Color('black'))
-        self.button = Button(self.screen, cx / 2 - 3 * cx / 12 /2 , 10 * cy / 12,
-                             3 * cx / 12, 1 * cy / 12, img='confirm')
+        self.button = Button(self.screen, cx / 2 - 3 * cx / 12 /2 , 
+            10 * cy / 12, 3 * cx / 12, 1 * cy / 12, img='confirm')
         self.next_scene = next_scene
         self.tables = list()
         self.set_table()
@@ -656,6 +656,38 @@ class SceneModal(SceneTime):
             else:
                 self.view.current_scene = self.next_scene
 
+class SceneModalCancelButton(SceneModal):
+    def __init__(self, screen, view, texts: list, next_scene: str):
+        super().__init__(screen, view, texts, next_scene)
+        self.buttons = list()
+        self.buttons.append(self.button)
+        cx, cy = screen.get_size()
+        self.buttons.append(Button(self.screen, cx/12 - 1 * cx / 12 / 2,
+            10 * cy / 12, 1 * cx / 12, 1 * cy / 12, img='cancel'))
+
+    def do_press_button(self):
+        # valid button
+        if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
+                    self.view.mouse.release('left'):
+            self.reset_entry_time()
+            if self.next_scene == 'new_user_valid':
+                self.view.end_new_user()
+            else:
+                self.view.current_scene = self.next_scene
+        # cancel button
+        if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and\
+                    self.view.mouse.release('left'):
+            self.reset_entry_time()
+            self.view.cancel()
+
+    def draw(self):
+        for table in self.tables:
+            table.draw(self.screen)
+        for button in self.buttons:
+            button.draw(self.screen)
+
+
+
 
 class SceneKeyboard(SceneTime):
     '''
@@ -693,12 +725,10 @@ class SceneKeyboard(SceneTime):
     def do_press_button(self):
         if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
                 self.view.mouse.release('left'):
-            # access parent instance
             self.count = 0
             self.view.cancel()
         if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and\
                 self.view.mouse.release('left'):
-            # access parent instance
             if  self.count == 0:
                 self.count += 1
                 self.view.do_unknown_badge(self.count)
@@ -816,8 +846,10 @@ class View:
             for event in self.events:
                 if event.type == pygame.QUIT:
                     self.running = False
+                    
             self.update()
             self.draw()
+        self.__del__()
         pygame.quit()
 
     def load_scene(self) -> None:
@@ -831,6 +863,10 @@ class View:
 
     def __del__(self) -> None:
         print('View.del, self pipe', self.pipe)
+        self.pipe['th_condition'].acquire()
+        self.pipe['quit'] = True
+        self.pipe['th_condition'].notify_all()
+        self.pipe['th_condition'].release()
         pygame.quit()
         sys.exit()
 
@@ -937,6 +973,10 @@ class View:
         View.pipe = pipe
         self.scenes['keyboard'].count = 0
         self.do_unknown_badge()
+
+    @classmethod
+    def read_pipe(cls, pipe: dict):
+        View.pipe = pipe
         
 
     def do_unknown_badge(self, count=0):
@@ -953,10 +993,12 @@ class View:
             texts.append('de ce message')
             next_scene = 'new_user_valid'
 
-        # self.scenes['modal'] = SceneModal(self.screen, self, texts, 'keyboard')
-        # to corr
         # setter is use
-        self.scenes = 'modal', SceneModal(self.screen, self, texts, next_scene)
+        if count == 0:
+            self.scenes = 'modal', SceneModalCancelButton(self.screen, self,
+                    texts, next_scene)
+        else:
+            self.scenes = 'modal', SceneModal(self.screen, self, texts, next_scene)
         self.current_scene = 'modal'
 
     def cancel(self):

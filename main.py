@@ -27,9 +27,13 @@ class App:
         self.theard_model_request = None
         self.theard_model_insert = None
         self.theard_model_new_user = None
+        self.theard_wait_quit = threading.Thread(target=self.wait_quit,
+                args=(self.pipe, ))
 
     def load(self):
         self.theard_view.start()
+        self.theard_wait_quit.start()
+        self.view.read_pipe(self.pipe)
         while True:
             self.update()
 
@@ -46,6 +50,8 @@ class App:
 #        print(self.pipe)
         # check unknown
         self.wait_choice()
+        if self.pipe['quit']:
+            quit()
         if self.is_cancel():
             self.reset()
             return
@@ -62,6 +68,14 @@ class App:
         self.theard_model_insert.join()
         self.reset()
 
+    @staticmethod
+    def wait_quit(pipe):
+        wait_thread = pipe['th_condition']
+        wait_thread.acquire()
+        while not pipe['quit']:
+            wait_thread.wait()
+        wait_thread.release()
+        exit()
 
 
     def is_cancel(self):
@@ -117,8 +131,8 @@ class App:
     def wait_choice(self):
         wait_thread = self.pipe['th_condition']
         wait_thread.acquire()
-        while (self.pipe["inside"] == None) and \
-                (not self.is_cancel()) and (not self.pipe['new_user_valid']):
+        while ((self.pipe["inside"] == None) and (not self.is_cancel()) and
+                (not self.pipe['new_user_valid']) and (not self.pipe['quit'])):
             wait_thread.wait()
             print('choice done')
             wait_thread.release()
@@ -156,6 +170,7 @@ class App:
         self.pipe['cancel'] = False
         self.pipe['new_user_valid'] = False
         self.pipe['th_condition'] = threading.Condition()
+        self.pipe['quit'] = False
 
     def reset(self):
         print('reset()')
