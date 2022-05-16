@@ -42,10 +42,11 @@ mariadb-server
 - [x] request log with unknow badge
 - [x] somme heures plus 24 heures
 - [ ] désactiver la mise en veille de l'écran
-- [ ] les câble ?
+- [ ] les câbles ?
+- [ ] requête log quand le bouton est appuyé
 
 
 ## bug
-- plus de 12 logs dans le détail d'un provoque un empilement des caratère
+- plus de 12 logs dans le détail d'un provoque un empilement des caractère
 - Utilisateur peut mettre un nom vide
 - Utilisateur peut mettre un nom à double

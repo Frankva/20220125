@@ -21,11 +21,22 @@ class Model:
             self.conn_params["password"] = ""
             self.conn_params["host"] = "localhost"
             self.conn_params["database"] = "timbreuse2022"
-        self.connect()
+        try:
+            self.connect()
+        except mariadb.ProgrammingError as E:
+            if E.errno == 1049: # Unknown database
+                self.create_structure()
+                self.connect()
 
     def create_structure(self):
-        with open('sql/timbreuse20220513.sql') as sql:
-            self.cursor.execute(sql)
+        database = self.conn_params['database']
+        del self.conn_params['database']
+        self.connection = mariadb.connect(**self.conn_params)
+        self.cursor = self.connection.cursor()
+        with open('sql/createDB.sql') as sql:
+            for line in sql.readlines():
+                self.cursor.execute(line)
+        self.conn_params['database'] = database
 
     # def createLog(self, ):
     #    self.cursor.execute(f"insert into log(id, datetime) values(1, '{now}');")
@@ -440,11 +451,15 @@ def test12():
     try:
         connection = mariadb.connect(**conn_params)
     except mariadb.ProgrammingError as E:
-        print(E)
-    
+        if E.errno == 1049: # Unknown database
+            print('a')
+
+def test13():    
+    model = Model()
+
 
 
 
 
 if __name__ == '__main__':
-    test12()
+    test13()
