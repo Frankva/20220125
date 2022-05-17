@@ -1,32 +1,19 @@
 from itertools import product
+import abc
 import pygame
 import pygame_vkeyboard as vkboard
 import sys
 import os
 import datetime
 from model import Model
-import threading
-import _thread
 
 
 class Button:
     '''
     button show with rect and unique color
+    Keyword arguments:
+    id -- is use for Table
     '''
-
-#    def __init__(self, screen: pygame.surfarray) -> None:
-#        if View.debug:
-#            print("Button.init", file=sys.stderr)
-#        self.screen = screen
-#        x, y = self.screen.get_size()
-#        self.x = 7 * (x / 12)
-#        self.y = 4 * (y / 12)
-#        self.w = 4 * (x / 12)
-#        self.h = 7 * (y / 12)
-#
-#        self.color = pygame.Color("#005BA9") # blue
-#        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
-#
     def __init__(self, screen: pygame.Surface, x, y, w, h,
                  color=pygame.Color("#6c767e"), img: str = 'cancel', id=-1) -> None:
         print("Button.init", file=sys.stderr)
@@ -41,8 +28,6 @@ class Button:
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
         self.img = Loader.load_icon(img, pygame.Color('#f8f9fa'))
         
-
-
     @staticmethod
     def inside_button(screen):
 
@@ -94,7 +79,7 @@ class Button:
         return Button(screen, x, y, w, h, color, img)
 
     @staticmethod
-    def return_button(screen):
+    def return_button(screen) -> 'Button':
 
         cx, cy = screen.get_size()
         x = 1 * (cx / 12)
@@ -106,27 +91,6 @@ class Button:
         color = pygame.Color('#6c767e')  # off white 
         return Button(screen, x, y, w, h, color, img)
 
-#    def set_red_pos(self) -> None:
-#        '''
-#        obselete
-#        preset for a red button
-#        '''
-#        if View.debug:
-#            print("Button.set_red_pos", file=sys.stderr)
-#        x, y = self.screen.get_size()
-#        self.color = pygame.Color("#DD1C1A") # red
-#        self.x = 1 * x / 12
-#        self.y = 4 * y / 12
-#        self.w = 4 * (x / 12)
-#        self.h = 7 * (y / 12)
-#        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
-#
-
- #   @classmethod
- #   def setting_button(cls):
- #
- #       return cls.__init__()
- #
     def draw(self, screen) -> None:
         pygame.draw.rect(screen, self.color, self.rect, 0, 10)
         self.draw_img_center(screen)
@@ -136,6 +100,9 @@ class Button:
                                self.y + self.h/2 - self.img.get_height()/2))
 
 class ButtonText(Button):
+    '''
+    button with text image and color
+    '''
     def __init__(self, screen: pygame.Surface, x, y, w, h,
                  color=pygame.Color("#6c767e"), img: str = 'cancel',
                  text: str = 't') -> None:
@@ -178,12 +145,12 @@ class ButtonText(Button):
 
 
 
-class Scene:
+class Scene(abc.ABC):
     '''
     scene containt text and button
     '''
 
-    def __init__(self, screen, view) -> None:
+    def __init__(self, screen:pygame.Surface, view:'View') -> None:
         if View.debug:
             print("init Scene", file=sys.stderr)
 
@@ -203,7 +170,7 @@ class Scene:
         pass
 
 
-class SceneTime(Scene):
+class SceneTime(Scene, abc.ABC):
     '''
     'abstrat class', active timer that cancel the session
     '''
@@ -246,11 +213,10 @@ class SceneSelect(SceneTime):
         self.choice = dict()
 
         self.buttons = list()
-        self.buttons.append(ButtonText.inside_button(self.screen))  # blue right
+        self.buttons.append(ButtonText.inside_button(self.screen)) # blue right
         self.buttons.append(ButtonText.outside_button(self.screen))  # red left
         self.buttons.append(Button.log_button(self.screen))  # red left
         self.buttons.append(Button.cancel_button(self.screen))  # red left
-        #self.buttons[1].set_red_pos()
         self.texts = list()
         self.texts.append(Text(10, 5, 30, '', pygame.Color('black')))
 
@@ -292,7 +258,6 @@ class SceneSelect(SceneTime):
     def draw(self):
         super().draw()
         for button in self.buttons:
-            #pygame.draw.rect(self.screen, button.color, button.rect)
             button.draw(self.screen)
         for text in self.texts:
             text.draw(self.screen)
@@ -343,12 +308,18 @@ class SceneWait(Scene):
         self.body.draw(self.screen)
 
 class Body:
+    '''
+    is use for bounced logo
+    '''
     def __init__(self, img: str):
         self.img = Loader.load_img(img)
         self.rect = self.img.get_rect() 
         self.speed = pygame.Vector2(1, 1)
     
     def update(self, screen: pygame.Surface):
+        '''
+        is call each frame when is on the screen
+        '''
         cx, cy = screen.get_size()
         self.rect = self.rect.move(self.speed)
         if self.rect.left < 0 or self.rect.right > cx:
@@ -357,20 +328,20 @@ class Body:
             self.speed.y = -self.speed.y
     
     def draw(self, screen: pygame.Surface):
+        '''
+        is call each frame when is on the screen, contain showing funcion
+        '''
         screen.blit(self.img, self.rect)
 
 class SceneLog(SceneTime):
     '''
-    scene show logs
+    scene show 5 last logs
     '''
 
-    def __init__(self, screen, view) -> None:
+    def __init__(self, screen:pygame.Surface, view:'View') -> None:
         super().__init__(screen, view)
         self.texts = list()
-        #nb_log = 10
         self.size_text = 30
-#        for i in range(nb_log):
-#            self.texts.append(Text(0, 0, size_txt + size_txt * i, "", pygame.Color('black')))
 
         self.buttons = list()
         self.buttons.append(Button.return_button(screen))
@@ -378,7 +349,7 @@ class SceneLog(SceneTime):
         self.buttons.append(Button(screen, 9 * cx / 12, 1 * cy / 12,
                                    2 * cx / 12, 2 * cy / 12, img='more'))
 
-    def set_text(self, logs: list):
+    def set_text(self, logs: list) -> None:
         print('SceneLog.set_text')
         cx, cy = self.screen.get_size()
         x = 1 * cx / 12
@@ -393,7 +364,7 @@ class SceneLog(SceneTime):
                               self.size_text, text_log, pygame.Color('black')))
 
     @staticmethod
-    def change_text_bool(b, text_true: str, text_false: str):
+    def change_text_bool(b, text_true: str, text_false: str) -> str:
         return text_true if bool(b) else text_false
 
     def update(self):
@@ -406,16 +377,11 @@ class SceneLog(SceneTime):
             self.reset_entry_time()
             # access parent instance
             self.view.current_scene = 'select'
-            # add reset timer
 
         if self.view.mouse.release('left') and\
                 self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()):
             self.reset_entry_time()
-            # access parent instance
             self.view.do_work_time()
-            # self.view.current_scene = 'time'
-            # add reset timer
-
 
     def draw(self):
         super().draw()
@@ -430,7 +396,8 @@ class SceneWorkTime(SceneTime):
     '''
     scene with a table/grid that show dates and times
     '''
-    def __init__(self, screen, view, week_str='current_week') -> None:
+    def __init__(self, screen:pygame.Surface, view:'View',
+            week_str:str='current_week') -> None:
         super().__init__(screen, view)
         self.texts = list()
         self.size_text = 30
