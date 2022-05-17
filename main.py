@@ -1,3 +1,5 @@
+import os
+import subprocess
 import threading
 import _thread
 import view
@@ -40,6 +42,7 @@ class App:
 
     def update(self):
         self.do_rfid()
+        self.turn_on_screen()
         #self.do_next_scene()
         self.do_model_request()
         print('unknown', self.is_unknown())
@@ -82,6 +85,14 @@ class App:
 
     def is_cancel(self):
         return self.pipe['cancel']
+
+    @staticmethod
+    def turn_on_screen():
+        try:
+            if os.name != 'nt':
+                subprocess.run(['xset', 'dpms', 'force', 'on'])
+        except:
+            pass
 
     def do_rfid(self):
         '''

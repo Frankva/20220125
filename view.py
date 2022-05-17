@@ -15,7 +15,8 @@ class Button:
     id -- is use for Table
     '''
     def __init__(self, screen: pygame.Surface, x, y, w, h,
-                 color=pygame.Color("#6c767e"), img: str = 'cancel', id=-1) -> None:
+                color=pygame.Color("#6c767e"), img: str = 'cancel',
+                id=-1) -> None:
         print("Button.init", file=sys.stderr)
         self.screen = screen
         self.x = x
@@ -29,7 +30,7 @@ class Button:
         self.img = Loader.load_icon(img, pygame.Color('#f8f9fa'))
         
     @staticmethod
-    def inside_button(screen):
+    def inside_button(screen: pygame.Surface) -> 'Button':
 
         cx, cy = screen.get_size()
         x = 7 * (cx / 12)
@@ -42,7 +43,7 @@ class Button:
         return Button(screen, x, y, w, h, color, img)
 
     @staticmethod
-    def outside_button(screen):
+    def outside_button(screen: pygame.Surface) -> 'Button':
 
         cx, cy = screen.get_size()
         x = 1 * (cx / 12)
@@ -55,7 +56,7 @@ class Button:
         return Button(screen, x, y, w, h, color, img)
 
     @staticmethod
-    def log_button(screen):
+    def log_button(screen: pygame.Surface) -> 'Button':
         cx, cy = screen.get_size()
         x = 9 * (cx / 12)
         y = 1 * (cy / 12)
@@ -66,7 +67,7 @@ class Button:
         return Button(screen, x, y, w, h, color, img)
 
     @staticmethod
-    def cancel_button(screen):
+    def cancel_button(screen: pygame.Surface) -> 'Button':
 
         cx, cy = screen.get_size()
         x = 1 * (cx / 12)
@@ -79,7 +80,7 @@ class Button:
         return Button(screen, x, y, w, h, color, img)
 
     @staticmethod
-    def return_button(screen) -> 'Button':
+    def return_button(screen: pygame.Surface) -> 'Button':
 
         cx, cy = screen.get_size()
         x = 1 * (cx / 12)
@@ -91,7 +92,7 @@ class Button:
         color = pygame.Color('#6c767e')  # off white 
         return Button(screen, x, y, w, h, color, img)
 
-    def draw(self, screen) -> None:
+    def draw(self, screen: pygame.Surface) -> None:
         pygame.draw.rect(screen, self.color, self.rect, 0, 10)
         self.draw_img_center(screen)
     
@@ -116,7 +117,7 @@ class ButtonText(Button):
         self.text.draw(screen)
 
     @staticmethod
-    def inside_button(screen):
+    def inside_button(screen: pygame.Surface) -> 'ButtonText':
 
         cx, cy = screen.get_size()
         x = 7 * (cx / 12)
@@ -130,7 +131,7 @@ class ButtonText(Button):
         return ButtonText(screen, x, y, w, h, color, img, text)
 
     @staticmethod
-    def outside_button(screen):
+    def outside_button(screen: pygame.Surface) -> 'ButtonText':
 
         cx, cy = screen.get_size()
         x = 1 * (cx / 12)
@@ -174,7 +175,7 @@ class SceneTime(Scene, abc.ABC):
     '''
     'abstrat class', active timer that cancel the session
     '''
-    def __init__(self, screen, view) -> None:
+    def __init__(self, screen: pygame.Surface, view: 'View') -> None:
         super().__init__(screen, view)
         self.entry_time = datetime.datetime.today()
 
@@ -205,7 +206,7 @@ class SceneSelect(SceneTime):
     is the scene with buttons
     '''
 
-    def __init__(self, screen, view):
+    def __init__(self, screen: pygame.Surface, view: 'View'):
         if View.debug:
             print("SceneSelect load", file=sys.stderr)
         super().__init__(screen, view)
@@ -270,14 +271,16 @@ class SceneSelect(SceneTime):
         return (choice, datetime.datetime.today())
 
     @classmethod
-    def take_choice_dict(cls, choice, dict) -> None:
+    def take_choice_dict(cls, choice: bool, pipe: dict) -> None:
         '''
         get the choice in a dict in args
         '''
-        dict["inside"], dict["date"] = cls.take_choice(choice)
-        View.pipe['th_condition'].acquire()
-        View.pipe['th_condition'].notify_all()
-        View.pipe['th_condition'].release()
+        pipe["inside"], pipe["date"] = cls.take_choice(choice)
+
+        # unlock the main thread in main.py
+        pipe['th_condition'].acquire()
+        pipe['th_condition'].notify_all()
+        pipe['th_condition'].release()
 
 
 class SceneWait(Scene):
@@ -285,7 +288,7 @@ class SceneWait(Scene):
     is the waiting screen with time
     '''
 
-    def __init__(self, screen, view):
+    def __init__(self, screen: pygame.Surface, view: 'View'):
 
         super().__init__(screen, view)
 
@@ -338,7 +341,7 @@ class SceneLog(SceneTime):
     scene show 5 last logs
     '''
 
-    def __init__(self, screen:pygame.Surface, view:'View') -> None:
+    def __init__(self, screen: pygame.Surface, view: 'View') -> None:
         super().__init__(screen, view)
         self.texts = list()
         self.size_text = 30
@@ -396,8 +399,8 @@ class SceneWorkTime(SceneTime):
     '''
     scene with a table/grid that show dates and times
     '''
-    def __init__(self, screen:pygame.Surface, view:'View',
-            week_str:str='current_week') -> None:
+    def __init__(self, screen: pygame.Surface, view: 'View',
+            week_str: str='current_week') -> None:
         super().__init__(screen, view)
         self.texts = list()
         self.size_text = 30
@@ -438,11 +441,10 @@ class SceneWorkTime(SceneTime):
                 self.reset_entry_time()
                 self.do_modal_scene(pressed_button.id)
         
-    def do_modal_scene(self, id) -> None:
+    def do_modal_scene(self, id: int) -> None:
         '''
         id is id of button on table
         '''
-        # text_list.append(str(type(View.pipe['day_current_week'][id][0])))
         date = View.pipe[f'day_{self.week_str}'][id][0]
         print('SceneWorkTime.do_modal_scene', date)
         # day all logs of the day
@@ -469,7 +471,7 @@ class SceneWorkTime(SceneTime):
         self.view.current_scene = 'modal'
     
     @staticmethod
-    def format_timedelta(timedelta:datetime.timedelta):
+    def format_timedelta(timedelta: datetime.timedelta):
         hh, ss = divmod(timedelta.seconds, 3600)
         mm, ss = divmod(ss, 60)
         hh += timedelta.days*24
@@ -495,7 +497,8 @@ class SceneWorkTime(SceneTime):
                 except TypeError:
                     pass
             self.texts[0].append('Total : ')
-            self.texts[1].append(self.format_timedelta(View.pipe[f'time_{self.week_str}']))
+            self.texts[1].append(self.format_timedelta(View.pipe[
+                    f'time_{self.week_str}']))
             self.set_table()
         print(self.texts, file=sys.stderr)
     
@@ -528,7 +531,7 @@ class Table:
     '''
     table/grid with content text or id of img that give a button
     '''
-    def __init__(self, x, y , w, h, cols:list):
+    def __init__(self, x, y , w, h, cols: list):
         print('Table.init', file=sys.stderr)
         self.size_text = 30
         self.pos = pygame.Vector2(x, y)
@@ -569,7 +572,7 @@ class Table:
             cursor.x += self.pixel_case.x
             cursor.y = self.pos.y
 
-    def draw(self, screen) -> None:
+    def draw(self, screen: pygame.Surface) -> None:
         for button in self.buttons:
             button.draw(screen)
         for text in self.texts:
@@ -590,7 +593,8 @@ class SceneModal(SceneTime):
     scene with one text and one button
     '''
 
-    def __init__(self, screen, view, texts: list, next_scene: str) -> None:
+    def __init__(self, screen: pygame.Surface, view: 'View', texts: list,
+            next_scene: str) -> None:
         super().__init__(screen, view)
         self.size_text = 30
         cx, cy = screen.get_size()
@@ -599,8 +603,6 @@ class SceneModal(SceneTime):
             self.texts.append(texts)
         else:
             self.texts = texts
-#        self.text = Text(1 * cx / 12, 1 * cx / 12, self.size_text, text,
-#                         pygame.Color('black'))
         self.button = Button(self.screen, cx / 2 - 3 * cx / 12 /2 , 
             10 * cy / 12, 3 * cx / 12, 1 * cy / 12, img='confirm')
         self.next_scene = next_scene
@@ -644,7 +646,8 @@ class SceneModal(SceneTime):
                 self.view.current_scene = self.next_scene
 
 class SceneModalCancelButton(SceneModal):
-    def __init__(self, screen, view, texts: list, next_scene: str):
+    def __init__(self, screen: pygame.Surface, view: 'View', texts: list,
+            next_scene: str):
         super().__init__(screen, view, texts, next_scene)
         self.buttons = list()
         self.buttons.append(self.button)
@@ -681,7 +684,7 @@ class SceneKeyboard(SceneTime):
     scene with keyboard and two buttons
     '''
 
-    def __init__(self, screen, view) -> None:
+    def __init__(self, screen: pygame.Surface, view: 'View') -> None:
         super().__init__(screen, view)
         self.layout = self.layout_CH()
         cx, cy = screen.get_size()
@@ -704,7 +707,7 @@ class SceneKeyboard(SceneTime):
             show_text=True)
 
 
-    def on_key_event(self, text):
+    def on_key_event(self, text: str) -> None:
         print('Current text:', text)
         self.input_text = text
         self.reset_entry_time()
@@ -740,7 +743,7 @@ class SceneKeyboard(SceneTime):
             button.draw(self.screen)
         
     @staticmethod
-    def layout_CH():
+    def layout_CH() -> vkboard.VKeyboardLayout:
         model = [
             'qwertzuiop',
             'asdfghjkl',
@@ -749,7 +752,7 @@ class SceneKeyboard(SceneTime):
         return vkboard.VKeyboardLayout(model, height_ratio=9/12)
 
     @staticmethod
-    def layout_special():
+    def layout_special() -> vkboard.VKeyboardLayout:
         model = [
             '-áàâæãåäąç',
             'ĉćčďéèêëęě',
@@ -760,18 +763,15 @@ class SceneKeyboard(SceneTime):
 
 
 class Mouse:
+    '''
+    unify MOUSEBUTTONDOWN and FINGERDOWN
+    '''
     def __init__(self) -> None:
         self.left = False
         self.old_left = False
 
     def update(self, events):
-        # self.event = event
-        # self.old_left = self.left
-        # self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERDOWN == 
-        # self.event)
         self.old_left = self.left
-        # self.left = pygame.mouse.get_pressed()[0] or (pygame.FINGERUP in 
-        # event)
         for event in events:
             if (pygame.MOUSEBUTTONDOWN == event.type) or (pygame.FINGERDOWN == 
             event.type):
@@ -795,9 +795,10 @@ class View:
     '''
     debug = True
 
+    # to communicate with other thread
     pipe = dict()
 
-    def __init__(self, pipe=None) -> None:
+    def __init__(self, pipe: dict=None) -> None:
         self.running = True
 
         self._scenes = dict()
@@ -853,7 +854,8 @@ class View:
 
 
     def __del__(self) -> None:
-        print('View.del, self pipe', self.pipe)
+        if View.debug:
+            print('View.del, self pipe', self.pipe, file=sys.stderr)
         self.pipe['th_condition'].acquire()
         self.pipe['quit'] = True
         self.pipe['th_condition'].notify_all()
@@ -868,9 +870,14 @@ class View:
         self.clock.tick(60)
         self.mouse.update(self.events)
         self.scenes[self.current_scene].update()
-        self.debug_command()
+        if View.debug:
+            self.debug_command()
 
     def debug_command(self):
+        '''
+        command to debug
+        force change scene
+        '''
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
             self.running = False
 
@@ -918,7 +925,7 @@ class View:
         return self._scenes
     
     @scenes.setter
-    def scenes(self, tup:tuple) -> None:
+    def scenes(self, tup: tuple) -> None:
         key = tup[0] # str
         new_scene = tup[1] # Scene
         print('View.scenes.setter', file=sys.stderr)
@@ -937,6 +944,7 @@ class View:
             self.current_scene = "select"
         else:
             self.current_scene = "wait"
+
     def do_wait_scene(self):
         self.current_scene = 'wait'
 
@@ -970,7 +978,7 @@ class View:
         View.pipe = pipe
         
 
-    def do_unknown_badge(self, count=0):
+    def do_unknown_badge(self, count: int=0):
         texts = list()
         if count == 0:
             texts.append("Le badge est inconnu.")
@@ -989,7 +997,8 @@ class View:
             self.scenes = 'modal', SceneModalCancelButton(self.screen, self,
                     texts, next_scene)
         else:
-            self.scenes = 'modal', SceneModal(self.screen, self, texts, next_scene)
+            self.scenes = 'modal', SceneModal(self.screen, self, texts,
+                    next_scene)
         self.current_scene = 'modal'
 
     def cancel(self):
@@ -1018,7 +1027,8 @@ class View:
 
 class Text:
     def __init__(self, x: float, y: float, size: float, text: str,
-                 color: pygame.Color=pygame.Color('#212529'), align='left') -> None:
+            color: pygame.Color=pygame.Color('#212529'),
+            align: str='left') -> None:
         '''
         text with position, size and color
         '''
@@ -1059,9 +1069,9 @@ class Text:
         if isinstance(txt, str):
             self.__text = txt
         else:
-            raise ValueError("'must be str")
+            raise ValueError("must be str")
 
-    def __call__(self, text):
+    def __call__(self, text: str):
         self.text = text
         self.update()
     
@@ -1085,22 +1095,20 @@ class Loader:
     
 
     @classmethod
-    def load_icon(cls, name:str, color:pygame.Color=None):
+    def load_icon(cls, name: str, color: pygame.Color=None):
         print('Loader.load', file=sys.stderr)
         if color is None:
             return pygame.image.load(cls.paths[name])
         else:
             
             return cls.change_color(pygame.image.load(cls.paths[name]), color)
-        #return cls.change_color(pygame.image.load(cls.paths[name]),
-        #                        pygame.Color('#dc3545')).convert_alpha()
 
     @classmethod
-    def load_img(cls, name:str):
+    def load_img(cls, name: str):
         return pygame.image.load(cls.paths[name])
     
     @classmethod
-    def load_txt(cls, name, size):
+    def load_txt(cls, name: str, size: int) -> pygame.font.Font:
         print('load_txt', file=sys.stderr)
         try:
             return pygame.font.Font(cls.paths[name], size)
@@ -1108,7 +1116,8 @@ class Loader:
             return pygame.font.Font(cls.paths[name], int(size))
 
     
-    def change_color(img: pygame.Surface, color: pygame.Color):
+    def change_color(img: pygame.Surface,
+            color: pygame.Color) -> pygame.Surface:
         w, h = img.get_size()
         r, g, b, _ = color
         for x, y in product(range(w), range(h)):
