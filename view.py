@@ -338,9 +338,9 @@ class SceneWait(Scene):
 
     def draw(self):
         super().draw()
-        self.body.draw(self.screen)
         for txt in self.texts:
             txt.draw(self.screen)
+        self.body.draw(self.screen)
 
 class Body:
     def __init__(self, img: str):
@@ -874,12 +874,16 @@ class View:
 
     def load_scene(self) -> None:
         self.scenes["wait"] = SceneWait(self.screen, self)
+        self.reload_scene()
+
+    def reload_scene(self) -> None:
         self.scenes["select"] = SceneSelect(self.screen, self)
         self.scenes["log"] = SceneLog(self.screen, self)
         self.scenes["time"] = SceneWorkTime(self.screen, self)
         self.scenes["last_time"] = SceneWorkTime(self.screen, self,
             'last_week')
         self.scenes["keyboard"] = SceneKeyboard(self.screen, self)
+
 
     def __del__(self) -> None:
         print('View.del, self pipe', self.pipe)
@@ -1026,7 +1030,7 @@ class View:
         when time expire or press quit button
         '''
         self.current_scene = 'wait'
-        self.load_scene()
+        self.reload_scene()
         View.pipe['cancel'] = True
         View.pipe['th_condition'].acquire()
         View.pipe['th_condition'].notify_all()
@@ -1038,7 +1042,7 @@ class View:
         reset for end of new user
         '''
         self.current_scene = 'wait'
-        self.load_scene()
+        self.reload_scene()
         View.pipe['new_user_valid'] = True
         View.pipe['th_condition'].acquire()
         View.pipe['th_condition'].notify_all()
