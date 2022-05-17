@@ -39,7 +39,7 @@ class Button:
 
         self.color = color
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
-        self.img = Loader.load_img(img, pygame.Color('#f8f9fa'))
+        self.img = Loader.load_icon(img, pygame.Color('#f8f9fa'))
         
 
 
@@ -327,18 +327,37 @@ class SceneWait(Scene):
         self.texts = list()
         self.texts.append(Text(10, 10, 30, "Attente d’un badge RFID"))
         self.texts.append(Text(10, 40, 30, ""))
+        self.body = Body('logo')
 
     def update(self):
         super().update()
         self.texts[1].text = str(datetime.datetime.today())[0:-7]
         for txt in self.texts:
             txt.update()
+        self.body.update(self.screen)
 
     def draw(self):
         super().draw()
+        self.body.draw(self.screen)
         for txt in self.texts:
             txt.draw(self.screen)
 
+class Body:
+    def __init__(self, img: str):
+        self.img = Loader.load_img(img)
+        self.rect = self.img.get_rect() 
+        self.speed = pygame.Vector2(1, 1)
+    
+    def update(self, screen: pygame.Surface):
+        cx, cy = screen.get_size()
+        self.rect = self.rect.move(self.speed)
+        if self.rect.left < 0 or self.rect.right > cx:
+            self.speed.x = -self.speed.x
+        if self.rect.top < 0 or self.rect.bottom > cy:
+            self.speed.y = -self.speed.y
+    
+    def draw(self, screen: pygame.Surface):
+        screen.blit(self.img, self.rect)
 
 class SceneLog(SceneTime):
     '''
@@ -1091,10 +1110,11 @@ class Loader:
     paths['confirm'] = 'icons/check.bmp'
     paths['detail'] = 'icons/zoom-in.bmp'
     paths['next'] = 'icons/arrow-right.bmp'
+    paths['logo'] = 'img/logo_orif_small_transparent.bmp'
     
 
     @classmethod
-    def load_img(cls, name:str, color:pygame.Color=None):
+    def load_icon(cls, name:str, color:pygame.Color=None):
         print('Loader.load', file=sys.stderr)
         if color is None:
             return pygame.image.load(cls.paths[name])
@@ -1103,6 +1123,10 @@ class Loader:
             return cls.change_color(pygame.image.load(cls.paths[name]), color)
         #return cls.change_color(pygame.image.load(cls.paths[name]),
         #                        pygame.Color('#dc3545')).convert_alpha()
+
+    @classmethod
+    def load_img(cls, name:str):
+        return pygame.image.load(cls.paths[name])
     
     @classmethod
     def load_txt(cls, name, size):

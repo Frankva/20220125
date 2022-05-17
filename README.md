@@ -2,6 +2,7 @@
 [mfrc522 PyPI](https://pypi.org/project/mfrc522/#description)  
 [mariadb PyPI](https://pypi.org/project/mariadb/)  
 [pygame](https://pypi.org/project/pygame/)
+[pygame-vkeyboard](https://pypi.org/project/pygame-vkeyboard/)
 
 github developer settings personal access tokens  
 
@@ -33,18 +34,18 @@ mariadb-server
 
 
 ## sécurité
-- stockage temporaire des noms
-- hacher (sha2) les ids des badges
-- chiffrement de la connexion avec la base de données
+- [ ] stockage temporaire des noms
+- [ ] hacher (sha2) les ids des badges
+- [ ] chiffrement de la connexion avec la base de données
 
 ## à corrigé
 - [x] scene with unknow badge
 - [x] request log with unknow badge
 - [x] somme heures plus 24 heures
-- [ ] désactiver la mise en veille de l'écran
+- [x] désactiver la mise en veille de l'écran
 - [ ] les câbles ?
 - [ ] requête log quand le bouton est appuyé
-- [ ] ferme proprement le script quand la view est fermé
+- [~] ferme proprement le script quand la view est fermé
 
 
 ## bug
