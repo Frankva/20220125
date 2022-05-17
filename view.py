@@ -6,6 +6,7 @@ import os
 import datetime
 from model import Model
 import threading
+import _thread
 
 
 class Button:
@@ -849,8 +850,8 @@ class View:
                     
             self.update()
             self.draw()
-        self.__del__()
         pygame.quit()
+        self.__del__()
 
     def load_scene(self) -> None:
         self.scenes["wait"] = SceneWait(self.screen, self)

@@ -1,4 +1,5 @@
 import threading
+import _thread
 import view
 try:
     import rfid
@@ -75,7 +76,8 @@ class App:
         while not pipe['quit']:
             wait_thread.wait()
         wait_thread.release()
-        exit()
+        print('exit wait_quit')
+        _thread.interrupt_main() 
 
 
     def is_cancel(self):
