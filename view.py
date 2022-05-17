@@ -991,7 +991,7 @@ class View:
             next_scene = 'keyboard'
         else:
             texts.append('Veuillez rescanner votre badge après validation')
-            texts.append('de ce message')
+            texts.append('de ce message.')
             next_scene = 'new_user_valid'
 
         # setter is use
