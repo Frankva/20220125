@@ -984,10 +984,10 @@ class View:
         texts = list()
         if count == 0:
             texts.append("Le badge est inconnu.")
-            texts.append("Veuille taper votre nom de famille.")
+            texts.append("Veuillez taper votre nom de famille.")
             next_scene = 'keyboard'
         elif count == 1:
-            texts.append("Veuille taper votre prénom.")
+            texts.append("Veuillez taper votre prénom.")
             next_scene = 'keyboard'
         else:
             texts.append('Veuillez rescanner votre badge après validation')
