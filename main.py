@@ -42,6 +42,8 @@ class App:
 
     def update(self):
         self.do_rfid()
+        self.model.disconnect()
+        self.model.connect()
         self.turn_on_screen()
         #self.do_next_scene()
         self.do_model_request()
