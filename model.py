@@ -216,6 +216,8 @@ class Model:
             elif date_in is not None:
                 if date_in.day == log[0].day: # ignore time with forgeting 
                     # outlog in the end of last day
+                    # to text day on multi day with forteing the last
+                    # first log of next day can bug
                     time += log[0] - date_in
                 date_in = None
         return time

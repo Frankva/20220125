@@ -141,6 +141,9 @@ class App:
         return dict(filter(lambda pipe: pipe[0] in name, self.pipe.items()))
 
     def safe_wait_thread(self, thread):
+        '''
+        wait the end of a thread
+        '''
         try:
             if thread.is_alive():
                 thread.join()
