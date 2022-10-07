@@ -12,4 +12,5 @@ class Rfid:
         #pipe['id_badge'] = 483985410385
         #pipe['id_badge'] = 483985410398
         pipe['id_badge'] = 589402514225
+        pipe['id_badge'] = 42
         #self.pipe['id_badge'] = 183985410385

@@ -5,6 +5,8 @@ import os
 
 import datetime
 
+import warnings
+
 
 
 class Model:
@@ -18,9 +20,12 @@ class Model:
             self.conn_params["database"] = "timbreuse2022"
         else:
             self.conn_params["user"] = "root"
-            self.conn_params["password"] = ""
+            self.conn_params["password"] = "0"
+            #self.conn_params["password"] = ""
             self.conn_params["host"] = "localhost"
-            self.conn_params["database"] = "timbreuse2022"
+            self.conn_params["database"] = "db20220830"
+            self.conn_params["port"] = 4003
+            #self.conn_params["database"] = "timbreuse2022"
         try:
             self.connect()
         except mariadb.ProgrammingError as E:
@@ -56,6 +61,7 @@ class Model:
         '''
         depreciated
         '''
+        warnings.warn("deprecated", DeprecationWarning)
         print(
             f"""insert into {table}({self.format_name_column(dict)}) values({
                 self.format_value_column(dict)})""")
@@ -70,8 +76,7 @@ class Model:
         '''
         sql = f"""insert into {table_name}({self.format_name_column(d)
             }) values({self.give_quationmark(d)})"""
-        self.cursor.execute(sql, tuple(d.values()))
-        self.connection.commit()
+        self.execute_and_commit(sql, tuple(d.values()))
 
     def read_name_log(self, pipe: dict) -> None:
         id_user = self.select_one(
@@ -126,21 +131,38 @@ class Model:
         return self.cursor
     
     def insert_user(self, select_name:str, table_name:str, value:tuple):
+        warnings.warn("deprecated", DeprecationWarning)
         sql = f'''INSERT INTO {table_name} ({self.format_tuple(select_name)
         }) VALUES (NULL, ?, ?);'''
         self.cursor.execute(sql, value)
         self.connection.commit()
+    
+    def call_insert_user(self, value:tuple):
+        sql = 'CALL `insert_user`(?, ?);'
+        self.execute_and_commit(sql, value)
     
     def select_new_user(self, value):
         sql = 'SELECT `id_user` FROM `user` WHERE name=? AND surname=? ORDER \
             BY `id_user` DESC;'
         self.cursor.execute(sql, value)
         return self.cursor.next()[0]
-        
 
     def insert_badge(self, select_name:str, table_name:str, value:tuple):
+        warnings.warn("deprecated", DeprecationWarning)
         sql = f'''INSERT INTO {table_name} ({self.format_tuple(select_name)
         }) VALUES (?, ?);'''
+        self.execute_and_commit(sql, value)
+
+    def call_insert_badge(self, value:tuple):
+        sql = 'CALL `insert_badge`(?, ?);'
+        self.execute_and_commit(sql, value)
+
+    def call_insert_log(self, value:tuple):
+        print('call_insert_log')
+        sql = 'CALL `insert_log`(?, ?);'
+        self.execute_and_commit(sql, value)
+
+    def execute_and_commit(self, sql, value:tuple):
         self.cursor.execute(sql, value)
         self.connection.commit()
 
@@ -296,7 +318,8 @@ class Model:
         log2week = tuple(self.cursor_to_list(log2week))
         return self.isolate_week(log2week)
 
-    def invoke_new_user(self, pipe: dict):
+    def old__invoke_new_user(self, pipe: dict):
+        warnings.warn("deprecated", DeprecationWarning)
         model = Model()
         select_name = ('id_user', 'name', 'surname')
         table_name = 'user'
@@ -308,6 +331,14 @@ class Model:
         table_name = 'badge'
         value = (pipe['id_badge'], id)
         model.insert_badge(select_name, table_name, value)
+
+    def invoke_new_user(self, pipe: dict):
+        value = (pipe['name'], pipe['surname'])
+        self.call_insert_user(value)
+        id = self.select_new_user(value)
+        print(id)
+        value = (pipe['id_badge'], id)
+        self.call_insert_badge(value)
 
 
 

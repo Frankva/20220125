@@ -26,7 +26,6 @@ class App:
         self.pipe['cancel'] = False
         self.reset_pipe()
         self.model = model.Model()
-        self.tableName = "log"
         self.theard_model_request = None
         self.theard_model_insert = None
         self.theard_model_new_user = None
@@ -49,7 +48,6 @@ class App:
         finally:
             self.model.connect()
         self.turn_on_screen()
-        #self.do_next_scene()
         self.do_model_request()
         print('unknown', self.is_unknown())
         if self.is_unknown():
@@ -57,7 +55,6 @@ class App:
         else:
             self.view.do_select_scene_dict(self.pipe)
 
-#        print(self.pipe)
         # check unknown
         self.wait_choice()
         if self.pipe['quit']:
@@ -69,11 +66,10 @@ class App:
             self.do_model_new_user()
             self.reset()
             return
-        #self.log.write(str(self.pipe))
-        #self.model.insert(self.tableName, self.create_dict_model())
         self.safe_wait_thread(self.theard_model_insert)
-        self.theard_model_insert = threading.Thread(target=self.model.insert,
-                                args=(self.tableName, self.filterInsert()))
+        self.theard_model_insert = threading.Thread(
+            target=self.model.call_insert_log, args=((self.pipe['id_badge'],
+                                                      self.pipe['inside']), ))
         self.theard_model_insert.start()
         self.theard_model_insert.join()
         self.reset()
@@ -135,14 +131,15 @@ class App:
 
     def filterInsert(self):
         name = list()
-        name.append('date')
+        #name.append('date')
         name.append('id_badge')
         name.append('inside')
         return dict(filter(lambda pipe: pipe[0] in name, self.pipe.items()))
 
     def safe_wait_thread(self, thread):
         '''
-        wait the end of a thread
+        Wait (block the execution) the end of a thread.
+        Check if the thread is running.
         '''
         try:
             if thread.is_alive():
