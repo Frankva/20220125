@@ -13,7 +13,7 @@ CREATE PROCEDURE `insert_log`(id_badge bigint, inside bool)
 BEGIN
     INSERT INTO `log_write` (`date`, `id_badge`, `inside` ) VALUES (NOW(),
         id_badge, inside);
-    CALL `delete_log_write `;
+    CALL `delete_log_write`;
 END //
 DELIMITER ;
 
