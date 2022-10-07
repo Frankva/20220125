@@ -14,8 +14,8 @@ class Model:
         self.conn_params = dict()
         if os.name != "nt":
 
-            self.conn_params["user"] = "admin"
-            self.conn_params["password"] = "1806"
+            self.conn_params["user"] = "root"
+            self.conn_params["password"] = "0"
             self.conn_params["host"] = "localhost"
             self.conn_params["database"] = "timbreuse2022"
         else:
