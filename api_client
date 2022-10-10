@@ -1,0 +1,20 @@
+import urllib.request as urll
+from urllib.parse import quote
+import urllib.error
+import hmac
+import json
+
+class ClientAPI:
+    def __init__(self):
+        self.base_url = 'https://timbreuse.sectioninformatique.net/Logs'
+        self.method = 'add'
+
+def load_key():
+    with open('.key.json', 'r') as file:
+        return json.load(file)['key']
+
+def create_token(date, badge_id, inside):
+    text = f'{date}{badge_id}{inside}'.encode()
+    key = load_key().encode()
+    token_text = hmac.new(key, text, 'sha256').hexdigest()
+    return token_text

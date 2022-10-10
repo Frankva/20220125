@@ -161,6 +161,13 @@ class Model:
         print('call_insert_log')
         sql = 'CALL `insert_log`(?, ?);'
         self.execute_and_commit(sql, value)
+    
+    def call_get_unsync_log(self):
+        sql = 'CALL `get_unsync_log;'
+        self.cursor.execute(sql)
+        return self.cursor
+
+
 
     def execute_and_commit(self, sql, value:tuple):
         self.cursor.execute(sql, value)
