@@ -31,6 +31,8 @@ class App:
         self.theard_model_new_user = None
         self.theard_wait_quit = threading.Thread(target=self.wait_quit,
                 args=(self.pipe, ))
+        self.theard_send = threading.Thread(
+            target=self.model.invoke_send_logs)
 
     def load(self):
         self.theard_view.start()
@@ -66,13 +68,24 @@ class App:
             self.do_model_new_user()
             self.reset()
             return
+        self.invoke_insert()
+        self.invoke_send()
+        self.reset()
+    
+    def invoke_insert(self):
         self.safe_wait_thread(self.theard_model_insert)
         self.theard_model_insert = threading.Thread(
-            target=self.model.insert_and_send_logs, args=((self.pipe['id_badge'],
+            target=self.model.call_insert_log, args=((self.pipe['id_badge'],
                                                       self.pipe['inside']), ))
         self.theard_model_insert.start()
         self.theard_model_insert.join()
-        self.reset()
+    
+    def invoke_send(self):
+        print('invokr_send')
+        self.safe_wait_thread(self.theard_send)
+        self.theard_send.start()
+        self.theard_send.join()
+
 
     @staticmethod
     def wait_quit(pipe):
