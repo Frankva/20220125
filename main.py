@@ -68,6 +68,7 @@ class App:
             self.reset()
             return
         self.invoke_insert()
+        self.view.do_wait_scene()
         self.invoke_send()
         self.reset()
     
@@ -208,9 +209,9 @@ class App:
     def reset(self):
         print('reset()')
         self.reset_pipe()
-        self.model.disconnect()
-        self.model.connect()
-        self.view.do_wait_scene()
+        #self.model.disconnect()
+        #self.model.connect()
+        #self.view.do_wait_scene()
 
     def __del__(self):
         pass
