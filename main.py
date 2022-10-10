@@ -31,8 +31,7 @@ class App:
         self.theard_model_new_user = None
         self.theard_wait_quit = threading.Thread(target=self.wait_quit,
                 args=(self.pipe, ))
-        self.theard_send = threading.Thread(
-            target=self.model.invoke_send_logs)
+        self.theard_send = None
 
     def load(self):
         self.theard_view.start()
@@ -83,6 +82,8 @@ class App:
     def invoke_send(self):
         print('invokr_send')
         self.safe_wait_thread(self.theard_send)
+        self.theard_send = threading.Thread(
+            target=self.model.invoke_send_logs)
         self.theard_send.start()
         self.theard_send.join()
 
