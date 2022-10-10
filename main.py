@@ -68,7 +68,7 @@ class App:
             return
         self.safe_wait_thread(self.theard_model_insert)
         self.theard_model_insert = threading.Thread(
-            target=self.model.call_insert_log, args=((self.pipe['id_badge'],
+            target=self.model.insert_and_send_logs, args=((self.pipe['id_badge'],
                                                       self.pipe['inside']), ))
         self.theard_model_insert.start()
         self.theard_model_insert.join()

@@ -17,6 +17,11 @@ BEGIN
 END //
 DELIMITER ;
 
+CREATE PROCEDURE `get_unsync_log`()
+        SELECT `date`, `id_badge`, `inside`
+        FROM `log_write`
+        WHERE (`date`, `id_badge`, `inside`)
+        NOT IN (SELECT `date`, `id_badge`, `inside` FROM `log_sync`);
 
 
 CREATE PROCEDURE `delete_badge_write`()

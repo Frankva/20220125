@@ -6,12 +6,14 @@ import os
 import datetime
 
 import warnings
+import api_client
 
 
 
 class Model:
     def __init__(self) -> None:
         self.conn_params = dict()
+        self.api_client = api_client.APIClient()
         if os.name != "nt":
 
             self.conn_params["user"] = "root"
@@ -23,8 +25,8 @@ class Model:
             self.conn_params["password"] = "0"
             #self.conn_params["password"] = ""
             self.conn_params["host"] = "localhost"
-            self.conn_params["database"] = "db20220830"
-            self.conn_params["port"] = 4003
+            self.conn_params["database"] = "db20221007"
+            self.conn_params["port"] = 4002
             #self.conn_params["database"] = "timbreuse2022"
         try:
             self.connect()
@@ -163,9 +165,26 @@ class Model:
         self.execute_and_commit(sql, value)
     
     def call_get_unsync_log(self):
-        sql = 'CALL `get_unsync_log;'
+        print('call_get_unsync_log')
+        sql = 'CALL `get_unsync_log`;'
+        sql = ('SELECT `date`, `id_badge`, `inside`'
+        'FROM `log_write`'
+        'WHERE (`date`, `id_badge`, `inside`)'
+        'NOT IN (SELECT `date`, `id_badge`, `inside` FROM `log_sync`);')
+        print(sql)
         self.cursor.execute(sql)
         return self.cursor
+    
+    def invoke_send_logs(self):
+        print('invoke_send_logs')
+        for log in self.call_get_unsync_log():
+            print(self.api_client.invoke_send_log(*log))
+        print('end invoke_send_logs')
+            
+    def insert_and_send_logs(self, value:tuple):
+        print('insert_and_send_logs')
+        self.call_insert_log(value)
+        self.invoke_send_logs()
 
 
 
