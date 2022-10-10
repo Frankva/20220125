@@ -60,12 +60,12 @@ def fake_info_stamping() -> tuple:
 
 def main():
     test = 1
-    match test:
-        case 0:
-            pass
-        case 1:
-            client_API = APIClient()
-            client_API.invoke_send_log(*fake_info_stamping())
+    # match test:
+    #     case 0:
+    #         pass
+    #     case 1:
+    #         client_API = APIClient()
+    #         client_API.invoke_send_log(*fake_info_stamping())
 
 
 if __name__ == "__main__":
