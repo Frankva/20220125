@@ -9,7 +9,6 @@ import warnings
 import api_client
 
 
-
 class Model:
     def __init__(self) -> None:
         self.conn_params = dict()
@@ -156,15 +155,30 @@ class Model:
         self.execute_and_commit(sql, value)
 
     def call_insert_badge(self, value:tuple):
+        '''
+        call a stored procedure that insert badge
+        '''
         sql = 'CALL `insert_badge`(?, ?);'
         self.execute_and_commit(sql, value)
 
     def call_insert_log(self, value:tuple):
+        '''
+        call a stored procedure that insert log with datetime of the database
+        '''
         print('call_insert_log')
         sql = 'CALL `insert_log`(?, ?);'
         self.execute_and_commit(sql, value)
     
+    def call_insert_sync_log(self, value):
+        print('call_insert_sync_log')
+        sql = 'CALL `insert_sync_log`(?, ?, ?, ?);'
+        print(value)
+        self.execute_and_commit(sql, value)
+
     def call_get_unsync_log(self):
+        '''
+        select all logs in write table that is not in sync table
+        '''
         print('call_get_unsync_log')
         sql = 'CALL `get_unsync_log`;'
         sql = ('SELECT `date`, `id_badge`, `inside`'
@@ -175,16 +189,31 @@ class Model:
         self.cursor.execute(sql)
         return self.cursor
     
-    def invoke_send_logs(self):
-        print('invoke_send_logs')
+    def send_logs(self):
+        '''
+        send all logs from the local database to the remote database
+        '''
+        print('send_logs')
         for log in self.call_get_unsync_log():
-            print(self.api_client.invoke_send_log(*log))
+            print(self.api_client.send_log(*log))
         print('end invoke_send_logs')
             
     def insert_and_send_logs(self, value:tuple):
         print('insert_and_send_logs')
         self.call_insert_log(value)
-        self.invoke_send_logs()
+        self.send_logs()
+    
+    def get_last_log_id(self) -> int:
+        print('get_last_id_log')
+        sql = 'SELECT MAX(`id_log`) FROM log_sync;'
+        self.cursor.execute(sql)
+        return self.cursor.next()[0]
+
+    def invoke_receve_logs(self) -> None:
+        print('model.invoke_receve_logs')
+        for log in self.api_client.receve_logs(self.get_last_log_id()):
+            print(log)
+            self.call_insert_sync_log(tuple(log.values()))
 
 
 
@@ -515,7 +544,7 @@ def test12():
 
 def test13():    
     model = Model()
-
+    model.invoke_receve_logs()
 
 
 

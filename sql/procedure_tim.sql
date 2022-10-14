@@ -17,11 +17,24 @@ BEGIN
 END //
 DELIMITER ;
 
-CREATE PROCEDURE `get_unsync_log`()
-        SELECT `date`, `id_badge`, `inside`
-        FROM `log_write`
-        WHERE (`date`, `id_badge`, `inside`)
-        NOT IN (SELECT `date`, `id_badge`, `inside` FROM `log_sync`);
+DELIMITER //
+CREATE PROCEDURE `insert_sync_log`(_date datetime, id_badge bigint,
+    inside bool, id_log int) 
+ MODIFIES SQL DATA
+BEGIN
+    INSERT INTO `log_sync` (`date`, `id_badge`, `inside`, `id_log`) VALUES
+    (_date, id_badge, inside, id_log);
+    CALL `delete_log_write`;
+END //
+DELIMITER ;
+
+-- CREATE PROCEDURE `get_unsync_log`()
+--         SELECT `date`, `id_badge`, `inside`
+--         FROM `log_write`
+--         WHERE (`date`, `id_badge`, `inside`)
+--         NOT IN (SELECT `date`, `id_badge`, `inside` FROM `log_sync`);
+--     
+-- call `get_unsync_log`;
 
 
 CREATE PROCEDURE `delete_badge_write`()

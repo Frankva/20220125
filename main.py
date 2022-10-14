@@ -81,10 +81,10 @@ class App:
         self.theard_model_insert.join()
     
     def invoke_send(self):
-        print('invokr_send')
+        print('invoke_send')
         self.safe_wait_thread(self.theard_send)
         self.theard_send = threading.Thread(
-            target=self.model.invoke_send_logs)
+            target=self.model.send_logs)
         self.theard_send.start()
         self.theard_send.join()
 

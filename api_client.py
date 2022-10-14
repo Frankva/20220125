@@ -1,13 +1,13 @@
 from urllib.request import urlopen
 from urllib.parse import quote
-import urllib.error
 import hmac
 import json
+import urllib.error
 
 class APIClient:
     def __init__(self) -> None:
         self.base_url = 'https://timbreuse.sectioninformatique.net/Logs'
-        self.method = 'add'
+        self.method = ('add', 'get_logs')
 
     @staticmethod
     def load_key() -> str:
@@ -28,27 +28,43 @@ class APIClient:
     def create_url(base_url, method, arg) -> str:
         return f'{base_url}/{method}/{arg}'
 
-    def send(self, url):
+    def send(self, url) -> tuple:
+        '''
+        wrap function of urllib.request.urlopen
+        '''
         print('send')
         try:
-            #html_file = urlopen(url)
-            # print(html_file.read())
-            # print()
-            # print(html_file.url)
-            # print(html_file.status)
-            # print(html_file.headers)
-            # return html_file
-            return urlopen(url).status
+            html_file = urlopen(url)
+        #    # print(html_file.read())
+        #    # print()
+        #    # print(html_file.url)
+        #    # print(html_file.status)
+        #    # print(html_file.headers)
+        #    # return html_file
+            return html_file, html_file.status
         except urllib.error.HTTPError as e:
-            return e
+            return None, str(e)
+        
     
-    def invoke_send_log(self, date, badge_id, inside) -> bool:
-        print('invoke_send_log')
+    def send_log(self, date, badge_id, inside):
         arg = self.create_arg(date, badge_id, inside, self.create_token(
             date, badge_id, inside)
         )
-        url = self.create_url(self.base_url, self.method, arg)
-        return self.send(url)
+        url = self.create_url(self.base_url, self.method[0], arg)
+        tmp = self.send(url)
+        print(type(tmp))
+        print(tmp)
+        return tmp[1]
+
+    def receve_logs(self, log_id) -> list[dict]:
+        print('receve_logs')
+        print(log_id)
+        url = self.create_url(self.base_url, self.method[1], log_id)
+        print(url)
+        html_file = self.send(url)[0]
+        return json.loads(html_file.readline())
+
+    
 
 def fake_info_stamping() -> tuple:
     import datetime
@@ -59,13 +75,17 @@ def fake_info_stamping() -> tuple:
     return date, badge_id, inside
 
 def main():
-    test = 1
-    # match test:
-    #     case 0:
-    #         pass
-    #     case 1:
-    #         client_API = APIClient()
-    #         client_API.invoke_send_log(*fake_info_stamping())
+    test = 2
+    if test == 0:
+        pass
+    if test == 1:
+        client_API = APIClient()
+        client_API.invoke_send_log(*fake_info_stamping())
+    if test == 2:
+        client_API = APIClient()
+        tmp = client_API.receve_logs(413)
+        print(type(tmp), tmp)
+        print(type(tmp[0]), tmp[0])
 
 
 if __name__ == "__main__":
