@@ -33,6 +33,7 @@ class App:
         self.theard_wait_quit = threading.Thread(target=self.wait_quit,
                 args=(self.pipe, ))
         self.theard_send = None
+        self.theard_receve = None
 
     def load(self):
         self.theard_view.start()
@@ -71,6 +72,7 @@ class App:
         self.invoke_insert()
         self.view.do_wait_scene()
         self.invoke_send()
+        self.invoke_receve()
         self.reset()
     
     def invoke_insert(self):
@@ -81,13 +83,27 @@ class App:
         self.theard_model_insert.start()
         self.theard_model_insert.join()
     
-    def invoke_send(self):
+    def invoke_send(self) -> None:
+        '''
+        manage therad to send all new logs from local
+        '''
         print('invoke_send')
         self.safe_wait_thread(self.theard_send)
         self.theard_send = threading.Thread(
             target=self.model.send_logs)
         self.theard_send.start()
         self.theard_send.join()
+
+    def invoke_receve(self) -> None:
+        '''
+        manage theard to receve all new logs from remote
+        '''
+        print('invoke_receve')
+        self.safe_wait_thread(self.theard_receve)
+        self.theard_receve = threading.Thread(
+            target=self.model.invoke_receve_logs)
+        self.theard_receve.start()
+        self.theard_receve.join()
 
 
     @staticmethod
