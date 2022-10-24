@@ -170,14 +170,19 @@ class Model:
         self.execute_and_commit(sql, value)
     
     def call_insert_sync_log(self, value):
+        '''
+        call a stored procedure that insert log in the sync_log table, 
+        all fiel are need
+        '''
         print('call_insert_sync_log')
         sql = 'CALL `insert_sync_log`(?, ?, ?, ?);'
         print(value)
         self.execute_and_commit(sql, value)
 
-    def call_get_unsync_log(self):
+    def call_get_unsync_log(self) -> mariadb.connection.cursor:
         '''
-        select all logs in write table that is not in sync table
+        select all logs in write table that is not in sync table,
+        the return is like a tuple
         '''
         print('call_get_unsync_log')
         sql = 'CALL `get_unsync_log`;'
@@ -191,7 +196,7 @@ class Model:
     
     def send_logs(self):
         '''
-        send all logs from the local database to the remote database
+        send all logs from the local database to the remote server
         '''
         print('send_logs')
         for log in self.call_get_unsync_log():
@@ -210,9 +215,13 @@ class Model:
         return self.cursor.next()[0]
 
     def invoke_receve_logs(self) -> None:
+        '''
+        receve all logs form remote server and insert in local database
+        '''
         print('model.invoke_receve_logs')
         for log in self.api_client.receve_logs(self.get_last_log_id()):
             print(log)
+            # insert one per one in local. can be better
             self.call_insert_sync_log(tuple(log.values()))
 
 

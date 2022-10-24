@@ -50,6 +50,7 @@ class App:
             pass
         finally:
             self.model.connect()
+        self.invoke_receve() # to test if there are more waiting screen
         self.turn_on_screen()
         self.do_model_request()
         print('unknown', self.is_unknown())

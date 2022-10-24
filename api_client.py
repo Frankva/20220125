@@ -57,6 +57,9 @@ class APIClient:
         return tmp[1]
 
     def receve_logs(self, log_id) -> list[dict]:
+        '''
+        receve all logs from the server
+        '''
         print('receve_logs')
         print(log_id)
         url = self.create_url(self.base_url, self.method[1], log_id)
