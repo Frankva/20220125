@@ -3,10 +3,14 @@ from urllib.parse import quote
 import hmac
 import json
 import urllib.error
+from functools import reduce
+import sys
+import warnings
 
 class APIClient:
     def __init__(self) -> None:
-        self.base_url = 'https://timbreuse.sectioninformatique.net/Logs'
+        self.base_url = 'https://timbreuse.sectioninformatique.net'
+        self.controller = ('Logs', 'Badges')
         self.method = ('add', 'get_logs')
 
     @staticmethod
@@ -22,17 +26,29 @@ class APIClient:
 
     @staticmethod
     def create_arg(date, badge_id, inside, token) -> str:
+        warnings.warn("use create_arg_args", DeprecationWarning)
         return f'{quote(str(date))}/{badge_id}/{inside}/{token}'
     
     @staticmethod
     def create_url(base_url, method, arg) -> str:
+        warnings.warn("use create_url_n", DeprecationWarning)
         return f'{base_url}/{method}/{arg}'
+
+    def create_url_n(self, controller_id:int, method_id:int, arg:str) -> str:
+        '''
+        >>> api_client = APIClient()
+        >>> api_client.create_url_n(0, 0, '2/3/4')
+        'https://timbreuse.sectioninformatique.net/Logs/add/2/3/4'
+        '''
+        # return f'{base_url}/{method}/{arg}'
+        return (f'{self.base_url}/{self.controller[controller_id]}/'
+        f'{self.method[method_id]}/{arg}')
 
     def send(self, url) -> tuple:
         '''
         wrap function of urllib.request.urlopen
         '''
-        print('send')
+        print('send', file=sys.stderr)
         try:
             html_file = urlopen(url)
         #    # print(html_file.read())
@@ -46,27 +62,77 @@ class APIClient:
             return None, str(e)
         
     
-    def send_log(self, date, badge_id, inside):
-        arg = self.create_arg(date, badge_id, inside, self.create_token(
+    def send_log(self, date, badge_id, inside) -> tuple:
+        '''
+        >>> client_API = APIClient()
+        >>> file, code = client_API.send_log(*fake_info_stamping())
+        >>> type(file)
+        <class 'http.client.HTTPResponse'>
+        >>> code
+        201
+        '''
+        print('APIClient.send_log', file=sys.stderr)
+        arg = self.create_arg_args(date, badge_id, inside, self.create_token(
             date, badge_id, inside)
         )
-        url = self.create_url(self.base_url, self.method[0], arg)
-        tmp = self.send(url)
-        print(type(tmp))
-        print(tmp)
-        return tmp[1]
+        url = self.create_url_n(0, 0, arg)
+        return self.send(url)
 
     def receve_logs(self, log_id) -> list[dict]:
         '''
         receve all logs from the server
+        >>> api_client = APIClient()
+        >>> logs = api_client.receve_logs(413)
+        >>> type(logs)
+        <class 'list'>
+        >>> type(logs[0])
+        <class 'dict'>
         '''
-        print('receve_logs')
-        print(log_id)
-        url = self.create_url(self.base_url, self.method[1], log_id)
-        print(url)
+        print('receve_logs', file=sys.stderr)
+        print(log_id, file=sys.stderr)
+        url = self.create_url_n(0, 1, log_id)
+        print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())
 
+    def send_badge_and_user(self, badge_id:int, name:str, surname:str):
+        '''
+        >>> api_client = APIClient()
+        >>> file, code = api_client.send_badge_and_user(44, 'John', 'Malc')
+        >>> type(file)
+        <class 'http.client.HTTPResponse'>
+        >>> code
+        201
+        '''
+        print('APIClient.send_badge_and_user', file=sys.stderr)
+        arg = self.create_arg_args(badge_id, name, surname,
+            self.create_token_args(badge_id, name, surname))
+        url = self.create_url_n(1, 0, arg)
+        print(url, file=sys.stderr)
+        return self.send(url)
+
+    @staticmethod
+    def create_arg_args(*args) -> str:
+        '''
+        >>> APIClient.create_arg_args('a', 'b', 'c')
+        'a/b/c'
+        '''
+        print('create_arg_args', file=sys.stderr)
+        text = reduce(lambda cumulator, word:f'{cumulator}/{word}', args)
+        return quote(text)
+
+    def create_token_args(self, *args) -> str:
+        '''
+        >>> badge_id, name, surname = 1, 'Sam', 'Smith'
+        >>> api_client = APIClient()
+        >>> api_client.create_token_args(badge_id, name, surname)
+        'c8261428a992984fea981d45714c09c3f0207423e0f1626c2508ae171aa4c134'
+        '''
+        text = reduce(lambda cumulator, word:f'{cumulator}{word}',
+            args).encode()
+        key = self.load_key().encode()
+        token_text = hmac.new(key, text, 'sha256').hexdigest()
+        return token_text
     
 
 def fake_info_stamping() -> tuple:
@@ -78,18 +144,12 @@ def fake_info_stamping() -> tuple:
     return date, badge_id, inside
 
 def main():
-    test = 2
+    test = 0
     if test == 0:
+        import doctest
+        doctest.testmod()
+    elif test == 1:
         pass
-    if test == 1:
-        client_API = APIClient()
-        client_API.invoke_send_log(*fake_info_stamping())
-    if test == 2:
-        client_API = APIClient()
-        tmp = client_API.receve_logs(413)
-        print(type(tmp), tmp)
-        print(type(tmp[0]), tmp[0])
-
 
 if __name__ == "__main__":
     main()
