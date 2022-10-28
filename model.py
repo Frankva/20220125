@@ -7,6 +7,7 @@ import datetime
 
 import warnings
 import api_client
+import sys
 
 
 class Model:
@@ -50,7 +51,7 @@ class Model:
     def connect(self):
         self.connection = mariadb.connect(**self.conn_params)
         self.cursor = self.connection.cursor()
-        print('connect')
+        print('connect', file=sys.stderr)
     
     def disconnect(self):
         self.connection.commit()
@@ -179,18 +180,46 @@ class Model:
         print(value)
         self.execute_and_commit(sql, value)
 
+    def call_insert_sync_user_badge(self, data:tuple):
+        '''
+        call a stored procedure that insert badge in the sync_badge table, 
+        >>> model = Model()
+        >>> model.call_insert_sync_user_badge(tuple([49, 8, 'a', 'b']))
+        test
+        '''
+        print('call_insert_sync_badge', file=sys.stderr)
+        sql = 'CALL `insert_users_and_badges`(?, ?, ?, ?);'
+        self.execute_and_commit(sql, data)
+
+    # will be renamed in select_unsync_logs
     def call_get_unsync_log(self) -> mariadb.connection.cursor:
         '''
         select all logs in write table that is not in sync table,
         the return is like a tuple
         '''
-        print('call_get_unsync_log')
-        sql = 'CALL `get_unsync_log`;'
+        print('call_get_unsync_log', file=sys.stderr)
+        # sql = 'CALL `get_unsync_log`;'
         sql = ('SELECT `date`, `id_badge`, `inside`'
         'FROM `log_write`'
         'WHERE (`date`, `id_badge`, `inside`)'
         'NOT IN (SELECT `date`, `id_badge`, `inside` FROM `log_sync`);')
-        print(sql)
+        self.cursor.execute(sql)
+        return self.cursor
+
+    def select_unsync_badges_and_users(self) -> mariadb.connection.cursor:
+        '''
+        select all badge id and user's names attach to badge id
+        >>> model = Model()
+        >>> cursor = model.select_unsync_badges_and_users()
+        >>> type(cursor)
+        <class 'mariadb.connection.cursor'>
+        '''
+        print('select_unsync_badges_and_users', file=sys.stderr)
+        sql = ('SELECT `id_badge`, `name`, `surname` '
+               'FROM `badge_write` LEFT OUTER JOIN `user_write` '
+               'ON `badge_write`.`id_user` = `user_write`.`id_user` '
+               'WHERE `id_badge` '
+               'NOT IN (SELECT `id_badge` FROM `badge_sync`);')
         self.cursor.execute(sql)
         return self.cursor
     
@@ -198,10 +227,24 @@ class Model:
         '''
         send all logs from the local database to the remote server
         '''
-        print('send_logs')
+        print('send_logs', file=sys.stderr)
         for log in self.call_get_unsync_log():
             print(self.api_client.send_log(*log))
-        print('end invoke_send_logs')
+        print('end invoke_send_logs', file=sys.stderr)
+
+    def send_unsync_badges_and_users(self):
+        '''
+        send all badge and user from the local database to the remote server
+        >>> model = Model()
+        >>> ids = model.test_add_user()
+        >>> model.send_unsync_badges_and_users()
+        201
+        '''
+        print('send_unsync_badges_and_users', file=sys.stderr)
+        for badge_and_names in self.select_unsync_badges_and_users():
+            _, code = self.api_client.send_badge_and_user(*badge_and_names)
+            print(code)
+
             
     def insert_and_send_logs(self, value:tuple):
         print('insert_and_send_logs')
@@ -209,20 +252,72 @@ class Model:
         self.send_logs()
     
     def get_last_log_id(self) -> int:
-        print('get_last_id_log')
+        print('get_last_log_id')
         sql = 'SELECT MAX(`id_log`) FROM log_sync;'
         self.cursor.execute(sql)
         return self.cursor.next()[0]
 
-    def invoke_receve_logs(self) -> None:
+    def get_last_badge_id(self) -> int:
         '''
-        receve all logs form remote server and insert in local database
+        get the last id badge,
+        maybe better to use last id user
+
+        >>> model = Model()
+        >>> isinstance(model.get_last_badge_id(), int)
+        True
         '''
-        print('model.invoke_receve_logs')
-        for log in self.api_client.receve_logs(self.get_last_log_id()):
-            print(log)
+        print('get_last_badge_id', file=sys.stderr)
+        sql = 'SELECT COUNT(`id_badge`) FROM badge_sync;'
+        self.cursor.execute(sql)
+        count = self.cursor.next()[0]
+        print(count, file=sys.stderr)
+        sql2 = f'SELECT `id_badge` FROM badge_sync LIMIT {count-1}, 1;'
+        print(sql2, file=sys.stderr)
+        self.cursor.execute(sql2, count)
+        tmp = self.cursor.next()[0]
+        print(tmp, file=sys.stderr)
+        return tmp
+    
+    def get_last_badge_id_via_last_user(self) -> int:
+        '''
+        get the last id badge,
+        that is correct if the last user have the last badge
+        >>> model = Model()
+        >>> isinstance(model.get_last_badge_id_via_last_user(), int)
+        True
+        '''
+        print('get_last_badge_id_via_last_user', file=sys.stderr)
+        sql = ('SELECT id_badge '
+        'FROM badge_sync '
+        'WHERE id_user '
+        'IN (SELECT MAX(`id_user`) FROM user_sync);')
+        self.cursor.execute(sql)
+        return self.cursor.next()[0]
+
+
+    def invoke_receive_logs(self) -> None:
+        '''
+        receive all logs from remote server and insert in local database
+        '''
+        print('model.invoke_receive_logs', file=sys.stderr)
+        for log in self.api_client.receive_logs(self.get_last_log_id()):
+            print(log, file=sys.stderr)
             # insert one per one in local. can be better
             self.call_insert_sync_log(tuple(log.values()))
+        
+    def invoke_receive_users_and_badges(self) -> None:
+        '''
+        receive all users and badges from remote server and insert in local
+        database
+        '''
+        print('invoke_receive_users_and_badges', file=sys.stderr)
+        for badge_and_user in self.api_client.receive_users_and_badges(
+                self.get_last_badge_id_via_last_user()):
+            print(badge_and_user, file=sys.stderr)
+            # insert one per one in local. can be better
+            self.call_insert_sync_user_badge(badge_and_user)
+            
+        
 
 
 
@@ -404,6 +499,27 @@ class Model:
         value = (pipe['id_badge'], id)
         self.call_insert_badge(value)
 
+    def test_add_user(self):
+        '''
+        just for unit test
+        '''
+        print('test_add_user', file=sys.stderr)
+        value = ('test', 'test')
+        self.call_insert_user(value)
+        id = self.select_new_user(value)
+        value = (50, id)
+        self.call_insert_badge(value)
+        return value
+
+    def test_del_user(self, user_id, badge_id):
+        '''
+        just for unit test
+        '''
+        sql_user = 'DELETE FROM user_write WHERE id_user=?;'
+        sql_badge = 'DELETE FROM badge_write WHERE id_badge=?;'
+        self.execute_and_commit(sql_user, user_id)
+        self.execute_and_commit(sql_badge, badge_id)
+
 
 
 
@@ -553,10 +669,14 @@ def test12():
 
 def test13():    
     model = Model()
-    model.invoke_receve_logs()
+    model.invoke_receive_logs()
 
 
+def doctest():
+    import doctest
+    doctest.testmod()
 
 
 if __name__ == '__main__':
-    test13()
+    #test13()
+    doctest()

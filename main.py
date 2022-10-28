@@ -18,7 +18,7 @@ class App:
 
     def __init__(self):
         self.view = view.View()
-        self.theard_view = threading.Thread(target=self.view.load)
+        self.thread_view = threading.Thread(target=self.view.load)
         #self.log = open("main_log.txt", "a")
 
         self.rfid = rfid.Rfid()
@@ -27,17 +27,17 @@ class App:
         self.pipe['cancel'] = False
         self.reset_pipe()
         self.model = model.Model()
-        self.theard_model_request = None
-        self.theard_model_insert = None
-        self.theard_model_new_user = None
-        self.theard_wait_quit = threading.Thread(target=self.wait_quit,
+        self.thread_model_request = None
+        self.thread_model_insert = None
+        self.thread_model_new_user = None
+        self.thread_wait_quit = threading.Thread(target=self.wait_quit,
                 args=(self.pipe, ))
-        self.theard_send = None
-        self.theard_receve = None
+        self.thread_send = None
+        self.thread_receve = None
 
     def load(self):
-        self.theard_view.start()
-        self.theard_wait_quit.start()
+        self.thread_view.start()
+        self.thread_wait_quit.start()
         self.view.read_pipe(self.pipe)
         while True:
             self.update()
@@ -50,7 +50,7 @@ class App:
             pass
         finally:
             self.model.connect()
-        self.invoke_receve() # to test if there are more waiting screen
+        self.invoke_receve_logs() # to test if there are more waiting screen
         self.turn_on_screen()
         self.do_model_request()
         print('unknown', self.is_unknown())
@@ -72,39 +72,39 @@ class App:
             return
         self.invoke_insert()
         self.view.do_wait_scene()
-        self.invoke_send()
-        self.invoke_receve()
+        self.invoke_send_log()
+        self.invoke_receve_logs()
         self.reset()
     
     def invoke_insert(self):
-        self.safe_wait_thread(self.theard_model_insert)
-        self.theard_model_insert = threading.Thread(
+        self.safe_wait_thread(self.thread_model_insert)
+        self.thread_model_insert = threading.Thread(
             target=self.model.call_insert_log, args=((self.pipe['id_badge'],
                                                       self.pipe['inside']), ))
-        self.theard_model_insert.start()
-        self.theard_model_insert.join()
+        self.thread_model_insert.start()
+        self.thread_model_insert.join()
     
-    def invoke_send(self) -> None:
+    def invoke_send_log(self) -> None:
         '''
-        manage therad to send all new logs from local
+        manage thread to send all new logs from local
         '''
-        print('invoke_send')
-        self.safe_wait_thread(self.theard_send)
-        self.theard_send = threading.Thread(
+        print('invoke_send_log')
+        self.safe_wait_thread(self.thread_send)
+        self.thread_send = threading.Thread(
             target=self.model.send_logs)
-        self.theard_send.start()
-        self.theard_send.join()
+        self.thread_send.start()
+        self.thread_send.join()
 
-    def invoke_receve(self) -> None:
+    def invoke_receve_logs(self) -> None:
         '''
-        manage theard to receve all new logs from remote
+        manage thread to receve all new logs from remote
         '''
-        print('invoke_receve')
-        self.safe_wait_thread(self.theard_receve)
-        self.theard_receve = threading.Thread(
-            target=self.model.invoke_receve_logs)
-        self.theard_receve.start()
-        self.theard_receve.join()
+        print('invoke_receve_logs')
+        self.safe_wait_thread(self.thread_receve)
+        self.thread_receve = threading.Thread(
+            target=self.model.invoke_receive_logs)
+        self.thread_receve.start()
+        self.thread_receve.join()
 
 
     @staticmethod
@@ -135,10 +135,10 @@ class App:
         with a thread
         '''
         print('do_rfid()')
-        self.theard_rfid = threading.Thread(target=self.rfid.read_pipe,
+        self.thread_rfid = threading.Thread(target=self.rfid.read_pipe,
                                             args=(self.pipe, ))
-        self.theard_rfid.start()
-        self.theard_rfid.join()
+        self.thread_rfid.start()
+        self.thread_rfid.join()
 
     def do_model_request(self):
         '''
@@ -146,20 +146,20 @@ class App:
         with a thread
         '''
         print('do_model_request()')
-        self.safe_wait_thread(self.theard_model_request)
-        self.theard_model_request = threading.Thread(
+        self.safe_wait_thread(self.thread_model_request)
+        self.thread_model_request = threading.Thread(
             target=self.model.read_name_log, args=(self.pipe, ))
-        self.theard_model_request.start()
-        self.theard_model_request.join()
+        self.thread_model_request.start()
+        self.thread_model_request.join()
         print('end do_model_request', self.pipe)
 
     def do_model_new_user(self):
         print('do_model_new_user()')
-        self.safe_wait_thread(self.theard_model_new_user)
-        self.theard_model_new_user = threading.Thread(
+        self.safe_wait_thread(self.thread_model_new_user)
+        self.thread_model_new_user = threading.Thread(
             target=self.model.invoke_new_user, args=(self.pipe, ))
-        self.theard_model_new_user.start()
-        self.theard_model_new_user.join()
+        self.thread_model_new_user.start()
+        self.thread_model_new_user.join()
     
 
     def filterInsert(self):

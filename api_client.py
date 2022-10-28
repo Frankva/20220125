@@ -6,12 +6,21 @@ import urllib.error
 from functools import reduce
 import sys
 import warnings
+from enum import Enum
+
+class Method(Enum):
+    ADD = 'add'
+    GET_LOGS = 'get_logs'
+    GET = 'get'
+class Controller(Enum):
+    LOGS = 'Logs'
+    BADGES = 'Badges'
 
 class APIClient:
     def __init__(self) -> None:
         self.base_url = 'https://timbreuse.sectioninformatique.net'
-        self.controller = ('Logs', 'Badges')
-        self.method = ('add', 'get_logs')
+        # self.controller = ('Logs', 'Badges')
+        # self.method = ('add', 'get_logs')
 
     @staticmethod
     def load_key() -> str:
@@ -34,15 +43,15 @@ class APIClient:
         warnings.warn("use create_url_n", DeprecationWarning)
         return f'{base_url}/{method}/{arg}'
 
-    def create_url_n(self, controller_id:int, method_id:int, arg:str) -> str:
+    def create_url_n(self, controller:str, method:str, arg:str) -> str:
         '''
         >>> api_client = APIClient()
-        >>> api_client.create_url_n(0, 0, '2/3/4')
+        >>> api_client.create_url_n('Logs', 'add', '2/3/4')
         'https://timbreuse.sectioninformatique.net/Logs/add/2/3/4'
         '''
         # return f'{base_url}/{method}/{arg}'
-        return (f'{self.base_url}/{self.controller[controller_id]}/'
-        f'{self.method[method_id]}/{arg}')
+        return (f'{self.base_url}/{controller}/'
+        f'{method}/{arg}')
 
     def send(self, url) -> tuple:
         '''
@@ -75,24 +84,26 @@ class APIClient:
         arg = self.create_arg_args(date, badge_id, inside, self.create_token(
             date, badge_id, inside)
         )
-        url = self.create_url_n(0, 0, arg)
+        url = self.create_url_n(Controller.LOGS.value, Method.ADD.value, arg)
         return self.send(url)
 
-    def receve_logs(self, log_id) -> list[dict]:
+    def receive_logs(self, log_id) -> list[dict]:
         '''
-        receve all logs from the server
+        receive all logs from the server
         >>> api_client = APIClient()
-        >>> logs = api_client.receve_logs(413)
+        >>> logs = api_client.receive_logs(413)
         >>> type(logs)
         <class 'list'>
         >>> type(logs[0])
         <class 'dict'>
         '''
-        print('receve_logs', file=sys.stderr)
+        print('receive_logs', file=sys.stderr)
         print(log_id, file=sys.stderr)
-        url = self.create_url_n(0, 1, log_id)
+        url = self.create_url_n(Controller.LOGS.value, Method.GET_LOGS.value, 
+            log_id)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
+        
         return json.loads(html_file.readline())
 
     def send_badge_and_user(self, badge_id:int, name:str, surname:str):
@@ -107,9 +118,27 @@ class APIClient:
         print('APIClient.send_badge_and_user', file=sys.stderr)
         arg = self.create_arg_args(badge_id, name, surname,
             self.create_token_args(badge_id, name, surname))
-        url = self.create_url_n(1, 0, arg)
+        url = self.create_url_n(Controller.BADGES.value, Method.ADD.value, arg)
         print(url, file=sys.stderr)
         return self.send(url)
+
+    def receive_users_and_badges(self, badge_id) -> list[dict]:
+        '''
+        receive all users and badges from the server
+         >>> api_client = APIClient()
+         >>> logs = api_client.receive_users_and_badges(97)
+         >>> type(logs)
+         <class 'list'>
+         >>> type(logs[0])
+         <class 'dict'>
+        '''
+        print('receive_users_and_badges', file=sys.stderr)
+        print(badge_id, file=sys.stderr)
+        url = self.create_url_n(Controller.BADGES.value, Method.GET.value,
+            badge_id)
+        print(url, file=sys.stderr)
+        html_file = self.send(url)[0]
+        return json.loads(html_file.readline())
 
     @staticmethod
     def create_arg_args(*args) -> str:
