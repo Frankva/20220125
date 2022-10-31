@@ -315,7 +315,7 @@ class Model:
                 self.get_last_badge_id_via_last_user()):
             print(badge_and_user, file=sys.stderr)
             # insert one per one in local. can be better
-            self.call_insert_sync_user_badge(badge_and_user)
+            self.call_insert_sync_user_badge(tuple(badge_and_user.values()))
             
         
 

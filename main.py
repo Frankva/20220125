@@ -9,6 +9,7 @@ try:
 except:
     import fake_rfid as rfid
 import model
+import sys
 
 
 class App:
@@ -32,8 +33,10 @@ class App:
         self.thread_model_new_user = None
         self.thread_wait_quit = threading.Thread(target=self.wait_quit,
                 args=(self.pipe, ))
-        self.thread_send = None
-        self.thread_receve = None
+        self.thread_send_log = None
+        self.thread_send_badges_and_users = None
+        self.thread_receive_log = None
+        self.thread_receive_users_and_badges = None
 
     def load(self):
         self.thread_view.start()
@@ -50,10 +53,12 @@ class App:
             pass
         finally:
             self.model.connect()
-        self.invoke_receve_logs() # to test if there are more waiting screen
+        self.invoke_send_unsunc_badges_and_users()
+        self.invoke_receive_logs() # to test if there are more waiting screen
+        self.invoke_receive_users_and_badges()
         self.turn_on_screen()
         self.do_model_request()
-        print('unknown', self.is_unknown())
+        print('unknown', self.is_unknown(), file=sys.stderr)
         if self.is_unknown():
             self.view.do_unknown_badge_dict(self.pipe)
         else:
@@ -68,12 +73,13 @@ class App:
             return
         if self.pipe['new_user_valid']:
             self.do_model_new_user()
+            self.invoke_send_unsunc_badges_and_users()
             self.reset()
             return
         self.invoke_insert()
         self.view.do_wait_scene()
         self.invoke_send_log()
-        self.invoke_receve_logs()
+        self.invoke_receive_logs()
         self.reset()
     
     def invoke_insert(self):
@@ -88,23 +94,46 @@ class App:
         '''
         manage thread to send all new logs from local
         '''
-        print('invoke_send_log')
-        self.safe_wait_thread(self.thread_send)
-        self.thread_send = threading.Thread(
+        print('invoke_send_log', file=sys.stderr)
+        self.safe_wait_thread(self.thread_send_log)
+        self.thread_send_log = threading.Thread(
             target=self.model.send_logs)
-        self.thread_send.start()
-        self.thread_send.join()
+        self.thread_send_log.start()
+        self.thread_send_log.join()
+    
+    def invoke_send_unsunc_badges_and_users(self) -> None:
+        '''
+        manage thread to send all new badges and users
+        '''
+        print('invoke_send_unsunc_badges_and_users', file=sys.stderr)
+        self.safe_wait_thread(self.thread_send_badges_and_users)
+        self.thread_send_badges_and_users = threading.Thread(
+            target=self.model.send_unsync_badges_and_users)
+        self.thread_send_badges_and_users.start()
+        self.thread_send_badges_and_users.join()
 
-    def invoke_receve_logs(self) -> None:
+
+    def invoke_receive_logs(self) -> None:
         '''
-        manage thread to receve all new logs from remote
+        manage thread to receive all new logs from remote
         '''
-        print('invoke_receve_logs')
-        self.safe_wait_thread(self.thread_receve)
-        self.thread_receve = threading.Thread(
+        print('invoke_receive_logs', file=sys.stderr)
+        self.safe_wait_thread(self.thread_receive_log)
+        self.thread_receive_log = threading.Thread(
             target=self.model.invoke_receive_logs)
-        self.thread_receve.start()
-        self.thread_receve.join()
+        self.thread_receive_log.start()
+        self.thread_receive_log.join()
+
+    def invoke_receive_users_and_badges(self) -> None:
+        '''
+        manage thread to receive all users and badges
+        '''
+        print('invoke_receive_users_and_badges', file=sys.stderr)
+        self.safe_wait_thread(self.thread_receive_users_and_badges)
+        self.thread_receive_users_and_badges = threading.Thread(
+            target=self.model.invoke_receive_users_and_badges)
+        self.thread_receive_users_and_badges.start()
+        self.thread_receive_users_and_badges.join()
 
 
     @staticmethod
@@ -114,7 +143,7 @@ class App:
         while not pipe['quit']:
             wait_thread.wait()
         wait_thread.release()
-        print('exit wait_quit')
+        print('exit wait_quit', file=sys.stderr)
         _thread.interrupt_main() 
 
 
@@ -134,7 +163,7 @@ class App:
         scanne rfid, put id in pipe
         with a thread
         '''
-        print('do_rfid()')
+        print('do_rfid()', file=sys.stderr)
         self.thread_rfid = threading.Thread(target=self.rfid.read_pipe,
                                             args=(self.pipe, ))
         self.thread_rfid.start()
@@ -145,16 +174,16 @@ class App:
         read user data from database
         with a thread
         '''
-        print('do_model_request()')
+        print('do_model_request()', file=sys.stderr)
         self.safe_wait_thread(self.thread_model_request)
         self.thread_model_request = threading.Thread(
             target=self.model.read_name_log, args=(self.pipe, ))
         self.thread_model_request.start()
         self.thread_model_request.join()
-        print('end do_model_request', self.pipe)
+        print('end do_model_request', self.pipe, file=sys.stderr)
 
     def do_model_new_user(self):
-        print('do_model_new_user()')
+        print('do_model_new_user()', file=sys.stderr)
         self.safe_wait_thread(self.thread_model_new_user)
         self.thread_model_new_user = threading.Thread(
             target=self.model.invoke_new_user, args=(self.pipe, ))
@@ -186,7 +215,7 @@ class App:
         while ((self.pipe["inside"] == None) and (not self.is_cancel()) and
                 (not self.pipe['new_user_valid']) and (not self.pipe['quit'])):
             wait_thread.wait()
-            print('choice done')
+            print('choice done', file=sys.stderr)
             wait_thread.release()
 
     def do_next_scene(self):
@@ -225,7 +254,7 @@ class App:
         self.pipe['quit'] = False
 
     def reset(self):
-        print('reset()')
+        print('reset()', file=sys.stderr)
         self.reset_pipe()
         #self.model.disconnect()
         #self.model.connect()
@@ -245,7 +274,7 @@ class App:
 #        self.pipe['id_badge'] = 183985410385
 #
     def is_unknown(self):
-        print('name', self.pipe['name'])
+        print('name', self.pipe['name'], file=sys.stderr)
         return self.pipe['name'] == ''
 
 

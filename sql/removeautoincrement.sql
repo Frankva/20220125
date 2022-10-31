@@ -1,2 +1,2 @@
-alter table `log_sync` change id_log id_log int;
-alter table `user_sync` change id_user id_user int;
+ALTER TABLE `log_sync` CHANGE id_log id_log INT;
+ALTER TABLE `user_sync` CHANGE id_user id_user INT;
