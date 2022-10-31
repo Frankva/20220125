@@ -732,8 +732,19 @@ class SceneKeyboard(SceneTime):
 
 
     def update(self):
+        # print('view.SceneKeyboard.update', file=sys.stderr)
         super().update()
-        self.keyboard.update(self.view.events)
+        events = self.view.events
+        if Mouse().only_mouse:
+            filtered_events = list(filter(lambda event: event.type in (
+                Mouse().button['down'] | Mouse().button['up']), events))
+        else:
+            filtered_events = events
+        #print('filtered_events : ', filtered_events, file=sys.stderr)
+       #  if self.view.events.type in (Mouse.button['down'] |
+       #                               Mouse.button['up']):
+        # self.keyboard.update(self.view.events)
+        self.keyboard.update(filtered_events)
         self.do_press_button()
 
     def draw(self):
