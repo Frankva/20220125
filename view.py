@@ -766,9 +766,14 @@ class Mouse:
     '''
     unify MOUSEBUTTONDOWN and FINGERDOWN
     '''
+    only_mouse = True
     button = dict()
-    button['down'] = set([pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN])
-    button['up'] = set([pygame.MOUSEBUTTONUP, pygame.FINGERUP])
+    if only_mouse:
+        button['down'] = set([pygame.MOUSEBUTTONDOWN])
+        button['up'] = set([pygame.MOUSEBUTTONUP])
+    else:
+        button['down'] = set([pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN])
+        button['up'] = set([pygame.MOUSEBUTTONUP, pygame.FINGERUP])
     def __init__(self) -> None:
         self.left = False
         self.old_left = False
