@@ -766,18 +766,24 @@ class Mouse:
     '''
     unify MOUSEBUTTONDOWN and FINGERDOWN
     '''
+    button = dict()
+    button['down'] = set([pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN])
+    button['up'] = set([pygame.MOUSEBUTTONUP, pygame.FINGERUP])
     def __init__(self) -> None:
         self.left = False
         self.old_left = False
 
+
     def update(self, events):
         self.old_left = self.left
         for event in events:
-            if (pygame.MOUSEBUTTONDOWN == event.type) or (pygame.FINGERDOWN == 
-            event.type):
+           # if (pygame.MOUSEBUTTONDOWN == event.type) or (pygame.FINGERDOWN == 
+           # event.type):
+            if  event.type in self.button['down']:
                 self.left = True
-            elif (pygame.MOUSEBUTTONUP == event.type) or (pygame.FINGERUP == 
-            event.type):
+            # elif (pygame.MOUSEBUTTONUP == event.type) or (pygame.FINGERUP == 
+            # event.type):
+            elif event.type in self.button['up']:
                 self.left = False
         
     def release(self, button: str):
