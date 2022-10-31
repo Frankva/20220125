@@ -110,6 +110,6 @@ BEGIN
 END //
 DELIMITER ;
 
-CALL `insert_users_and_badges`(42);
+-- CALL `insert_users_and_badges`(42);
 
 
