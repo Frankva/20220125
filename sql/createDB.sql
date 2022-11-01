@@ -1,7 +1,7 @@
--- CREATE DATABASE `timbreuse2022`;
-CREATE DATABASE `db20221101081819`;
--- USE `timbreuse2022`;
-USE `db20221101081819`;
+CREATE DATABASE `timbreuse2022`;
+-- CREATE DATABASE `db20221101081819`;
+USE `timbreuse2022`;
+-- USE `db20221101081819`;
 CREATE TABLE `user_sync` ( `id_user` int(11) NOT NULL, `name` text COLLATE utf8mb4_unicode_ci NOT NULL, `surname` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id_user`)) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 CREATE TABLE `user_write` ( `id_user` int(11) NOT NULL AUTO_INCREMENT, `name` text COLLATE utf8mb4_unicode_ci NOT NULL, `surname` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id_user`)) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 CREATE TABLE `badge_sync` ( `id_badge` bigint(20) NOT NULL, `id_user` int(11) NOT NULL, PRIMARY KEY (`id_badge`), FOREIGN KEY (`id_user`) REFERENCES `user_sync` (`id_user`)) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
