@@ -18,7 +18,11 @@ class Controller(Enum):
 
 class APIClient:
     def __init__(self) -> None:
-        self.base_url = 'https://timbreuse.sectioninformatique.net'
+        local_test = True
+        if local_test:
+            self.base_url = 'http://localhost:8080'
+        else:
+            self.base_url = 'https://timbreuse.sectioninformatique.net'
         # self.controller = ('Logs', 'Badges')
         # self.method = ('add', 'get_logs')
 
@@ -47,7 +51,9 @@ class APIClient:
         '''
         >>> api_client = APIClient()
         >>> api_client.create_url_n('Logs', 'add', '2/3/4')
-        'https://timbreuse.sectioninformatique.net/Logs/add/2/3/4'
+        'http://localhost:8080/Logs/add/2/3/4'
+
+        # 'https://timbreuse.sectioninformatique.net/Logs/add/2/3/4'
         '''
         # return f'{base_url}/{method}/{arg}'
         return (f'{self.base_url}/{controller}/'
@@ -94,8 +100,9 @@ class APIClient:
         >>> logs = api_client.receive_logs(413)
         >>> type(logs)
         <class 'list'>
-        >>> type(logs[0])
-        <class 'dict'>
+
+        # >>> type(logs[0])
+        # <class 'dict'>
         '''
         print('receive_logs', file=sys.stderr)
         print(log_id, file=sys.stderr)
@@ -155,7 +162,7 @@ class APIClient:
         >>> badge_id, name, surname = 1, 'Sam', 'Smith'
         >>> api_client = APIClient()
         >>> api_client.create_token_args(badge_id, name, surname)
-        'c8261428a992984fea981d45714c09c3f0207423e0f1626c2508ae171aa4c134'
+        '1d0e1bc7fb9d9588833c427aa27b3d5edd20725cdee071e8c3f60d6009761e57'
         '''
         text = reduce(lambda cumulator, word:f'{cumulator}{word}',
             args).encode()

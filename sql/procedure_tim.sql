@@ -21,15 +21,16 @@ END //
 DELIMITER ;
 
 DELIMITER //
-
 DROP PROCEDURE IF EXISTS `insert_sync_log`;
 CREATE PROCEDURE `insert_sync_log`(_date DATETIME, id_badge BIGINT,
-    inside BOOL, id_log INT) 
+    inside BOOL, id_log INT, id_user INT) 
  MODIFIES SQL DATA
 BEGIN
-    INSERT INTO `log_sync` (`date`, `id_badge`, `inside`, `id_log`) VALUES
-    (_date, id_badge, inside, id_log);
+    INSERT INTO `log_sync` (`date`, `id_badge`, `inside`, `id_log`, `id_user`)
+    VALUES (_date, id_badge, inside, id_log, id_user);
     -- to be optimize
+    -- maybe use a trigger instead
+    -- see to add index on id_badge or id_user
     CALL `delete_log_write`;
 END //
 DELIMITER ;

@@ -176,7 +176,7 @@ class Model:
         all fiel are need
         '''
         print('call_insert_sync_log')
-        sql = 'CALL `insert_sync_log`(?, ?, ?, ?);'
+        sql = 'CALL `insert_sync_log`(?, ?, ?, ?, ?);'
         print(value)
         self.execute_and_commit(sql, value)
 
@@ -185,7 +185,6 @@ class Model:
         call a stored procedure that insert badge in the sync_badge table, 
         >>> model = Model()
         >>> model.call_insert_sync_user_badge(tuple([49, 8, 'a', 'b']))
-        test
         '''
         print('call_insert_sync_badge', file=sys.stderr)
         sql = 'CALL `insert_users_and_badges`(?, ?, ?, ?);'
@@ -238,6 +237,7 @@ class Model:
         >>> model = Model()
         >>> ids = model.test_add_user()
         >>> model.send_unsync_badges_and_users()
+
         201
         '''
         print('send_unsync_badges_and_users', file=sys.stderr)
