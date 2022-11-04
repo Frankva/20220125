@@ -53,7 +53,7 @@ class App:
             pass
         finally:
             self.model.connect()
-        self.invoke_send_unsunc_badges_and_users()
+        self.invoke_send_unsync_badges_and_users()
         self.invoke_receive_logs() # to test if there are more waiting screen
         self.invoke_receive_users_and_badges()
         self.turn_on_screen()
@@ -73,7 +73,7 @@ class App:
             return
         if self.pipe['new_user_valid']:
             self.do_model_new_user()
-            self.invoke_send_unsunc_badges_and_users()
+            self.invoke_send_unsync_badges_and_users()
             self.reset()
             return
         self.invoke_insert()
@@ -101,11 +101,11 @@ class App:
         self.thread_send_log.start()
         self.thread_send_log.join()
     
-    def invoke_send_unsunc_badges_and_users(self) -> None:
+    def invoke_send_unsync_badges_and_users(self) -> None:
         '''
         manage thread to send all new badges and users
         '''
-        print('invoke_send_unsunc_badges_and_users', file=sys.stderr)
+        print('invoke_send_unsync_badges_and_users', file=sys.stderr)
         self.safe_wait_thread(self.thread_send_badges_and_users)
         self.thread_send_badges_and_users = threading.Thread(
             target=self.model.send_unsync_badges_and_users)
