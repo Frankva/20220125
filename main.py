@@ -39,7 +39,6 @@ class App:
         self.thread_receive_users_and_badges = None
 
     def load(self):
-        subprocess.run(['xset', 'dpms', 'force', 'off'])
         self.thread_view.start()
         self.thread_wait_quit.start()
         self.view.read_pipe(self.pipe)
@@ -150,8 +149,9 @@ class App:
     def turn_on_screen():
         try:
             if os.name != 'nt':
-                # subprocess.run(['xset', 'dpms', 'force', 'on'])
-                subprocess.run(['xset', 'dpms', 'force', 'on', 's', '60s'])
+                subprocess.run(['xset', 'dpms', 'force', 'on'])
+                # subprocess.run(['xset', 'dpms', 'force', 'on', 's', '60s'])
+                subprocess.run(['xset', 'dpms', 'fp', 'default'])
                 # subprocess.run(['xset', 'dpms', 'force', 'off', 's', '30s'])
         except:
             pass
