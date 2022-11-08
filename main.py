@@ -150,8 +150,8 @@ class App:
         try:
             if os.name != 'nt':
                 # subprocess.run(['xset', 'dpms', 'force', 'on'])
-                # subprocess.run(['xset', 'dpms', 'force', 'on', 's', '30'])
-                subprocess.run(['xset', 'dpms', 'force', 'off', 's', '30'])
+                # subprocess.run(['xset', 'dpms', 'force', 'on', 's', '30s'])
+                subprocess.run(['xset', 'dpms', 'force', 'on', 's', '30s'])
         except:
             pass
 
