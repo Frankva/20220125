@@ -47,8 +47,9 @@ mariadb-server
 - [ ] requête log quand le bouton est appuyé
 - [~] ferme proprement le script quand la view est fermé
 
-
 ## bug
-- plus de 12 logs dans le détail d'un provoque un empilement des caractère
+- [x] plus de 12 logs dans le détail d'un provoque un empilement des caractère
 - Utilisateur peut mettre un nom vide
 - Utilisateur peut mettre un nom à double
+- Un badge avec un user id à NULL provoque un dysfonctionnement de la 
+synchronisation

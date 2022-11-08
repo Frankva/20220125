@@ -12,6 +12,7 @@ import sys
 
 class Model:
     def __init__(self) -> None:
+        self.check_with_badge_id = False
         self.conn_params = dict()
         self.api_client = api_client.APIClient()
         if os.name != "nt":
@@ -25,7 +26,8 @@ class Model:
             self.conn_params["password"] = "0"
             #self.conn_params["password"] = ""
             self.conn_params["host"] = "localhost"
-            self.conn_params["database"] = "db20221007"
+            #self.conn_params["database"] = "db20221007"
+            self.conn_params["database"] = "tmp"
             self.conn_params["port"] = 4002
             #self.conn_params["database"] = "timbreuse2022"
         try:
@@ -86,8 +88,12 @@ class Model:
         if id_user is not None:
             pipe['name'], pipe['surname'] = self.select(
                 ('name', 'surname'), 'user', 'id_user', (id_user, ))
-            clog = self.select_log(('date', 'inside'), 'log',
-                                'id_badge', (pipe['id_badge'], ), 'date', 5)
+            if self.check_with_badge_id:
+                clog = self.select_log(('date', 'inside'), 'log',
+                        'id_badge', (pipe['id_badge'], ), 'date', 5)
+            else:
+                clog = self.select_log(('date', 'inside'), 'log',
+                        'id_user', (id_user, ), 'date', 5)
             pipe['log'] = self.cursor_to_dict_in_list(('date', 'inside'), clog)
             self.read_work_time(pipe)
 
@@ -100,7 +106,7 @@ class Model:
     def select_one(self, select_name:str, table_name: str, where_name: str, 
                    value: tuple):
         #sql = f"select id_user from badge where id_badge=483985410385;"
-        sql = f"select {select_name} from {table_name} where {where_name}=?;"
+        sql = f"SELECT {select_name} FROM {table_name} WHERE {where_name}=?;"
         self.cursor.execute(sql, value)
         try:
             return self.cursor.next()[0]
@@ -116,12 +122,18 @@ class Model:
 
     def select_log(self, select_name: tuple, table_name: str, where_name: str,
                    value: tuple, order: str, limit: int):
+        '''
+        >>> model = Model()
+        >>> model.select_log(('date', 'inside'), 'log', 'id_user', (113, ),
+        ... 'date', 5).next()[0]
+        datetime.datetime(2022, 11, 7, 10, 21, 37)
+        '''
         if limit == 0:
-            sql = f"""select {self.format_tuple(select_name)} from {table_name
-                } where {where_name}=? order by {order} desc"""
+            sql = f"""SELECT {self.format_tuple(select_name)} FROM {table_name
+                } WHERE {where_name}=? ORDER BY {order} DESC"""
         else:
-            sql = f"""select {self.format_tuple(select_name)} from {table_name
-                } where {where_name}=? order by {order} desc limit {limit}"""
+            sql = f"""SELECT {self.format_tuple(select_name)} FROM {table_name
+                } WHERE {where_name}=? ORDER BY {order} DESC LIMIT {limit}"""
         self.cursor.execute(sql, value)
         return self.cursor
 
@@ -237,8 +249,8 @@ class Model:
         >>> model = Model()
         >>> ids = model.test_add_user()
         >>> model.send_unsync_badges_and_users()
-
         201
+        >>> model.test_del_user(ids[0])
         '''
         print('send_unsync_badges_and_users', file=sys.stderr)
         for badge_and_names in self.select_unsync_badges_and_users():
@@ -292,6 +304,23 @@ class Model:
         'WHERE id_user '
         'IN (SELECT MAX(`id_user`) FROM user_sync);')
         self.cursor.execute(sql)
+        id = self.cursor.next()[0]
+        if id is not None:
+            return id
+        else:
+            return 0
+
+    def get_last_user_id(self) -> int:
+        '''
+        get the last user id of user_sync table
+        >>> model = Model()
+        >>> isinstance(model.get_last_user_id(), int)
+        True
+        '''
+        print('get_last_user_id', file=sys.stderr)
+        sql = ('SELECT MAX(`id_user`) '
+        'FROM user_sync;')
+        self.cursor.execute(sql)
         return self.cursor.next()[0]
 
 
@@ -312,7 +341,7 @@ class Model:
         '''
         print('invoke_receive_users_and_badges', file=sys.stderr)
         for badge_and_user in self.api_client.receive_users_and_badges(
-                self.get_last_badge_id_via_last_user()):
+                self.get_last_user_id()):
             print(badge_and_user, file=sys.stderr)
             # insert one per one in local. can be better
             self.call_insert_sync_user_badge(tuple(badge_and_user.values()))
@@ -501,24 +530,27 @@ class Model:
 
     def test_add_user(self):
         '''
-        just for unit test
+        just for unit test 
         '''
         print('test_add_user', file=sys.stderr)
-        value = ('test', 'test')
+        value = ('unit', 'test')
         self.call_insert_user(value)
         id = self.select_new_user(value)
-        value = (50, id)
+        value = (51, id)
         self.call_insert_badge(value)
         return value
 
-    def test_del_user(self, user_id, badge_id):
+    def test_del_user(self, badge_id):
         '''
         just for unit test
         '''
-        sql_user = 'DELETE FROM user_write WHERE id_user=?;'
-        sql_badge = 'DELETE FROM badge_write WHERE id_badge=?;'
-        self.execute_and_commit(sql_user, user_id)
-        self.execute_and_commit(sql_badge, badge_id)
+        sql_user_id = 'SELECT `id_user` FROM `badge_write` WHERE `id_badge`=?;'
+        sql_user = 'DELETE FROM `user_write` WHERE `id_user`=?;'
+        sql_badge = 'DELETE FROM `badge_write` WHERE `id_badge`=?;'
+        self.cursor.execute(sql_user_id, (badge_id, ))
+        user_id = self.cursor.next()[0]
+        self.execute_and_commit(sql_user, (user_id, ))
+        self.execute_and_commit(sql_badge, (badge_id, ))
 
 
 

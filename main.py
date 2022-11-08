@@ -54,8 +54,8 @@ class App:
         finally:
             self.model.connect()
         self.invoke_send_unsync_badges_and_users()
-        self.invoke_receive_logs() # to test if there are more waiting screen
         self.invoke_receive_users_and_badges()
+        self.invoke_receive_logs() # to test if there are more waiting screen
         self.turn_on_screen()
         self.do_model_request()
         print('unknown', self.is_unknown(), file=sys.stderr)

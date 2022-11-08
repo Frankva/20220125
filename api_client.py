@@ -129,7 +129,7 @@ class APIClient:
         print(url, file=sys.stderr)
         return self.send(url)
 
-    def receive_users_and_badges(self, badge_id) -> list[dict]:
+    def receive_users_and_badges(self, user_id) -> list[dict]:
         '''
         receive all users and badges from the server
          >>> api_client = APIClient()
@@ -140,9 +140,9 @@ class APIClient:
          <class 'dict'>
         '''
         print('receive_users_and_badges', file=sys.stderr)
-        print(badge_id, file=sys.stderr)
+        print(user_id, file=sys.stderr)
         url = self.create_url_n(Controller.BADGES.value, Method.GET.value,
-            badge_id)
+            user_id)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())
