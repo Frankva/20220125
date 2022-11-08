@@ -46,16 +46,10 @@ class App:
             self.update()
 
     def update(self):
+        self.syncronize_user_badge_log_with_remote()
         self.do_rfid()
-        try:
-            self.model.disconnect()
-        except:
-            pass
-        finally:
-            self.model.connect()
-        self.invoke_send_unsync_badges_and_users()
-        self.invoke_receive_users_and_badges()
-        self.invoke_receive_logs() # to test if there are more waiting screen
+        self.reconnect_local_db()
+        self.syncronize_user_badge_log_with_remote()
         self.turn_on_screen()
         self.do_model_request()
         print('unknown', self.is_unknown(), file=sys.stderr)
@@ -73,15 +67,16 @@ class App:
             return
         if self.pipe['new_user_valid']:
             self.do_model_new_user()
-            self.invoke_send_unsync_badges_and_users()
+            # self.invoke_send_unsync_badges_and_users()
             self.reset()
             return
         self.invoke_insert()
         self.view.do_wait_scene()
-        self.invoke_send_log()
-        self.invoke_receive_logs()
+        # self.invoke_send_log()
+        # self.invoke_receive_logs()
         self.reset()
     
+
     def invoke_insert(self):
         self.safe_wait_thread(self.thread_model_insert)
         self.thread_model_insert = threading.Thread(
@@ -154,7 +149,9 @@ class App:
     def turn_on_screen():
         try:
             if os.name != 'nt':
-                subprocess.run(['xset', 'dpms', 'force', 'on'])
+                # subprocess.run(['xset', 'dpms', 'force', 'on'])
+                # subprocess.run(['xset', 'dpms', 'force', 'on', 's', '30'])
+                subprocess.run(['xset', 'dpms', 'force', 'off', 's', '30'])
         except:
             pass
 
@@ -277,6 +274,18 @@ class App:
         print('name', self.pipe['name'], file=sys.stderr)
         return self.pipe['name'] == ''
 
+    def syncronize_user_badge_log_with_remote(self):
+        self.invoke_send_unsync_badges_and_users()
+        self.invoke_send_log()
+        self.invoke_receive_users_and_badges()
+        self.invoke_receive_logs() 
+    def reconnect_local_db(self):
+        try:
+            self.model.disconnect()
+        except:
+            pass
+        finally:
+            self.model.connect()
 
 
 def main():
