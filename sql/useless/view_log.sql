@@ -1,4 +1,6 @@
-
+-- log view is log_sync and log_write combine (with a union); log_write take
+-- the user id of the badge view (badge_sync+badge_write) with a join
+-- this script is in createDB.sql
 DROP VIEW IF EXISTS `log`;
 
 CREATE VIEW `log` AS 

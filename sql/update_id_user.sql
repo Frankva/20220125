@@ -22,13 +22,6 @@ ROLLBACK;
 ----------------
 START TRANSACTION;
 UPDATE `log_sync`
-SET `id_user` = 8
-WHERE `id_badge` IN (
-    SELECT `id_badge`
-    FROM `badge_sync`
-    WHERE `id_user` = 8
-);
-UPDATE `log_sync`
 SET `id_user` = 92
 WHERE `id_badge` IN (
     SELECT `id_badge`

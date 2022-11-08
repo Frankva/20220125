@@ -38,13 +38,18 @@ class Model:
                 self.connect()
 
     def create_structure(self):
+        print('Model.create_structure', file=sys.stderr)
         database = self.conn_params['database']
         del self.conn_params['database']
         self.connection = mariadb.connect(**self.conn_params)
         self.cursor = self.connection.cursor()
         with open('sql/createDB.sql') as sql:
             for line in sql.readlines():
-                self.cursor.execute(line)
+                try: 
+                    self.cursor.execute(line)
+                except mariadb.ProgrammingError:
+                    # to ignore error end of file
+                    print('Error create DB', file=sys.stderr)
         self.conn_params['database'] = database
 
     # def createLog(self, ):

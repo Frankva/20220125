@@ -46,6 +46,7 @@ mariadb-server
 - [ ] les câbles ?
 - [ ] requête log quand le bouton est appuyé
 - [~] ferme proprement le script quand la view est fermé
+- [ ] mettre le jeton d’identification aussi pour les get de l’api
 
 ## bug
 - [x] plus de 12 logs dans le détail d'un provoque un empilement des caractère
