@@ -167,8 +167,10 @@ class App:
         try:
             # do it only on the Raspberry Pi
             if os.name != 'nt':
-                subprocess.run(['xset', 'dpms', 'force', 'off', 's',
-                                str(interval) + 's'])
+                # subprocess.run(['xset', 'dpms', 'force', 'standby', 's',
+                #                 str(interval) + 's'])
+
+                 subprocess.run(['xset', 's', str(interval) + 's'])
         except Exception:
             pass
 
