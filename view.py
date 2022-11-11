@@ -835,6 +835,7 @@ class View:
             self.screen = pygame.display.set_mode(
                 (800, 480), pygame.FULLSCREEN)
             pygame.mouse.set_visible(False)
+            pygame.display.set_allow_screensaver(True)
         else:
             self.screen = pygame.display.set_mode((800, 480))
         pygame.display.set_caption("Timbreuse")
