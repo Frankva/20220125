@@ -39,7 +39,7 @@ class App:
         self.thread_receive_users_and_badges = None
 
     def load(self):
-        self.turn_off_screen_interval()
+        self.turn_off_screen_interval(60)
         self.thread_view.start()
         self.thread_wait_quit.start()
         self.view.read_pipe(self.pipe)
@@ -147,7 +147,7 @@ class App:
         return self.pipe['cancel']
 
     @staticmethod
-    def turn_on_screen():
+    def turn_on_screen() -> None:
         try:
             # do it only on the Raspberry Pi
             if os.name != 'nt':
@@ -158,7 +158,12 @@ class App:
         except Exception:
             pass
     @staticmethod
-    def turn_off_screen_interval(interval:int):
+    def turn_off_screen_interval(interval: int) -> None:
+        '''
+        turn off screen after inactivity times
+        Parameters:
+            interval(int): interval in second off
+        '''
         try:
             # do it only on the Raspberry Pi
             if os.name != 'nt':
