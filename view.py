@@ -831,6 +831,7 @@ class View:
     def load_pygame(self):
         pygame.init()
         self.clock = pygame.time.Clock()
+        # run that only on Raspberry Pi
         if os.name != "nt":
             self.screen = pygame.display.set_mode(
                 (800, 480), pygame.FULLSCREEN)

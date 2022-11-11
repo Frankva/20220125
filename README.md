@@ -24,7 +24,7 @@ mariadb-server
     - #AE9B70 text
     - #FFFFFF
     https://coolors.co/005ba9-dd1c1a-dbceb1-386641-3c362a
-- wait screen avec rebond du text avec les bords
+- [x] wait screen avec rebond du text avec les bords
 - [x] 5 dernières décroisant
 - [x] nom, prénom
 - [x] temps limite
@@ -50,7 +50,7 @@ mariadb-server
 
 ## bug
 - [ ] plus de 12 logs dans le détail d'un provoque un empilement des caractère
-- Utilisateur peut mettre un nom vide
-- Utilisateur peut mettre un nom à double
-- Un badge avec un user id à NULL provoque un dysfonctionnement de la 
+- [ ] Utilisateur peut mettre un nom vide
+- [ ] Utilisateur peut mettre un nom à double
+- [ ] Un badge avec un user id à NULL provoque un dysfonctionnement de la 
 synchronisation

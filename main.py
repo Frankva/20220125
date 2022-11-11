@@ -18,6 +18,7 @@ class App:
     '''
 
     def __init__(self):
+        self.suspend_screen_time = 10*60
         self.view = view.View()
         self.thread_view = threading.Thread(target=self.view.load)
         #self.log = open("main_log.txt", "a")
@@ -39,7 +40,7 @@ class App:
         self.thread_receive_users_and_badges = None
 
     def load(self):
-        self.turn_off_screen_interval(60)
+        self.turn_off_screen_interval(self.suspend_screen_time)
         self.thread_view.start()
         self.thread_wait_quit.start()
         self.view.read_pipe(self.pipe)
