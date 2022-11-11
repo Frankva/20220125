@@ -1,2 +1,3 @@
-cd ~/Documents/20220125/code
+cd ~/timbreuse_code
+xset s 60s
 python3 main.py
