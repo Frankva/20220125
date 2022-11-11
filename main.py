@@ -39,6 +39,7 @@ class App:
         self.thread_receive_users_and_badges = None
 
     def load(self):
+        self.turn_off_screen_interval()
         self.thread_view.start()
         self.thread_wait_quit.start()
         self.view.read_pipe(self.pipe)
@@ -148,12 +149,22 @@ class App:
     @staticmethod
     def turn_on_screen():
         try:
+            # do it only on the Raspberry Pi
             if os.name != 'nt':
                 subprocess.run(['xset', 'dpms', 'force', 'on'])
                 # subprocess.run(['xset', 'dpms', 'force', 'on', 's', '60s'])
-                subprocess.run(['xset', 'dpms', 'fp', 'default'])
+                # subprocess.run(['xset', 'dpms', 'fp', 'default'])
                 # subprocess.run(['xset', 'dpms', 'force', 'off', 's', '30s'])
-        except:
+        except Exception:
+            pass
+    @staticmethod
+    def turn_off_screen_interval(interval:int):
+        try:
+            # do it only on the Raspberry Pi
+            if os.name != 'nt':
+                subprocess.run(['xset', 'dpms', 'force', 'off', 's',
+                                str(interval) + 's'])
+        except Exception:
             pass
 
     def do_rfid(self):

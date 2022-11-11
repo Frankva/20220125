@@ -49,7 +49,7 @@ mariadb-server
 - [ ] mettre le jeton d’identification aussi pour les get de l’api
 
 ## bug
-- [x] plus de 12 logs dans le détail d'un provoque un empilement des caractère
+- [ ] plus de 12 logs dans le détail d'un provoque un empilement des caractère
 - Utilisateur peut mettre un nom vide
 - Utilisateur peut mettre un nom à double
 - Un badge avec un user id à NULL provoque un dysfonctionnement de la 
