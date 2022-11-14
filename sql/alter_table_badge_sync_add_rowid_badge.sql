@@ -1,0 +1,1 @@
+ALTER TABLE `badge_sync` ADD `rowid_badge` int(11);

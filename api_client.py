@@ -12,13 +12,15 @@ class Method(Enum):
     ADD = 'add'
     GET_LOGS = 'get_logs'
     GET = 'get'
+    PUT = 'put'
 class Controller(Enum):
     LOGS = 'Logs'
     BADGES = 'Badges'
+    USERS = 'UsersAPI'
 
 class APIClient:
     def __init__(self) -> None:
-        local_test = False
+        local_test = True
         if local_test:
             self.base_url = 'http://localhost:8080'
         else:
@@ -143,6 +145,17 @@ class APIClient:
         print(user_id, file=sys.stderr)
         url = self.create_url_n(Controller.BADGES.value, Method.GET.value,
             user_id)
+        print(url, file=sys.stderr)
+        html_file = self.send(url)[0]
+        return json.loads(html_file.readline())
+
+    def receive_users(self, user_id) -> list[dict]:
+        '''
+        '''
+        print('receive_users', file=sys.stderr)
+        token = self.create_token_args(user_id)
+        url = self.create_url_n(Controller.USERS.value, Method.GET.value,
+            user_id, token)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())

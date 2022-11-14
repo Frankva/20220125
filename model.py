@@ -272,7 +272,11 @@ class Model:
         print('get_last_log_id')
         sql = 'SELECT MAX(`id_log`) FROM log_sync;'
         self.cursor.execute(sql)
-        return self.cursor.next()[0]
+        log_id = self.cursor.next()[0]
+        if log_id is not None:
+            return log_id
+        else:
+            return 0
 
     def get_last_badge_id(self) -> int:
         '''
@@ -284,16 +288,21 @@ class Model:
         True
         '''
         print('get_last_badge_id', file=sys.stderr)
-        sql = 'SELECT COUNT(`id_badge`) FROM badge_sync;'
+        sql = 'SELECT COUNT(`id_badge`) FROM `badge_sync`;'
         self.cursor.execute(sql)
         count = self.cursor.next()[0]
         print(count, file=sys.stderr)
-        sql2 = f'SELECT `id_badge` FROM badge_sync LIMIT {count-1}, 1;'
+        sql2 = (f'SELECT `id_badge` FROM `badge_sync` LIMIT {max(count-1, 0)}'
+                ', 1;')
         print(sql2, file=sys.stderr)
         self.cursor.execute(sql2, count)
-        tmp = self.cursor.next()[0]
-        print(tmp, file=sys.stderr)
-        return tmp
+        try:
+            badge_id = self.cursor.next()[0]
+        except TypeError:
+            badge_id = 0
+        finally:
+            print('badge_id = ', badge_id, file=sys.stderr)
+            return badge_id
     
     def get_last_badge_id_via_last_user(self) -> int:
         '''
@@ -304,16 +313,40 @@ class Model:
         True
         '''
         print('get_last_badge_id_via_last_user', file=sys.stderr)
-        sql = ('SELECT id_badge '
-        'FROM badge_sync '
-        'WHERE id_user '
-        'IN (SELECT MAX(`id_user`) FROM user_sync);')
+        sql = ('SELECT `id_badge` '
+        'FROM `badge_sync` '
+        'WHERE `id_user` '
+        'IN (SELECT MAX(`id_user`) FROM `user_sync`);')
         self.cursor.execute(sql)
-        id = self.cursor.next()[0]
-        if id is not None:
-            return id
-        else:
+        try:
+            badge_id = self.cursor.next()[0]
+        except TypeError:
+            badge_id = 0
+        finally:
+            print('badge_id = ', badge_id, file=sys.stderr)
+            return badge_id
+
+    def get_last_badge_id_via_rowid_badge(self) -> int:
+        '''
+        get the last id badge, via rowid_badge that is a auto increment colomn
+        >>> model = Model()
+        >>> isinstance(model.get_last_badge_id_via_rowid_badge(), int)
+        True
+        '''
+        print('get_last_badge_id_via_rowid_badge', file=sys.stderr)
+        sql = (
+            'SELECT `id_badge` '
+            'FROM `badge_sync` '
+            'WHERE `rowid_badge` IN '
+            '(SELECT MAX(`rowid_badge`) FROM `badge_sync`);'
+        )
+        self.cursor.execute(sql)
+        try:
+            badge_id = self.cursor.next()[0]
+            return badge_id
+        except TypeError:
             return 0
+
 
     def get_last_user_id(self) -> int:
         '''
@@ -324,9 +357,17 @@ class Model:
         '''
         print('get_last_user_id', file=sys.stderr)
         sql = ('SELECT MAX(`id_user`) '
-        'FROM user_sync;')
+        'FROM `user_sync`;')
         self.cursor.execute(sql)
-        return self.cursor.next()[0]
+        try:
+            user_id = self.cursor.next()[0]
+            if user_id is None:
+                user_id = 0
+        except TypeError:
+            user_id = 0
+        finally:
+            print('user_id = ', user_id, file=sys.stderr)
+            return user_id
 
 
     def invoke_receive_logs(self) -> None:
@@ -351,7 +392,11 @@ class Model:
             # insert one per one in local. can be better
             self.call_insert_sync_user_badge(tuple(badge_and_user.values()))
             
-        
+    def invoke_receive_users(self) -> None:
+        '''
+        receive all user from remote derver and insert in local database
+        '''
+        print('invoke_receive_users', file=sys.stderr)
 
 
 
