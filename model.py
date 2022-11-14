@@ -394,9 +394,10 @@ class Model:
             
     def invoke_receive_users(self) -> None:
         '''
-        receive all user from remote derver and insert in local database
+        receive all user from remote server and insert in local database
         '''
         print('invoke_receive_users', file=sys.stderr)
+        # for user in 
 
 
 
