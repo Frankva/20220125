@@ -33,6 +33,7 @@ mariadb-server
 
 
 
+
 ## sécurité
 - [ ] stockage temporaire des noms
 - [ ] hacher (sha2) les ids des badges
@@ -47,6 +48,8 @@ mariadb-server
 - [ ] requête log quand le bouton est appuyé
 - [~] ferme proprement le script quand la view est fermé
 - [ ] mettre le jeton d’identification aussi pour les get de l’api
+- [ ] enlever peut-être la contraint de clé étrangère sur les table sync sur la
+ timbreuse
 
 ## bug
 - [ ] plus de 12 logs dans le détail d'un provoque un empilement des caractère

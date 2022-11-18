@@ -212,10 +212,23 @@ class Model:
         call a strored procedure that insert user in user_sync table
         >>> model = Model()
         >>> model.call_insert_sync_user(tuple([2, 'Name', 'Surname']))
+        >>> model.call_insert_sync_badge(tuple([88282828, 2, 3]))
         '''
         print('call_insert_sync_user', file=sys.stderr)
         sql = 'CALL `insert_user_sync`(?, ?, ?);'
         self.execute_and_commit(sql, data)
+
+    def call_insert_sync_badge(self, data:tuple) -> None:
+        '''
+        call a strored procedure that insert badge in badge_sync table
+        >>> # model = Model()
+        >>> # model.call_insert_sync_badge(tuple([88282828, 2, 3]))
+        '''
+        print('call_insert_sync_badge', file=sys.stderr)
+        sql = 'CALL `insert_badge_sync`(?, ?, ?);'
+        self.execute_and_commit(sql, data)
+
+
 
     # will be renamed in select_unsync_logs
     def call_get_unsync_log(self) -> mariadb.connection.cursor:
@@ -417,7 +430,10 @@ class Model:
         receive all badge from remote server and insert in local database
         '''
         print('invoke_receive_badges', file=sys.stderr)
-        #for badge in self.api_client.receive_badges()
+        for badge in self.api_client.receive_badges(
+                self.get_last_badge_id_via_last_user()):
+            print(badge, file=sys.stderr)
+            #self.call_insert_sync_badge(badge)
         
 
 

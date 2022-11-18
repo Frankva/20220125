@@ -13,7 +13,9 @@ class Method(Enum):
     ADD = 'add'
     GET_LOGS = 'get_logs'
     GET = 'get'
+    GET2 = 'get2'
     PUT = 'put'
+
 class Controller(Enum):
     LOGS = 'Logs'
     BADGES = 'Badges'
@@ -144,27 +146,44 @@ class APIClient:
         '''
         print('receive_users_and_badges', file=sys.stderr)
         print(user_id, file=sys.stderr)
-        url = self.create_url_n(Controller.BADGES.value, Method.GET.value,
+        url = self.create_url_n(Controller.BADGES.value, Method.GET2.value,
             user_id)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())
 
-    def receive_users(self, user_id) -> list[dict]:
+    def receive_users(self, start_user_id) -> list[dict]:
         '''
         receive all users from the server
         >>> api_client = APIClient()
-        >>> user = api_client.receive_users(92)
-        >>> isinstance(user, list)
+        >>> users = api_client.receive_users(92)
+        >>> isinstance(users, list)
         True
         '''
         print('receive_users', file=sys.stderr)
-        token = self.create_token_args(user_id)
-        arg = self.create_arg_args(user_id, token)
+        token = self.create_token_args(start_user_id)
+        arg = self.create_arg_args(start_user_id, token)
         url = self.create_url_n(Controller.USERS.value, Method.GET.value, arg)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())
+
+    def receive_badges(self, start_badge_id):
+        '''
+        receive all badges from the server
+        >>> api_client = APIClient()
+        >>> badges = api_client.receive_badges(92)
+        >>> isinstance(badges, list)
+        True
+        '''
+        print('receive_badges', file=sys.stderr)
+        token = self.create_token_args(start_badge_id)
+        arg = self.create_arg_args(start_badge_id, token)
+        url = self.create_url_n(Controller.BADGES.value, Method.GET.value, arg)
+        print(url, file=sys.stderr)
+        html_file = self.send(url)[0]
+        return json.loads(html_file.readline())
+
 
     @staticmethod
     def create_arg_args(*args) -> str:

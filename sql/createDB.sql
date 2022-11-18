@@ -24,6 +24,7 @@ CREATE PROCEDURE `insert_user`(_name TEXT, surname TEXT) MODIFIES SQL DATA BEGIN
 CREATE PROCEDURE `insert_users_and_badges`(id_badge BIGINT, id_user INT, _name TEXT, surname TEXT) MODIFIES SQL DATA BEGIN DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; END; START TRANSACTION; INSERT INTO `user_sync` (`id_user`, `name`, `surname`) VALUES (id_user, _name, surname); INSERT INTO `badge_sync` (`id_badge`, `id_user`) VALUES (id_badge, id_user); COMMIT; CALL `delete_user_write`; CALL `delete_badge_write`; END;
 -- new not tested
 CREATE PROCEDURE `insert_user_sync`(_id_user INT, _name TEXT, _surname TEXT) MODIFIES SQL DATA BEGIN INSERT INTO `user_sync` (`id_user`, `name`, `surname`) VALUES (_id_user, _name, _surname); CALL `delete_user_write`; END
+CREATE PROCEDURE `INSERT_BADGE_SYNC` (_id_badge BIGINT, _id_user INT, _rowid_badge INT) MODIFIES SQL DATA BEGIN INSERT INTO `badge_sync` (`id_badge`, `id_user`, `rowid_badge`) VALUES (_id_badge, _id_user, _rowid_badge); CALL `delete_badge_write`; END
 -- true
 
 -- DELIMITER // CREATE PROCEDURE `insert_log`(id_badge BIGINT, inside BOOL) MODIFIES SQL DATA BEGIN INSERT INTO `log_write` (`date`, `id_badge`, `inside` ) VALUES (NOW(), id_badge, inside); CALL `delete_log_write`; END // DELIMITER ;

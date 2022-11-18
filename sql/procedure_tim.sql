@@ -98,6 +98,18 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS `insert_badge_sync`;
+DELIMITER //
+CREATE PROCEDURE `insert_badge_sync` 
+	(_id_badge BIGINT, _id_user INT, _rowid_badge INT) 
+
+ MODIFIES SQL DATA
+BEGIN
+        INSERT INTO `badge_sync` (`id_badge`, `id_user`, `rowid_badge`)
+        VALUES (_id_badge, _id_user, _rowid_badge);
+        CALL `delete_badge_write`;
+END //
+DELIMITER ;
 
 
 
