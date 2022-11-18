@@ -11,7 +11,7 @@ CREATE TABLE `log_write` ( `date` datetime NOT NULL DEFAULT NOW(), `id_badge` bi
 DROP VIEW IF EXISTS `user`;
 CREATE VIEW `user` AS SELECT * FROM `user_sync` UNION SELECT * FROM `user_write` WHERE (`name`, `surname`) NOT IN ( SELECT `name`, `surname` FROM `user_sync`) ORDER BY `NAME`;
 DROP VIEW IF EXISTS `badge`;
-CREATE VIEW `badge` AS SELECT `id_badge`, `id_user` FROM `badge_sync` UNION SELECT * FROM `badge_write` WHERE (`id_badge`, `id_user`) NOT IN ( SELECT `id_badge`, `id_user` FROM `badge_sync`) ; 
+CREATE VIEW `BADGE` AS SELECT `id_badge`, `id_user` FROM `badge_sync` UNION SELECT * FROM `badge_write` WHERE `id_badge` NOT IN ( SELECT `id_badge` FROM `badge_sync`) ; 
 DROP VIEW IF EXISTS `log`;
 CREATE VIEW `log` AS SELECT * FROM `log_sync` UNION SELECT `date`, `log_write`.`id_badge`, `inside`, `id_log`, `id_user` FROM `log_write` LEFT OUTER JOIN `badge` ON `log_write`.`id_badge` = `badge`.`id_badge` WHERE ( `date`, `log_write`.`id_badge`, `inside`) NOT IN ( SELECT `date`, `id_badge`, `inside` FROM `log_sync`) ORDER BY `date`; 
 CREATE PROCEDURE `delete_log_write`() MODIFIES SQL DATA DELETE FROM `log_write` WHERE (`date`, `id_badge`, `inside`) IN ( SELECT `date`, `id_badge`, `inside` FROM `log_sync`);
@@ -22,6 +22,8 @@ CREATE PROCEDURE `insert_badge`(id_badge BIGINT, id_user INT) MODIFIES SQL DATA 
 CREATE PROCEDURE `delete_user_write`() MODIFIES SQL DATA DELETE FROM `user_write` WHERE (`name`, `surname`) IN ( SELECT `name`, `surname` FROM `user_sync`);
 CREATE PROCEDURE `insert_user`(_name TEXT, surname TEXT) MODIFIES SQL DATA BEGIN INSERT INTO `user_write` (`name`, `surname`) VALUES (_name, surname); CALL `delete_user_write`; END;
 CREATE PROCEDURE `insert_users_and_badges`(id_badge BIGINT, id_user INT, _name TEXT, surname TEXT) MODIFIES SQL DATA BEGIN DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; END; START TRANSACTION; INSERT INTO `user_sync` (`id_user`, `name`, `surname`) VALUES (id_user, _name, surname); INSERT INTO `badge_sync` (`id_badge`, `id_user`) VALUES (id_badge, id_user); COMMIT; CALL `delete_user_write`; CALL `delete_badge_write`; END;
+-- new not tested
+CREATE PROCEDURE `insert_user_sync`(_id_user INT, _name TEXT, _surname TEXT) MODIFIES SQL DATA BEGIN INSERT INTO `user_sync` (`id_user`, `name`, `surname`) VALUES (_id_user, _name, _surname); CALL `delete_user_write`; END
 -- true
 
 -- DELIMITER // CREATE PROCEDURE `insert_log`(id_badge BIGINT, inside BOOL) MODIFIES SQL DATA BEGIN INSERT INTO `log_write` (`date`, `id_badge`, `inside` ) VALUES (NOW(), id_badge, inside); CALL `delete_log_write`; END // DELIMITER ;

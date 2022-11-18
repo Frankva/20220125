@@ -87,6 +87,19 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS `insert_user_sync`;
+DELIMITER //
+CREATE PROCEDURE `insert_user_sync`(_id_user INT, _name TEXT, _surname TEXT) 
+ MODIFIES SQL DATA
+BEGIN
+        INSERT INTO `user_sync` (`id_user`, `name`, `surname`)
+        VALUES (_id_user, _name, _surname);
+        CALL `delete_user_write`;
+END //
+DELIMITER ;
+
+
+
 
 DROP PROCEDURE IF EXISTS `insert_users_and_badges`;
 DELIMITER //

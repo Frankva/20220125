@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from urllib.request import urlopen
 from urllib.parse import quote
 import hmac
@@ -151,11 +152,16 @@ class APIClient:
 
     def receive_users(self, user_id) -> list[dict]:
         '''
+        receive all users from the server
+        >>> api_client = APIClient()
+        >>> user = api_client.receive_users(92)
+        >>> isinstance(user, list)
+        True
         '''
         print('receive_users', file=sys.stderr)
         token = self.create_token_args(user_id)
-        url = self.create_url_n(Controller.USERS.value, Method.GET.value,
-            user_id, token)
+        arg = self.create_arg_args(user_id, token)
+        url = self.create_url_n(Controller.USERS.value, Method.GET.value, arg)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())
@@ -170,16 +176,24 @@ class APIClient:
         text = reduce(lambda cumulator, word:f'{cumulator}/{word}', args)
         return quote(text)
 
-    def create_token_args(self, *args) -> str:
+    @classmethod
+    def create_token_args(cls, *args) -> str:
         '''
         >>> badge_id, name, surname = 1, 'Sam', 'Smith'
         >>> api_client = APIClient()
         >>> api_client.create_token_args(badge_id, name, surname)
         '1d0e1bc7fb9d9588833c427aa27b3d5edd20725cdee071e8c3f60d6009761e57'
         '''
-        text = reduce(lambda cumulator, word:f'{cumulator}{word}',
-            args).encode()
-        key = self.load_key().encode()
+        text = reduce(lambda cumulator,
+                      word: f'{cumulator}{word}', args)
+
+        # is necessary args is one arg
+        text = str(text)
+
+        print(type(text), text, file=sys.stderr)
+        text = text.encode()
+        print(type(text), text, file=sys.stderr)
+        key = cls.load_key().encode()
         token_text = hmac.new(key, text, 'sha256').hexdigest()
         return token_text
     

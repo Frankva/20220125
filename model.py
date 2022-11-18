@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 import mariadb
 import os
 
@@ -130,8 +130,7 @@ class Model:
         '''
         >>> model = Model()
         >>> model.select_log(('date', 'inside'), 'log', 'id_user', (113, ),
-        ... 'date', 5).next()[0]
-        datetime.datetime(2022, 11, 7, 10, 21, 37)
+        ... 'date', 5).next()
         '''
         if limit == 0:
             sql = f"""SELECT {self.format_tuple(select_name)} FROM {table_name
@@ -199,12 +198,23 @@ class Model:
 
     def call_insert_sync_user_badge(self, data:tuple):
         '''
-        call a stored procedure that insert badge in the sync_badge table, 
+        call a stored procedure that insert user and badge in the user_sync
+        and badge_sync table 
         >>> model = Model()
         >>> model.call_insert_sync_user_badge(tuple([49, 8, 'a', 'b']))
         '''
         print('call_insert_sync_badge', file=sys.stderr)
         sql = 'CALL `insert_users_and_badges`(?, ?, ?, ?);'
+        self.execute_and_commit(sql, data)
+
+    def call_insert_sync_user(self, data:tuple) -> None:
+        '''
+        call a strored procedure that insert user in user_sync table
+        >>> model = Model()
+        >>> model.call_insert_sync_user(tuple([2, 'Name', 'Surname']))
+        '''
+        print('call_insert_sync_user', file=sys.stderr)
+        sql = 'CALL `insert_user_sync`(?, ?, ?);'
         self.execute_and_commit(sql, data)
 
     # will be renamed in select_unsync_logs
@@ -397,7 +407,19 @@ class Model:
         receive all user from remote server and insert in local database
         '''
         print('invoke_receive_users', file=sys.stderr)
-        # for user in 
+        for user in self.api_client.receive_users(
+                self.get_last_badge_id_via_rowid_badge()):
+            print(user, file=sys.stderr)
+            self.call_insert_sync_user(user)
+    
+    def invoke_receive_badges(self) -> None:
+        '''
+        receive all badge from remote server and insert in local database
+        '''
+        print('invoke_receive_badges', file=sys.stderr)
+        #for badge in self.api_client.receive_badges()
+        
+
 
 
 
@@ -512,7 +534,7 @@ class Model:
                 (date.year == date2.year))
         
     @classmethod
-    def isolate_day(cls, logs:list()) -> list:
+    def isolate_day(cls, logs:list) -> list:
         '''
         return a list with a list for each day
         '''
