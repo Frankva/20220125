@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import mariadb
 import os
 
@@ -200,8 +200,8 @@ class Model:
         '''
         call a stored procedure that insert user and badge in the user_sync
         and badge_sync table 
-        >>> model = Model()
-        >>> model.call_insert_sync_user_badge(tuple([49, 8, 'a', 'b']))
+        >>> # model = Model()
+        >>> # model.call_insert_sync_user_badge(tuple([49, 8, 'a', 'b']))
         '''
         print('call_insert_sync_badge', file=sys.stderr)
         sql = 'CALL `insert_users_and_badges`(?, ?, ?, ?);'
@@ -210,9 +210,9 @@ class Model:
     def call_insert_sync_user(self, data:tuple) -> None:
         '''
         call a strored procedure that insert user in user_sync table
-        >>> model = Model()
-        >>> model.call_insert_sync_user(tuple([2, 'Name', 'Surname']))
-        >>> model.call_insert_sync_badge(tuple([88282828, 2, 3]))
+        >>> # model = Model()
+        >>> # model.call_insert_sync_user(tuple([2, 'Name', 'Surname']))
+        >>> # model.call_insert_sync_badge(tuple([88282828, 2, 3]))
         '''
         print('call_insert_sync_user', file=sys.stderr)
         sql = 'CALL `insert_user_sync`(?, ?, ?);'
@@ -369,6 +369,16 @@ class Model:
             return badge_id
         except TypeError:
             return 0
+        
+    def get_last_badge_rowid(self) -> int:
+        print('get_last_badge_rowid', file=sys.stderr)
+        sql = 'SELECT MAX(`rowid_badge`) FROM `badge_sync`;'
+        self.cursor.execute(sql)
+        try:
+            badge_id = self.cursor.next()[0]
+            return badge_id
+        except TypeError:
+            return 0
 
 
     def get_last_user_id(self) -> int:
@@ -421,19 +431,24 @@ class Model:
         '''
         print('invoke_receive_users', file=sys.stderr)
         for user in self.api_client.receive_users(
-                self.get_last_badge_id_via_rowid_badge()):
+                self.get_last_user_id()):
             print(user, file=sys.stderr)
-            self.call_insert_sync_user(user)
+            # insert one per one in local. can be better
+            self.call_insert_sync_user(tuple(user.values()))
     
     def invoke_receive_badges(self) -> None:
         '''
         receive all badge from remote server and insert in local database
+        >>> model = Model()
+        >>> model.invoke_receive_users()
+        >>> model.invoke_receive_badges()
         '''
         print('invoke_receive_badges', file=sys.stderr)
         for badge in self.api_client.receive_badges(
-                self.get_last_badge_id_via_last_user()):
+                self.get_last_badge_rowid()):
             print(badge, file=sys.stderr)
-            #self.call_insert_sync_badge(badge)
+            # insert one per one in local. can be better
+            self.call_insert_sync_badge(tuple(badge.values()))
         
 
 

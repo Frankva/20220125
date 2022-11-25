@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from urllib.request import urlopen
 from urllib.parse import quote
 import hmac
@@ -168,7 +168,7 @@ class APIClient:
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())
 
-    def receive_badges(self, start_badge_id):
+    def receive_badges(self, start_badge_rowid):
         '''
         receive all badges from the server
         >>> api_client = APIClient()
@@ -177,8 +177,8 @@ class APIClient:
         True
         '''
         print('receive_badges', file=sys.stderr)
-        token = self.create_token_args(start_badge_id)
-        arg = self.create_arg_args(start_badge_id, token)
+        token = self.create_token_args(start_badge_rowid)
+        arg = self.create_arg_args(start_badge_rowid, token)
         url = self.create_url_n(Controller.BADGES.value, Method.GET.value, arg)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]

@@ -46,8 +46,8 @@ mariadb-server
 - [x] désactiver la mise en veille de l'écran
 - [ ] les câbles ?
 - [ ] requête log quand le bouton est appuyé
-- [~] ferme proprement le script quand la view est fermé
-- [ ] mettre le jeton d’identification aussi pour les get de l’api
+- [ ] ferme proprement le script quand la view est fermé
+- [ ] mettre le jeton d’identification aussi pour le get log de l’api 
 - [ ] enlever peut-être la contraint de clé étrangère sur les table sync sur la
  timbreuse
 

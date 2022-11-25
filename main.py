@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import os
 import subprocess
 import threading
@@ -37,7 +37,9 @@ class App:
         self.thread_send_log = None
         self.thread_send_badges_and_users = None
         self.thread_receive_log = None
-        self.thread_receive_users_and_badges = None
+        # self.thread_receive_users_and_badges = None
+        self.thread_receive_users = None
+        self.thread_receive_badges = None
 
     def load(self):
         self.turn_off_screen_interval(self.suspend_screen_time)
@@ -48,10 +50,10 @@ class App:
             self.update()
 
     def update(self):
-        self.syncronize_user_badge_log_with_remote()
+        self.synchronize_user_badge_log_with_remote()
         self.do_rfid()
         self.reconnect_local_db()
-        self.syncronize_user_badge_log_with_remote()
+        self.synchronize_user_badge_log_with_remote()
         self.turn_on_screen()
         self.do_model_request()
         print('unknown', self.is_unknown(), file=sys.stderr)
@@ -131,6 +133,24 @@ class App:
             target=self.model.invoke_receive_users_and_badges)
         self.thread_receive_users_and_badges.start()
         self.thread_receive_users_and_badges.join()
+
+    def invoke_join_thread(self, thread:str, function):
+        '''
+        manage thread in procedural way
+        '''
+        print('invoke_join_thread', 'thread', thread, 'function', function,
+              file=sys.stderr)
+        self.safe_wait_thread(getattr(self, thread))
+        setattr(self, thread, threading.Thread( target=function))
+        print('before start invoke_join_thread', 'thread', thread, 'function',
+              function, file=sys.stderr)
+        getattr(self, thread).start()
+        print('before join invoke_join_thread', 'thread', thread, 'function',
+              function, file=sys.stderr)
+        getattr(self, thread).join()
+        print('end invoke_join_thread', 'thread', thread, 'function', function,
+              file=sys.stderr)
+
 
 
     @staticmethod
@@ -294,11 +314,17 @@ class App:
         print('name', self.pipe['name'], file=sys.stderr)
         return self.pipe['name'] == ''
 
-    def syncronize_user_badge_log_with_remote(self):
+    def synchronize_user_badge_log_with_remote(self):
+        print('synchronize_user_badge_log_with_remote', file=sys.stderr)
         self.invoke_send_unsync_badges_and_users()
         self.invoke_send_log()
-        self.invoke_receive_users_and_badges()
+        #self.invoke_receive_users_and_badges()
+        self.invoke_join_thread('thread_receive_users',
+                                self.model.invoke_receive_users)
+        self.invoke_join_thread('thread_receive_badges',
+                                self.model.invoke_receive_badges)
         self.invoke_receive_logs() 
+
     def reconnect_local_db(self):
         try:
             self.model.disconnect()
