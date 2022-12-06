@@ -10,15 +10,12 @@ import warnings
 from enum import Enum
 
 class Method(Enum):
-    ADD = 'add'
-    GET_LOGS = 'get_logs'
     GET = 'get'
-    GET2 = 'get2'
     PUT = 'put'
 
 class Controller(Enum):
-    LOGS = 'Logs'
-    BADGES = 'Badges'
+    LOGS = 'LogsAPI'
+    BADGES = 'BadgesAPI'
     USERS = 'UsersAPI'
 
 class APIClient:
@@ -55,10 +52,10 @@ class APIClient:
     def create_url_n(self, controller:str, method:str, arg:str) -> str:
         '''
         >>> api_client = APIClient()
-        >>> api_client.create_url_n('Logs', 'add', '2/3/4')
-        'http://localhost:8080/Logs/add/2/3/4'
+        >>> api_client.create_url_n('Logs', 'put', '2/3/4')
+        'http://localhost:8080/Logs/put/2/3/4'
 
-        # 'https://timbreuse.sectioninformatique.net/Logs/add/2/3/4'
+        # 'https://timbreuse.sectioninformatique.net/Logs/put/2/3/4'
         '''
         # return f'{base_url}/{method}/{arg}'
         return (f'{self.base_url}/{controller}/'
@@ -95,7 +92,7 @@ class APIClient:
         arg = self.create_arg_args(date, badge_id, inside, self.create_token(
             date, badge_id, inside)
         )
-        url = self.create_url_n(Controller.LOGS.value, Method.ADD.value, arg)
+        url = self.create_url_n(Controller.LOGS.value, Method.PUT.value, arg)
         return self.send(url)
 
     def receive_logs(self, log_id) -> list[dict]:
@@ -111,7 +108,7 @@ class APIClient:
         '''
         print('receive_logs', file=sys.stderr)
         print(log_id, file=sys.stderr)
-        url = self.create_url_n(Controller.LOGS.value, Method.GET_LOGS.value, 
+        url = self.create_url_n(Controller.LOGS.value, Method.GET.value, 
             log_id)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
@@ -130,7 +127,7 @@ class APIClient:
         print('APIClient.send_badge_and_user', file=sys.stderr)
         arg = self.create_arg_args(badge_id, name, surname,
             self.create_token_args(badge_id, name, surname))
-        url = self.create_url_n(Controller.BADGES.value, Method.ADD.value, arg)
+        url = self.create_url_n(Controller.BADGES.value, Method.PUT.value, arg)
         print(url, file=sys.stderr)
         return self.send(url)
 
@@ -146,7 +143,7 @@ class APIClient:
         '''
         print('receive_users_and_badges', file=sys.stderr)
         print(user_id, file=sys.stderr)
-        url = self.create_url_n(Controller.BADGES.value, Method.GET2.value,
+        url = self.create_url_n(Controller.BADGES.value, Method.GET.value,
             user_id)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
