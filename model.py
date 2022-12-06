@@ -376,7 +376,10 @@ class Model:
         self.cursor.execute(sql)
         try:
             badge_id = self.cursor.next()[0]
-            return badge_id
+            if badge_id is None:
+                return 0
+            else:
+                return badge_id
         except TypeError:
             return 0
 
@@ -419,6 +422,7 @@ class Model:
         database
         '''
         print('invoke_receive_users_and_badges', file=sys.stderr)
+        warnings.warn("use create_arg_args", DeprecationWarning)
         for badge_and_user in self.api_client.receive_users_and_badges(
                 self.get_last_user_id()):
             print(badge_and_user, file=sys.stderr)

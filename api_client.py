@@ -20,7 +20,7 @@ class Controller(Enum):
 
 class APIClient:
     def __init__(self) -> None:
-        local_test = False
+        local_test = True
         if local_test:
             self.base_url = 'http://localhost:8080'
         else:
@@ -93,6 +93,7 @@ class APIClient:
             date, badge_id, inside)
         )
         url = self.create_url_n(Controller.LOGS.value, Method.PUT.value, arg)
+        print(url, file=sys.stderr)
         return self.send(url)
 
     def receive_logs(self, log_id) -> list[dict]:
@@ -133,15 +134,17 @@ class APIClient:
 
     def receive_users_and_badges(self, user_id) -> list[dict]:
         '''
-        receive all users and badges from the server
-         >>> api_client = APIClient()
-         >>> logs = api_client.receive_users_and_badges(97)
-         >>> type(logs)
-         <class 'list'>
-         >>> type(logs[0])
-         <class 'dict'>
+        deprecated
+        # receive all users and badges from the server
+        #  >>> api_client = APIClient()
+        #  >>> logs = api_client.receive_users_and_badges(97)
+        #  >>> type(logs)
+        #  <class 'list'>
+        #  >>> type(logs[0])
+        #  <class 'dict'>
         '''
         print('receive_users_and_badges', file=sys.stderr)
+        warnings.warn("use create_arg_args", DeprecationWarning)
         print(user_id, file=sys.stderr)
         url = self.create_url_n(Controller.BADGES.value, Method.GET.value,
             user_id)
@@ -174,6 +177,7 @@ class APIClient:
         True
         '''
         print('receive_badges', file=sys.stderr)
+        print('start_badge_rowid', start_badge_rowid, file=sys.stderr)
         token = self.create_token_args(start_badge_rowid)
         arg = self.create_arg_args(start_badge_rowid, token)
         url = self.create_url_n(Controller.BADGES.value, Method.GET.value, arg)

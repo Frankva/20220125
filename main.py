@@ -10,6 +10,7 @@ except:
     import fake_rfid as rfid
 import model
 import sys
+import warnings
 
 
 class App:
@@ -128,6 +129,7 @@ class App:
         manage thread to receive all users and badges
         '''
         print('invoke_receive_users_and_badges', file=sys.stderr)
+        warnings.warn("use create_arg_args", DeprecationWarning)
         self.safe_wait_thread(self.thread_receive_users_and_badges)
         self.thread_receive_users_and_badges = threading.Thread(
             target=self.model.invoke_receive_users_and_badges)
