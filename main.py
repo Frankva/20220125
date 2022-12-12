@@ -19,6 +19,7 @@ class App:
     '''
 
     def __init__(self):
+        self.HAS_REMOTE_SERVER = False;
         self.suspend_screen_time = 10*60
         self.view = view.View()
         self.thread_view = threading.Thread(target=self.view.load)
@@ -51,10 +52,12 @@ class App:
             self.update()
 
     def update(self):
-        self.synchronize_user_badge_log_with_remote()
+        if self.HAS_REMOTE_SERVER:
+            self.synchronize_user_badge_log_with_remote()
         self.do_rfid()
         self.reconnect_local_db()
-        self.synchronize_user_badge_log_with_remote()
+        if self.HAS_REMOTE_SERVER:
+            self.synchronize_user_badge_log_with_remote()
         self.turn_on_screen()
         self.do_model_request()
         print('unknown', self.is_unknown(), file=sys.stderr)

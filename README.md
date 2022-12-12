@@ -57,3 +57,11 @@ mariadb-server
 - [ ] Utilisateur peut mettre un nom à double
 - [ ] Un badge avec un user id à NULL provoque un dysfonctionnement de la 
 synchronisation
+
+## À faire
+* [ ] changer log_sync
+
+## À faire plus tard
+* [ ] mettre à jour la view log
+* [ ] rajouter l’affichage des date de modification
+
