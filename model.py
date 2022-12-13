@@ -23,12 +23,12 @@ class Model:
             self.conn_params["database"] = "timbreuse2022"
         else:
             self.conn_params["user"] = "root"
-            self.conn_params["password"] = "0"
+            self.conn_params["password"] = ""
             #self.conn_params["password"] = ""
             self.conn_params["host"] = "localhost"
             #self.conn_params["database"] = "db20221007"
             self.conn_params["database"] = "tmp"
-            self.conn_params["port"] = 4002
+            self.conn_params["port"] = 3306
             #self.conn_params["database"] = "timbreuse2022"
         try:
             self.connect()
@@ -191,9 +191,9 @@ class Model:
         call a stored procedure that insert log in the sync_log table, 
         all fiel are need
         '''
-        print('call_insert_sync_log')
-        sql = 'CALL `insert_sync_log`(?, ?, ?, ?, ?);'
-        print(value)
+        print('call_insert_sync_log', file=sys.stderr)
+        sql = 'CALL `insert_sync_log`(?, ?, ?, ?, ?, ?, ?, ?);'
+        print(value, file=sys.stderr)
         self.execute_and_commit(sql, value)
 
     def call_insert_sync_user_badge(self, data:tuple):
@@ -405,13 +405,38 @@ class Model:
             print('user_id = ', user_id, file=sys.stderr)
             return user_id
 
+    def get_last_updated_log_datetime(self):
+        '''
+        >>> model = Model()
+        >>> isinstance(model.get_last_updated_log_datetime(),
+        ...             datetime.datetime)
+        True
+        '''
+        print('get_last_user_id', file=sys.stderr)
+        sql = ('SELECT MAX(`date_modif`) '
+               'FROM `log_sync`;')
+        self.cursor.execute(sql)
+        try:
+            last_datetime = self.cursor.next()[0]
+            if last_datetime is None:
+                last_datetime = datetime.datetime.min
+        except TypeError:
+            last_datetime = datetime.datetime.min
+        finally:
+            print('last_datetime = ', last_datetime, file=sys.stderr)
+            return last_datetime
+
+
 
     def invoke_receive_logs(self) -> None:
         '''
         receive all logs from remote server and insert in local database
+        >>> model = Model()
+        >>> model.invoke_receive_logs()
         '''
         print('model.invoke_receive_logs', file=sys.stderr)
-        for log in self.api_client.receive_logs(self.get_last_log_id()):
+        for log in self.api_client.receive_logs(
+                self.get_last_updated_log_datetime()):
             print(log, file=sys.stderr)
             # insert one per one in local. can be better
             self.call_insert_sync_log(tuple(log.values()))

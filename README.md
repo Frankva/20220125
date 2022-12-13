@@ -60,6 +60,8 @@ synchronisation
 
 ## À faire
 * [ ] changer log_sync
+* [ ] changer les procedure strocked utilisant log_sync
+* [ ] changer la fonction python qui appelle la processure strocked utilisant log_sync
 
 ## À faire plus tard
 * [ ] mettre à jour la view log

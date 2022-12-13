@@ -96,21 +96,38 @@ class APIClient:
         print(url, file=sys.stderr)
         return self.send(url)
 
-    def receive_logs(self, log_id) -> list[dict]:
+    def _receive_logs(self, log_id) -> list[dict]:
         '''
+        deprecated
         receive all logs from the server
-        >>> api_client = APIClient()
-        >>> logs = api_client.receive_logs(413)
-        >>> type(logs)
-        <class 'list'>
+        # >>> api_client = APIClient()
+        # >>> logs = api_client.receive_logs(413)
+        # >>> type(logs)
+        # <class 'list'>
 
         # >>> type(logs[0])
         # <class 'dict'>
         '''
-        print('receive_logs', file=sys.stderr)
+        warnings.warn("deprecated", DeprecationWarning)
+        print('_receive_logs', file=sys.stderr)
         print(log_id, file=sys.stderr)
         url = self.create_url_n(Controller.LOGS.value, Method.GET.value, 
             log_id)
+        print(url, file=sys.stderr)
+        html_file = self.send(url)[0]
+        
+        return json.loads(html_file.readline())
+
+    def receive_logs(self, start_date) -> list[dict]:
+        '''
+        receive all logs since the date in parameter from the server
+        >>> api_client = APIClient()
+        >>> logs = api_client.receive_logs("2022-12-12 00:00:00")
+        '''
+        print('receive_logs', file=sys.stderr)
+        print(start_date, file=sys.stderr)
+        url = self.create_url_n(Controller.LOGS.value, Method.GET.value, 
+            quote(str(start_date)))
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         
