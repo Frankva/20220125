@@ -189,7 +189,6 @@ class Model:
     def call_insert_sync_log(self, value):
         '''
         call a stored procedure that insert log in the sync_log table, 
-        all fiel are need
         '''
         print('call_insert_sync_log', file=sys.stderr)
         sql = 'CALL `insert_sync_log`(?, ?, ?, ?, ?, ?, ?, ?);'

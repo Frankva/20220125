@@ -19,7 +19,7 @@ class App:
     '''
 
     def __init__(self):
-        self.HAS_REMOTE_SERVER = True;
+        self.HAS_REMOTE_SERVER = True
         self.suspend_screen_time = 10*60
         self.view = view.View()
         self.thread_view = threading.Thread(target=self.view.load)
