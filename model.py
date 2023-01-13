@@ -411,7 +411,7 @@ class Model:
         ...             datetime.datetime)
         True
         '''
-        print('get_last_user_id', file=sys.stderr)
+        print('get_last_updated_log_datetime', file=sys.stderr)
         sql = ('SELECT MAX(`date_modif`) '
                'FROM `log_sync`;')
         self.cursor.execute(sql)
