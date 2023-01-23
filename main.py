@@ -129,6 +129,7 @@ class App:
 
     def invoke_receive_users_and_badges(self) -> None:
         '''
+        Deprecation
         manage thread to receive all users and badges
         '''
         print('invoke_receive_users_and_badges', file=sys.stderr)
@@ -139,14 +140,14 @@ class App:
         self.thread_receive_users_and_badges.start()
         self.thread_receive_users_and_badges.join()
 
-    def invoke_join_thread(self, thread:str, function):
+    def invoke_join_thread(self, thread:str, function, args=()):
         '''
         manage thread in procedural way
         '''
         print('invoke_join_thread', 'thread', thread, 'function', function,
               file=sys.stderr)
         self.safe_wait_thread(getattr(self, thread))
-        setattr(self, thread, threading.Thread( target=function))
+        setattr(self, thread, threading.Thread(target=function, args=args))
         print('before start invoke_join_thread', 'thread', thread, 'function',
               function, file=sys.stderr)
         getattr(self, thread).start()
@@ -183,6 +184,7 @@ class App:
                 # subprocess.run(['xset', 'dpms', 'force', 'off', 's', '30s'])
         except Exception:
             pass
+
     @staticmethod
     def turn_off_screen_interval(interval: int) -> None:
         '''
@@ -196,7 +198,7 @@ class App:
                 # subprocess.run(['xset', 'dpms', 'force', 'standby', 's',
                 #                 str(interval) + 's'])
 
-                 subprocess.run(['xset', 's', str(interval) + 's'])
+                subprocess.run(['xset', 's', str(interval) + 's'])
         except Exception:
             pass
 
@@ -217,11 +219,13 @@ class App:
         with a thread
         '''
         print('do_model_request()', file=sys.stderr)
-        self.safe_wait_thread(self.thread_model_request)
-        self.thread_model_request = threading.Thread(
-            target=self.model.read_name_log, args=(self.pipe, ))
-        self.thread_model_request.start()
-        self.thread_model_request.join()
+        self.invoke_join_thread('thread_model_request', 
+                                self.model.find_user_info, args=(self.pipe, ))
+        # self.safe_wait_thread(self.thread_model_request)
+        # self.thread_model_request = threading.Thread(
+        #     target=self.model.read_name_log, args=(self.pipe, ))
+        # self.thread_model_request.start()
+        # self.thread_model_request.join()
         print('end do_model_request', self.pipe, file=sys.stderr)
 
     def do_model_new_user(self):
@@ -306,15 +310,7 @@ class App:
         pass
         #self.log.close()
 
-#    def fake_rfid(self):
-#        '''
-#        to test the script when no rfid scanner
-#        '''
-#        print('fake_rfid()')
-#        sleep(10)
-#        #self.pipe['id_badge'] = 483985410385
-#        self.pipe['id_badge'] = 183985410385
-#
+
     def is_unknown(self):
         print('name', self.pipe['name'], file=sys.stderr)
         return self.pipe['name'] == ''
@@ -323,7 +319,6 @@ class App:
         print('synchronize_user_badge_log_with_remote', file=sys.stderr)
         self.invoke_send_unsync_badges_and_users()
         self.invoke_send_log()
-        #self.invoke_receive_users_and_badges()
         self.invoke_join_thread('thread_receive_users',
                                 self.model.invoke_receive_users)
         self.invoke_join_thread('thread_receive_badges',

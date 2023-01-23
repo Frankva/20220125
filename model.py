@@ -88,6 +88,10 @@ class Model:
         self.execute_and_commit(sql, tuple(d.values()))
 
     def read_name_log(self, pipe: dict) -> None:
+        '''
+        Deprecation
+        '''
+        warnings.warn("use find_user_info", DeprecationWarning)
         id_user = self.select_one(
             'id_user', 'badge', 'id_badge', (pipe['id_badge'], ))
         if id_user is not None:
@@ -102,10 +106,60 @@ class Model:
             pipe['log'] = self.cursor_to_dict_in_list(('date', 'inside'), clog)
             self.read_work_time(pipe)
 
+    def get_user_id_with_badge(self, badge_id):
+        '''
+        >>> model = Model()
+        >>> model.get_user_id_with_badge(45)
+        116
+        '''
+        sql = "SELECT `id_user` FROM `badge` WHERE `id_badge` = ?"
+        self.cursor.execute(sql, (badge_id, ))
+        try:
+            return self.cursor.next()[0]
+        except TypeError:
+            return self.cursor.next()
+    
+    def get_usernames(self, user_id):
+        '''
+        >>> model = Model()
+        >>> model.get_usernames(116)
+        ('Zéro-Six', 'Un-cinq')
+        '''
+        print('get_usernames', file=sys.stderr)
+        sql = 'SELECT `name`, `surname` FROM `user` WHERE `id_user` = ?;'
+        self.cursor.execute(sql, (user_id, ))
+        return self.cursor_to_tuple(self.cursor)
+    
+    def get_5_last_logs(self, user_id):
+        '''
+        >>> model = Model()
+        >>> type(model.get_5_last_logs(116))
+        <class 'mariadb.connection.cursor'>
+        '''
+        sql = ('SELECT `date`, `inside`, `date_badge`, `date_modif`, '
+               '`date_delete` FROM `log` WHERE `id_user` = ? LIMIT 5')
+        self.cursor.execute(sql, (user_id, ))
+        return self.cursor
+
+    def find_user_info(self, pipe: dict) -> None:
+        user_id = self.get_user_id_with_badge(pipe['id_badge'])
+        if user_id is None:
+            return
+        pipe['name'], pipe['surname'] = self.get_usernames(user_id)
+        five_logs = self.get_5_last_logs(user_id)
+        pipe['log'] = self.cursor_to_dict_in_list(('date', 'inside',
+                'date_badge', 'date_modif', 'date_delete'), five_logs)
+        
+
+        # to refactory
+        self.read_work_time(pipe)
+    
+
     def read_work_time(self, pipe: dict) -> None:
         last_week, current_week = self.select_log_2_week(pipe)
         pipe['time_last_week'] = self.calcul_work_time(last_week)
         pipe['time_current_week'] = self.calcul_work_time(current_week)
+
         self.read_work_time_day(pipe, last_week, current_week)
 
     def select_one(self, select_name:str, table_name: str, where_name: str, 
@@ -127,11 +181,6 @@ class Model:
 
     def select_log(self, select_name: tuple, table_name: str, where_name: str,
                    value: tuple, order: str, limit: int):
-        '''
-        >>> model = Model()
-        >>> model.select_log(('date', 'inside'), 'log', 'id_user', (113, ),
-        ... 'date', 5).next()
-        '''
         if limit == 0:
             sql = f"""SELECT {self.format_tuple(select_name)} FROM {table_name
                 } WHERE {where_name}=? ORDER BY {order} DESC"""

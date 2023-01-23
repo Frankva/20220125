@@ -352,6 +352,47 @@ class SceneLog(SceneTime):
         self.buttons.append(Button(screen, 9 * cx / 12, 1 * cy / 12,
                                    2 * cx / 12, 2 * cy / 12, img='more'))
 
+    @staticmethod
+    def get_deleted_log_text(log) -> str:
+        try:
+            if log['date_delete'] is None:
+                return ''
+            else:
+                return 'Supprimé'
+        except:
+            return ''
+
+    @staticmethod
+    def get_site_log_text(log) -> str:
+        try:
+            if log['date_badge'] is None:
+                return 'Site'
+            else:
+                return ''
+        except:
+            return ''
+
+    @staticmethod
+    def get_modified_log_text(log) -> str:
+        try:
+            if log['date_badge'] == log['date']:
+                return ''
+            else:
+                return 'Modifié'
+        except:
+            return ''
+        
+    def get_one_log_text(self, log) -> str:
+        text = self.get_deleted_log_text(log)
+        if text != '':
+            return text
+        text = self.get_site_log_text(log)
+        if text != '':
+            return text
+        return self.get_modified_log_text(log)
+
+
+
     def set_text(self, logs: list) -> None:
         print('SceneLog.set_text')
         cx, cy = self.screen.get_size()
@@ -360,9 +401,13 @@ class SceneLog(SceneTime):
         self.texts = list()
         text_inside = 'entrée'
         text_outside = 'sortie'
+
         for index, log in enumerate(logs):
             text_log = str(log['date'])[:-3] + ' ' + self.change_text_bool(
                 log['inside'], text_inside, text_outside)
+            
+            text_log += self.get_one_log_text(log)
+            
             self.texts.append(Text(x, y + index * self.size_text,
                               self.size_text, text_log, pygame.Color('black')))
 
@@ -1140,6 +1185,7 @@ class Loader:
             return pygame.font.Font(cls.paths[name], int(size))
 
     
+    @staticmethod
     def change_color(img: pygame.Surface,
             color: pygame.Color) -> pygame.Surface:
         w, h = img.get_size()
