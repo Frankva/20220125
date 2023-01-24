@@ -137,7 +137,8 @@ class Model:
         <class 'mariadb.connection.cursor'>
         '''
         sql = ('SELECT `date`, `inside`, `date_badge`, `date_modif`, '
-               '`date_delete` FROM `log` WHERE `id_user` = ? LIMIT 5')
+               '`date_delete` FROM `log` WHERE `id_user` = ? '
+               'ORDER BY `date` DESC LIMIT 5')
         self.cursor.execute(sql, (user_id, ))
         return self.cursor
 
@@ -629,6 +630,10 @@ class Model:
 
     @staticmethod
     def find_last_monday(date, n=0) -> datetime.date:
+        '''
+        n=0 the last monday
+        n=1 the monday before the last monday 
+        '''
         print('find_last_monday', date)
         try:
             return date.date() - datetime.timedelta(date.weekday() + 7*n)
@@ -679,6 +684,14 @@ class Model:
         current_week = tuple(map(self.map_work_time, current_week))
         pipe['day_last_week'] = last_week
         pipe['day_current_week'] = current_week
+
+    def get_2_week_log(self, pipe:dict):
+        # work in progress
+        old_last_monday = self.find_last_monday(datetime.date.today(), 1)
+        sql = ('SELECT `date`, `inside`, `date_badge`, `date_modif`, '
+               '`date_delete` FROM `log` WHERE `id_user` = ? AND date >= ? '
+               'ORDER BY `date` DESC;')
+        self.cursor.execute(sql, (pipe['id_badge'], old_last_monday))
 
     def select_log_2_week(self, pipe: dict) -> tuple:
         old_monday = self.find_last_monday(datetime.date.today(), 1)

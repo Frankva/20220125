@@ -353,63 +353,83 @@ class SceneLog(SceneTime):
                                    2 * cx / 12, 2 * cy / 12, img='more'))
 
     @staticmethod
-    def get_deleted_log_text(log) -> str:
+    def is_deleted_log_text(log):
+        return log['date_delete'] is not None
+
+    @classmethod
+    def get_deleted_log_text(cls, log) -> str:
+        print('get_deleted_log_text', file=sys.stderr)
         try:
-            if log['date_delete'] is None:
-                return ''
+            if cls.is_deleted_log_text(log):
+                return cls.get_text_with_chevron('supprimé')
             else:
-                return 'Supprimé'
+                return ''
         except:
             return ''
 
-    @staticmethod
-    def get_site_log_text(log) -> str:
+    @classmethod
+    def get_site_log_text(cls, log) -> str:
+        print('get_site_log_text', file=sys.stderr)
         try:
             if log['date_badge'] is None:
-                return 'Site'
+                return cls.get_text_with_chevron('site')
             else:
                 return ''
         except:
             return ''
 
-    @staticmethod
-    def get_modified_log_text(log) -> str:
+    @classmethod
+    def get_modified_log_text(cls, log) -> str:
+        print('get_modified_log_text', file=sys.stderr)
         try:
             if log['date_badge'] == log['date']:
                 return ''
             else:
-                return 'Modifié'
+                return cls.get_text_with_chevron('modifié')
         except:
             return ''
         
+    @staticmethod
+    def get_text_with_chevron(text):
+        return f'<{text}>'
+
     def get_one_log_text(self, log) -> str:
+        print('get_one_log_text', file=sys.stderr)
         text = self.get_deleted_log_text(log)
         if text != '':
-            return text
+            return ' ' + text
         text = self.get_site_log_text(log)
         if text != '':
-            return text
-        return self.get_modified_log_text(log)
+            return ' ' + text
+        return ' ' + self.get_modified_log_text(log)
 
+    def set_text(self, index: int, log: dict, info: dict) -> None:
+        x, y = info['x'], info['y']
+        text_inside, text_outside = info['text_inside'], info['text_outside']
 
+        text_log = str(log['date'])[:-3] + ' ' + self.change_text_bool(
+            log['inside'], text_inside, text_outside)
+        
+        text_log += self.get_one_log_text(log)
+        
+        self.texts.append(Text(x, y + index * self.size_text,
+                            self.size_text, text_log, pygame.Color('black')))
+        if self.is_deleted_log_text(log):
+            self.texts[-1].strikethrough = True
 
-    def set_text(self, logs: list) -> None:
-        print('SceneLog.set_text')
+    def set_texts(self, logs: list) -> None:
+        print('SceneLog.set_texts', file=sys.stderr)
+        info = dict()
         cx, cy = self.screen.get_size()
-        x = 1 * cx / 12
-        y = 4 * cy / 12
+        info["x"] = 1 * cx / 12
+        info["y"] = 4 * cy / 12
+        info['text_inside'] = 'entrée'
+        info['text_outside'] = 'sortie'
+
         self.texts = list()
-        text_inside = 'entrée'
-        text_outside = 'sortie'
 
         for index, log in enumerate(logs):
-            text_log = str(log['date'])[:-3] + ' ' + self.change_text_bool(
-                log['inside'], text_inside, text_outside)
-            
-            text_log += self.get_one_log_text(log)
-            
-            self.texts.append(Text(x, y + index * self.size_text,
-                              self.size_text, text_log, pygame.Color('black')))
+            self.set_text(index, log, info)
 
     @staticmethod
     def change_text_bool(b, text_true: str, text_false: str) -> str:
@@ -499,6 +519,8 @@ class SceneWorkTime(SceneTime):
         text_list = tuple(filter(lambda day: Model.is_same_day(date,
             day[0][0]), View.pipe[self.week_str]))
         def map_func(log):
+            print('map_func', file=sys.stderr)
+            print(log)
             if bool(log[1]):
                 return f'{log[0]} entrée'
             else:
@@ -523,7 +545,7 @@ class SceneWorkTime(SceneTime):
         return f'{hh} h {mm} min'
 
     def set_content(self):
-        print('SceneWorkTime.set_text', file=sys.stderr)
+        print('SceneWorkTime.set_content', file=sys.stderr)
         self.texts.clear()
         self.texts.append(list())
         self.texts[0].append('Date')
@@ -1028,7 +1050,7 @@ class View:
     def do_log_scene(self, log) -> None:
         if self.current_scene == 'select':
             self.current_scene = 'log'
-            self.scenes['log'].set_text(log)
+            self.scenes['log'].set_texts(log)
 
     def do_work_time(self, time='time') -> None:
         if ((self.current_scene == 'log' and time == 'time') or
@@ -1109,6 +1131,51 @@ class Text:
         self.img = self.font.render(self.text, True, self.color)
         self.align = align
         self.set_align()
+
+    @property
+    def strikethrough(self):
+        return self.font.strikethrough
+
+    @strikethrough.setter
+    def strikethrough(self, is_active: bool):
+        '''
+        20230124 striketrough is not yet in the stable version of pygame but
+        it is in a doc of pygame, if error do italic and underline
+        '''
+        try:
+            self.font.strikethrough = is_active
+            self.update()
+        except:
+            self.color = pygame.Color("#6c767e")
+            self.italic = is_active
+
+
+    @property
+    def italic(self):
+        return self.font.italic
+
+    @italic.setter
+    def italic(self, is_active: bool):
+        self.font.italic = is_active
+        self.update()
+    
+    @property
+    def underline(self):
+        return self.font.underline
+
+    @underline.setter
+    def underline(self, is_active: bool):
+        self.font.underline = is_active
+        self.update()
+
+    @property
+    def bold(self):
+        return self.font.bold
+
+    @bold.setter
+    def bold(self, is_active: bool):
+        self.font.bold = is_active
+        self.update()
 
     def set_align(self) -> None:
         if self.align == 'center':
