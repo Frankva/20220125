@@ -506,27 +506,63 @@ class SceneWorkTime(SceneTime):
                 self.reset_entry_time()
                 self.do_modal_scene(pressed_button.id)
         
+    @classmethod
+    def get_inside_label(cls, log_list:list):
+        print('get_inside_label', file=sys.stderr)
+        def map_func(log):
+            log_dict = cls.get_dict_log_list(log)
+            if bool(log_dict['inside']):
+                return f"{log_dict['date']} entrée"
+            else:
+                return f"{log_dict['date']} sortie"
+
+        return tuple(map(map_func, log_list))
+
+    @staticmethod
+    def get_dict_log_list(log:list) -> dict:
+        log_dict = dict()
+        log_dict['date'] = log[0]
+        log_dict['inside'] = log[1]
+        log_dict['date_badge'] = log[2]
+        log_dict['date_modif'] = log[3]
+        log_dict['date_delete'] = log[4]
+        return log_dict
+
+    @classmethod
+    def get_modified_log_text(cls, log_list:list):
+        # work in progress
+        print('get_modified_log_text', file=sys.stderr)
+        def map_func(log):
+            log_dict = cls.get_dict_log_list(log)
+            return SceneLog.get_modified_log_text(log_dict)
+
+        return tuple(map(map_func, log_list))
+
+    def get_text_modal(self, log):
+        pass
+
     def do_modal_scene(self, id: int) -> None:
         '''
         id is id of button on table
         '''
         date = View.pipe[f'day_{self.week_str}'][id][0]
         print('SceneWorkTime.do_modal_scene', date)
+        print(View.pipe[self.week_str])
         # day all logs of the day
         # day[0] is one log with datetime and bool
+        # day[0] is list with date, inside, date_badge, date_modif, date_delete
         # day[0][0] is one datetime of the log
 
-        text_list = tuple(filter(lambda day: Model.is_same_day(date,
-            day[0][0]), View.pipe[self.week_str]))
-        def map_func(log):
-            print('map_func', file=sys.stderr)
-            print(log)
-            if bool(log[1]):
-                return f'{log[0]} entrée'
-            else:
-                return f'{log[0]} sortie'
+        filtered_logs = tuple(filter(lambda day: Model.is_same_day(date,
+            day[0][0]), View.pipe[self.week_str]))[0]
+        print('filtered_logs', filtered_logs)
+        # work in progress
+        for log in filtered_logs:
+            log_dict = self.get_dict_log_list(log)
+            text_list.append(self.get_text_modal(log_dict))
+        text_list = self.get_inside_label(filtered_logs)
 
-        text_list = tuple(map(map_func, text_list[0]))
+
 
         if self.week_str == 'current_week':
             time = 'time'
@@ -603,7 +639,7 @@ class Table:
         self.size_text = 30
         self.pos = pygame.Vector2(x, y)
         self.size = pygame.Vector2(w, h - self.size_text) # pixel
-        self.cols = cols
+        self.cols = cols # list of string
         self.update_scaling() # number element in row col
         self.update_pixel_case() 
         self.buttons = list()
@@ -625,6 +661,7 @@ class Table:
         print(self.pixel_case, file=sys.stderr)
 
     def set_content(self):
+        print("Table.set_content", file=sys.stderr)
         cursor = pygame.Vector2(self.pos.x, self.pos.y)
         for col in self.cols:
             for nb_line, text in enumerate(col):
@@ -686,9 +723,9 @@ class SceneModal(SceneTime):
         w = 11 * cx / 12
         h = 8 * cy / 12
         self.tables.clear()
-        l = list()
-        l.append(self.texts)
-        self.tables.append(Table(x, y, w, h, l))
+        string_per_col = list()
+        string_per_col.append(self.texts)
+        self.tables.append(Table(x, y, w, h, string_per_col))
 
         
 
@@ -711,6 +748,7 @@ class SceneModal(SceneTime):
                 self.view.end_new_user()
             else:
                 self.view.current_scene = self.next_scene
+
 
 class SceneModalCancelButton(SceneModal):
     def __init__(self, screen: pygame.Surface, view: 'View', texts: list,

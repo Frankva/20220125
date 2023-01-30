@@ -157,7 +157,7 @@ class Model:
     
 
     def read_work_time(self, pipe: dict) -> None:
-        last_week, current_week = self.select_log_2_week(pipe)
+        last_week, current_week = self.get_2_week_log(pipe)
         pipe['time_last_week'] = self.calcul_work_time(last_week)
         pipe['time_current_week'] = self.calcul_work_time(current_week)
 
@@ -616,7 +616,7 @@ class Model:
     
     @classmethod
     def isolate_week(cls, logs: list)-> tuple:
-        print('isolate_week')
+        print('isolate_week', file=sys.stderr)
         current_week = list()
         last_week = list()
         last_monday = cls.find_last_monday(datetime.date.today())
@@ -634,7 +634,7 @@ class Model:
         n=0 the last monday
         n=1 the monday before the last monday 
         '''
-        print('find_last_monday', date)
+        print('find_last_monday', date, file=sys.stderr)
         try:
             return date.date() - datetime.timedelta(date.weekday() + 7*n)
         except:
@@ -666,6 +666,8 @@ class Model:
     @classmethod
     def map_work_time(cls, day_logs):
         try:
+            print('model.map_work_time', file=sys.stderr)
+            print(day_logs, file=sys.stderr)
             return day_logs[0][0].date(), cls.calcul_work_time(day_logs)
         except IndexError:
             return None
@@ -686,14 +688,22 @@ class Model:
         pipe['day_current_week'] = current_week
 
     def get_2_week_log(self, pipe:dict):
-        # work in progress
+        '''
+        >>> model = Model()
+        >>> pipe = dict()
+        >>> pipe['id_badge'] = 47
+        >>> model.get_2_week_log(pipe)
+        '''
         old_last_monday = self.find_last_monday(datetime.date.today(), 1)
         sql = ('SELECT `date`, `inside`, `date_badge`, `date_modif`, '
-               '`date_delete` FROM `log` WHERE `id_user` = ? AND date >= ? '
+               '`date_delete` FROM `log` WHERE `id_badge` = ? AND `date` >= ? '
                'ORDER BY `date` DESC;')
         self.cursor.execute(sql, (pipe['id_badge'], old_last_monday))
+        log2week = tuple(self.cursor_to_list(self.cursor))
+        return self.isolate_week(log2week)
 
     def select_log_2_week(self, pipe: dict) -> tuple:
+        warnings.warn("deprecated", DeprecationWarning)
         old_monday = self.find_last_monday(datetime.date.today(), 1)
         log2week = self.select_log_date(('date', 'inside'), 'log', 'id_badge',
                                         (pipe['id_badge'], old_monday), 'date')
