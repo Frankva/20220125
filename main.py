@@ -338,7 +338,13 @@ def main():
     app = App()
     app.load()
 
-
+def doctest():
+    import doctest
+    doctest.testmod()
 
 if __name__ == "__main__":
+    if False:
+        doctest()
+        exit()
+
     main()

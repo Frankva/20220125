@@ -55,6 +55,7 @@ class Model:
     # def createLog(self, ):
     #    self.cursor.execute(f"insert into log(id, datetime) values(1, '{now}');")
     #    self.connection.commit()
+
     def connect(self):
         self.connection = mariadb.connect(**self.conn_params)
         self.cursor = self.connection.cursor()
@@ -66,6 +67,7 @@ class Model:
         print('disconnect')
         
 
+    # depreciated
     def insert_old(self, table, dict) -> None:
         '''
         depreciated
@@ -79,14 +81,17 @@ class Model:
                 self.format_value_column(dict)})""")
         self.connection.commit()
 
+    # depreciated
     def insert(self, table_name: str, d: dict) -> None:
         '''
         execute insert sql
         '''
+        warnings.warn("deprecated", DeprecationWarning)
         sql = f"""insert into {table_name}({self.format_name_column(d)
             }) values({self.give_quationmark(d)})"""
         self.execute_and_commit(sql, tuple(d.values()))
 
+    # depreciated
     def read_name_log(self, pipe: dict) -> None:
         '''
         Deprecation
@@ -125,21 +130,23 @@ class Model:
         >>> model.get_usernames(116)
         ('Zéro-Six', 'Un-cinq')
         '''
+        # to fix if offline and same id between user_write and user_sync
         print('get_usernames', file=sys.stderr)
         sql = 'SELECT `name`, `surname` FROM `user` WHERE `id_user` = ?;'
         self.cursor.execute(sql, (user_id, ))
         return self.cursor_to_tuple(self.cursor)
     
-    def get_5_last_logs(self, user_id):
+    def get_5_last_logs(self, badge_id):
         '''
         >>> model = Model()
         >>> type(model.get_5_last_logs(116))
         <class 'mariadb.connection.cursor'>
         '''
+        user_id = self.get_user_id_with_badge(badge_id)
         sql = ('SELECT `date`, `inside`, `date_badge`, `date_modif`, '
-               '`date_delete` FROM `log` WHERE `id_user` = ? '
-               'ORDER BY `date` DESC LIMIT 5')
-        self.cursor.execute(sql, (user_id, ))
+               '`date_delete` FROM `log` WHERE `id_user` = ? OR '
+               '`id_badge` = ? ORDER BY `date` DESC LIMIT 5;')
+        self.cursor.execute(sql, (user_id, badge_id))
         return self.cursor
 
     def find_user_info(self, pipe: dict) -> None:
@@ -147,7 +154,7 @@ class Model:
         if user_id is None:
             return
         pipe['name'], pipe['surname'] = self.get_usernames(user_id)
-        five_logs = self.get_5_last_logs(user_id)
+        five_logs = self.get_5_last_logs(pipe['id_badge'])
         pipe['log'] = self.cursor_to_dict_in_list(('date', 'inside',
                 'date_badge', 'date_modif', 'date_delete'), five_logs)
         
@@ -155,16 +162,40 @@ class Model:
         # to refactory
         self.read_work_time(pipe)
     
+    @staticmethod
+    def get_dict_log_list(log:list) -> dict:
+        log_dict = dict()
+        log_dict['date'] = log[0]
+        log_dict['inside'] = log[1]
+        log_dict['date_badge'] = log[2]
+        log_dict['date_modif'] = log[3]
+        log_dict['date_delete'] = log[4]
+        return log_dict
+
+    @staticmethod
+    def is_deleted_log(log):
+        return log['date_delete'] is not None
 
     def read_work_time(self, pipe: dict) -> None:
+        '''
+        >>> model = Model()
+        >>> pipe = dict()
+        >>> pipe['id_badge'] = 47
+        >>> model.read_work_time(pipe)
+        '''
+        print('read_work_time', file=sys.stderr)
         last_week, current_week = self.get_2_week_log(pipe)
-        pipe['time_last_week'] = self.calcul_work_time(last_week)
-        pipe['time_current_week'] = self.calcul_work_time(current_week)
+        pipe['time_last_week'] = self.calcul_work_time(tuple(filter(
+            self.is_deleted_log, last_week)))
+        pipe['time_current_week'] = self.calcul_work_time(tuple(filter(
+            self.is_deleted_log, current_week)))
 
         self.read_work_time_day(pipe, last_week, current_week)
 
+    # depreciated
     def select_one(self, select_name:str, table_name: str, where_name: str, 
                    value: tuple):
+        warnings.warn('depreciated', DeprecationWarning)
         #sql = f"select id_user from badge where id_badge=483985410385;"
         sql = f"SELECT {select_name} FROM {table_name} WHERE {where_name}=?;"
         self.cursor.execute(sql, value)
@@ -173,15 +204,19 @@ class Model:
         except TypeError:
             return self.cursor.next()
 
+    # depreciated
     def select(self, select_name: tuple, table_name: str, where_name: str, 
                value: tuple) -> tuple:
+        warnings.warn('depreciated', DeprecationWarning)
         sql = f"""select {self.format_tuple(select_name)} from {table_name
             } where {where_name}=?;"""
         self.cursor.execute(sql, value)
         return self.cursor_to_tuple(self.cursor)
 
+    # depreciated
     def select_log(self, select_name: tuple, table_name: str, where_name: str,
                    value: tuple, order: str, limit: int):
+        warnings.warn('depreciated', DeprecationWarning)
         if limit == 0:
             sql = f"""SELECT {self.format_tuple(select_name)} FROM {table_name
                 } WHERE {where_name}=? ORDER BY {order} DESC"""
@@ -191,13 +226,16 @@ class Model:
         self.cursor.execute(sql, value)
         return self.cursor
 
+    # depreciated
     def select_log_date(self, select_name: tuple, table_name: str,
                         where_name: str, value: tuple, order: str):
+        warnings.warn('depreciated', DeprecationWarning)
         sql = f"""select {self.format_tuple(select_name)} from {table_name
             } where {where_name}=? and date >=? order by {order} desc"""
         self.cursor.execute(sql, value)
         return self.cursor
     
+    # depreciated
     def insert_user(self, select_name:str, table_name:str, value:tuple):
         warnings.warn("deprecated", DeprecationWarning)
         sql = f'''INSERT INTO {table_name} ({self.format_tuple(select_name)
@@ -210,11 +248,12 @@ class Model:
         self.execute_and_commit(sql, value)
     
     def select_new_user(self, value):
-        sql = 'SELECT `id_user` FROM `user` WHERE name=? AND surname=? ORDER \
-            BY `id_user` DESC;'
+        sql = ('SELECT `id_user` FROM `user` WHERE name=? AND surname=? ORDER '
+            'BY `id_user` DESC;')
         self.cursor.execute(sql, value)
         return self.cursor.next()[0]
 
+    # depreciated
     def insert_badge(self, select_name:str, table_name:str, value:tuple):
         warnings.warn("deprecated", DeprecationWarning)
         sql = f'''INSERT INTO {table_name} ({self.format_tuple(select_name)
@@ -490,6 +529,7 @@ class Model:
             # insert one per one in local. can be better
             self.call_insert_sync_log(tuple(log.values()))
         
+    # depreciated
     def invoke_receive_users_and_badges(self) -> None:
         '''
         receive all users and badges from remote server and insert in local
@@ -528,8 +568,6 @@ class Model:
             # insert one per one in local. can be better
             self.call_insert_sync_badge(tuple(badge.values()))
         
-
-
 
 
     def execute_and_commit(self, sql, value:tuple):
@@ -597,7 +635,7 @@ class Model:
 
 
     @staticmethod
-    def calcul_work_time(logs: tuple):
+    def old_calcul_work_time(logs: tuple):
         print('calcul_work_time')
         time = datetime.timedelta()
         date_in = None
@@ -611,6 +649,27 @@ class Model:
                     # to text day on multi day with forteing the last
                     # first log of next day can bug
                     time += log[0] - date_in
+                date_in = None
+        return time
+
+    @classmethod
+    def calcul_work_time(cls, logs: tuple):
+        print('calcul_work_time', file=sys.stderr)
+        print('---------', file=sys.stderr)
+        print(logs, file=sys.stderr)
+        logs = tuple(map(cls.get_dict_log_list, logs))
+        time = datetime.timedelta()
+        date_in = None
+        for log in logs[::-1]:
+            if bool(log['inside']):
+                if date_in is None:
+                    date_in = log['date']
+            elif date_in is not None:
+                if date_in.day == log['date'].day: # ignore time with forgeting 
+                    # outlog in the end of last day
+                    # to text day on multi day with forteing the last
+                    # first log of next day can bug
+                    time += log['date'] - date_in
                 date_in = None
         return time
     
@@ -631,7 +690,8 @@ class Model:
     @staticmethod
     def find_last_monday(date, n=0) -> datetime.date:
         '''
-        n=0 the last monday
+        n=0 the last monday (monday of the current week if monday is the first 
+        day of the week).
         n=1 the monday before the last monday 
         '''
         print('find_last_monday', date, file=sys.stderr)
@@ -687,21 +747,26 @@ class Model:
         pipe['day_last_week'] = last_week
         pipe['day_current_week'] = current_week
 
-    def get_2_week_log(self, pipe:dict):
+    def get_2_week_log(self, pipe:dict) -> tuple:
         '''
         >>> model = Model()
         >>> pipe = dict()
         >>> pipe['id_badge'] = 47
-        >>> model.get_2_week_log(pipe)
+        >>> r = model.get_2_week_log(pipe)
+        >>> isinstance(r, tuple)
+        True
         '''
+        id_user = self.get_user_id_with_badge(pipe['id_badge'])
         old_last_monday = self.find_last_monday(datetime.date.today(), 1)
         sql = ('SELECT `date`, `inside`, `date_badge`, `date_modif`, '
-               '`date_delete` FROM `log` WHERE `id_badge` = ? AND `date` >= ? '
-               'ORDER BY `date` DESC;')
-        self.cursor.execute(sql, (pipe['id_badge'], old_last_monday))
+               '`date_delete` FROM `log` WHERE (`id_badge` = ? OR '
+               '`id_user` = ?) AND `date` >= ? ORDER BY `date` DESC;')
+        self.cursor.execute(sql, (pipe['id_badge'], id_user,
+                                  old_last_monday))
         log2week = tuple(self.cursor_to_list(self.cursor))
         return self.isolate_week(log2week)
 
+    # deprecated
     def select_log_2_week(self, pipe: dict) -> tuple:
         warnings.warn("deprecated", DeprecationWarning)
         old_monday = self.find_last_monday(datetime.date.today(), 1)
@@ -710,6 +775,7 @@ class Model:
         log2week = tuple(self.cursor_to_list(log2week))
         return self.isolate_week(log2week)
 
+    # deprecated
     def old__invoke_new_user(self, pipe: dict):
         warnings.warn("deprecated", DeprecationWarning)
         model = Model()

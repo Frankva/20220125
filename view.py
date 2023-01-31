@@ -190,8 +190,8 @@ class SceneTime(Scene, abc.ABC):
         '''
         check time with now and entry_time proprety 
         '''
-        return datetime.datetime.today() - self.entry_time >\
-            datetime.timedelta(minutes=minute)
+        return (datetime.datetime.today() - self.entry_time >
+            datetime.timedelta(minutes=minute))
 
     def do_cancel(self) -> None:
         if self.check_time(1):
@@ -233,26 +233,26 @@ class SceneSelect(SceneTime):
             pass
 
     def do_press_button(self):
-        if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
-                self.view.mouse.release('left'):
+        if (self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and
+                self.view.mouse.release('left')):
             if View.debug:
                 print("blue right pressed", file=sys.stderr)
             self.take_choice_dict(True, View.pipe)
 
-        if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and\
-                self.view.mouse.release('left'):
+        if (self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and
+                self.view.mouse.release('left')):
             if View.debug:
                 print("red left pressed", file=sys.stderr)
             self.take_choice_dict(False, View.pipe)
 
-        if self.buttons[2].rect.collidepoint(pygame.mouse.get_pos()) and\
-                self.view.mouse.release('left'):
+        if (self.buttons[2].rect.collidepoint(pygame.mouse.get_pos()) and
+                self.view.mouse.release('left')):
             self.reset_entry_time()
             # access parent instance
             self.view.do_log_scene(View.pipe['log'])
 
-        if self.buttons[3].rect.collidepoint(pygame.mouse.get_pos()) and\
-                self.view.mouse.release('left'):
+        if (self.buttons[3].rect.collidepoint(pygame.mouse.get_pos()) and
+                self.view.mouse.release('left')):
             # access parent instance
             self.view.cancel()
 
@@ -393,15 +393,16 @@ class SceneLog(SceneTime):
     def get_text_with_chevron(text):
         return f'<{text}>'
 
-    def get_one_log_text(self, log) -> str:
+    @classmethod
+    def get_one_log_text(cls, log) -> str:
         print('get_one_log_text', file=sys.stderr)
-        text = self.get_deleted_log_text(log)
+        text = cls.get_deleted_log_text(log)
         if text != '':
             return ' ' + text
-        text = self.get_site_log_text(log)
+        text = cls.get_site_log_text(log)
         if text != '':
             return ' ' + text
-        return ' ' + self.get_modified_log_text(log)
+        return ' ' + cls.get_modified_log_text(log)
 
     def set_text(self, index: int, log: dict, info: dict) -> None:
         x, y = info['x'], info['y']
@@ -440,14 +441,14 @@ class SceneLog(SceneTime):
         self.do_press_button()
 
     def do_press_button(self):
-        if self.view.mouse.release('left') and\
-                self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+        if (self.view.mouse.release('left') and
+                self.buttons[0].rect.collidepoint(pygame.mouse.get_pos())):
             self.reset_entry_time()
             # access parent instance
             self.view.current_scene = 'select'
 
-        if self.view.mouse.release('left') and\
-                self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()):
+        if (self.view.mouse.release('left') and
+                self.buttons[1].rect.collidepoint(pygame.mouse.get_pos())):
             self.reset_entry_time()
             self.view.do_work_time()
 
@@ -479,8 +480,8 @@ class SceneWorkTime(SceneTime):
         self.week_str = week_str
 
     def do_press_return_button(self) -> None:
-        if self.view.mouse.release('left') and\
-                self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()):
+        if (self.view.mouse.release('left') and
+                self.buttons[0].rect.collidepoint(pygame.mouse.get_pos())):
             self.reset_entry_time()
             # access parent instance
             if self.week_str == 'current_week':
@@ -505,18 +506,13 @@ class SceneWorkTime(SceneTime):
             if pressed_button is not None:
                 self.reset_entry_time()
                 self.do_modal_scene(pressed_button.id)
-        
-    @classmethod
-    def get_inside_label(cls, log_list:list):
-        print('get_inside_label', file=sys.stderr)
-        def map_func(log):
-            log_dict = cls.get_dict_log_list(log)
-            if bool(log_dict['inside']):
-                return f"{log_dict['date']} entrée"
-            else:
-                return f"{log_dict['date']} sortie"
 
-        return tuple(map(map_func, log_list))
+    @staticmethod
+    def get_inside_label_log(log):
+        if bool(log['inside']):
+            return " entrée"
+        else:
+            return " sortie"
 
     @staticmethod
     def get_dict_log_list(log:list) -> dict:
@@ -528,49 +524,28 @@ class SceneWorkTime(SceneTime):
         log_dict['date_delete'] = log[4]
         return log_dict
 
-    @classmethod
-    def get_modified_log_text(cls, log_list:list):
-        # work in progress
-        print('get_modified_log_text', file=sys.stderr)
-        def map_func(log):
-            log_dict = cls.get_dict_log_list(log)
-            return SceneLog.get_modified_log_text(log_dict)
-
-        return tuple(map(map_func, log_list))
-
-    def get_text_modal(self, log):
-        pass
+    def get_text_modal_row(self, log):
+        log_dict = self.get_dict_log_list(log)
+        text = str(log_dict['date'])[:-3]
+        text += self.get_inside_label_log(log_dict)
+        text += SceneLog.get_one_log_text(log_dict)
+        return text
 
     def do_modal_scene(self, id: int) -> None:
         '''
         id is id of button on table
         '''
+        print('SceneWorkTime.do_modal_scene', file=sys.stderr)
         date = View.pipe[f'day_{self.week_str}'][id][0]
-        print('SceneWorkTime.do_modal_scene', date)
-        print(View.pipe[self.week_str])
-        # day all logs of the day
-        # day[0] is one log with datetime and bool
-        # day[0] is list with date, inside, date_badge, date_modif, date_delete
-        # day[0][0] is one datetime of the log
-
         filtered_logs = tuple(filter(lambda day: Model.is_same_day(date,
             day[0][0]), View.pipe[self.week_str]))[0]
-        print('filtered_logs', filtered_logs)
-        # work in progress
-        for log in filtered_logs:
-            log_dict = self.get_dict_log_list(log)
-            text_list.append(self.get_text_modal(log_dict))
-        text_list = self.get_inside_label(filtered_logs)
-
-
-
+        text_tuple = tuple(map(self.get_text_modal_row, filtered_logs)) 
         if self.week_str == 'current_week':
             time = 'time'
         else:
             time = 'last_time'
-
         self.view.scenes = 'modal', SceneModal(self.screen, self.view,
-            text_list, time)
+            text_tuple, time)
         self.view.current_scene = 'modal'
     
     @staticmethod
@@ -634,13 +609,13 @@ class Table:
     '''
     table/grid with content text or id of img that give a button
     '''
-    def __init__(self, x, y , w, h, cols: list):
+    def __init__(self, x, y , w, h, columns: list):
         print('Table.init', file=sys.stderr)
         self.size_text = 30
         self.pos = pygame.Vector2(x, y)
         self.size = pygame.Vector2(w, h - self.size_text) # pixel
-        self.cols = cols # list of string
-        self.update_scaling() # number element in row col
+        self.columns = columns # list of string
+        self.update_scaling() # number element in row columns
         self.update_pixel_case() 
         self.buttons = list()
         self.texts = list()
@@ -649,9 +624,9 @@ class Table:
 
     def update_scaling(self):
         print('Table.update_scaling', file=sys.stderr)
-        print(self.cols)
-        len_cols = map(lambda row:len(row), self.cols)
-        self.scaling = pygame.Vector2(len(self.cols), max(len_cols))
+        print(self.columns)
+        len_columns = map(lambda row:len(row), self.columns)
+        self.scaling = pygame.Vector2(len(self.columns), max(len_columns))
         print(self.scaling, file=sys.stderr)
 
     def update_pixel_case(self):
@@ -660,19 +635,30 @@ class Table:
                                          self.size.y / self.scaling.y)
         print(self.pixel_case, file=sys.stderr)
 
+    def check_and_put_strikethrough(self, text:'Text') -> None:
+        if '<supprimé>' in text.text:
+            self.texts[-1].strikethrough = True
+
+    def set_case_content(self, cursor, nb_line, text):
+        if text in Loader.paths:
+            self.buttons.append(Button(None, cursor.x, cursor.y,
+                self.pixel_case.x * 8 / 12, self.pixel_case.y * 11 / 12,
+                self.button_color, text, nb_line - 1)) 
+        else:
+            self.texts.append(Text(cursor.x, cursor.y, self.size_text, text))
+            self.check_and_put_strikethrough(self.texts[-1])
+
+    def set_column_content(self, cursor, colone): 
+        # side effect on cursor
+        for nb_line, text in enumerate(colone):
+            self.set_case_content(cursor, nb_line, text)
+            cursor.y += self.pixel_case.y
+
     def set_content(self):
         print("Table.set_content", file=sys.stderr)
         cursor = pygame.Vector2(self.pos.x, self.pos.y)
-        for col in self.cols:
-            for nb_line, text in enumerate(col):
-                if text in Loader.paths:
-                    self.buttons.append(Button(None, cursor.x, cursor.y,
-                        self.pixel_case.x * 8 / 12, self.pixel_case.y * 11 / 
-                        12, self.button_color, text, nb_line - 1)) 
-                else:
-                    self.texts.append(Text(cursor.x, cursor.y,
-                        self.size_text, text))
-                cursor.y += self.pixel_case.y
+        for column in self.columns:
+            self.set_column_content(cursor, column)
             cursor.x += self.pixel_case.x
             cursor.y = self.pos.y
 
@@ -727,9 +713,6 @@ class SceneModal(SceneTime):
         string_per_col.append(self.texts)
         self.tables.append(Table(x, y, w, h, string_per_col))
 
-        
-
-
     def update(self):
         super().update()
         self.do_press_button()
@@ -741,8 +724,8 @@ class SceneModal(SceneTime):
         self.button.draw(self.screen)
     
     def do_press_button(self):
-        if self.view.mouse.release('left') and \
-                self.button.rect.collidepoint(pygame.mouse.get_pos()):
+        if (self.view.mouse.release('left') and 
+                self.button.rect.collidepoint(pygame.mouse.get_pos())):
             self.reset_entry_time()
             if self.next_scene == 'new_user_valid':
                 self.view.end_new_user()
@@ -762,16 +745,16 @@ class SceneModalCancelButton(SceneModal):
 
     def do_press_button(self):
         # valid button
-        if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
-                    self.view.mouse.release('left'):
+        if (self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and
+                    self.view.mouse.release('left')):
             self.reset_entry_time()
             if self.next_scene == 'new_user_valid':
                 self.view.end_new_user()
             else:
                 self.view.current_scene = self.next_scene
         # cancel button
-        if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and\
-                    self.view.mouse.release('left'):
+        if (self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and
+                    self.view.mouse.release('left')):
             self.reset_entry_time()
             self.view.cancel()
 
@@ -818,12 +801,12 @@ class SceneKeyboard(SceneTime):
         self.reset_entry_time()
 
     def do_press_button(self):
-        if self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and\
-                self.view.mouse.release('left'):
+        if (self.buttons[0].rect.collidepoint(pygame.mouse.get_pos()) and
+                self.view.mouse.release('left')):
             self.count = 0
             self.view.cancel()
-        if self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and\
-                self.view.mouse.release('left'):
+        if (self.buttons[1].rect.collidepoint(pygame.mouse.get_pos()) and
+                self.view.mouse.release('left')):
             if  self.count == 0:
                 self.count += 1
                 self.view.do_unknown_badge(self.count)
@@ -1368,10 +1351,15 @@ def main():
     view = View()
     view.load()
 
+def doctest():
+    import doctest
+    doctest.testmod()
 
 if __name__ == "__main__":
-    mode = 1
+    mode = 2
     if mode == 0:
         main()
     elif mode == 1:
         test1()
+    elif mode == 2:
+        doctest()
