@@ -6,6 +6,7 @@ import sys
 import os
 import datetime
 from model import Model
+import warnings
 
 
 class Button:
@@ -514,8 +515,10 @@ class SceneWorkTime(SceneTime):
         else:
             return " sortie"
 
+    # deprecated
     @staticmethod
     def get_dict_log_list(log:list) -> dict:
+        warnings.warn("deprecated", DeprecationWarning)
         log_dict = dict()
         log_dict['date'] = log[0]
         log_dict['inside'] = log[1]
@@ -525,10 +528,9 @@ class SceneWorkTime(SceneTime):
         return log_dict
 
     def get_text_modal_row(self, log):
-        log_dict = self.get_dict_log_list(log)
-        text = str(log_dict['date'])[:-3]
-        text += self.get_inside_label_log(log_dict)
-        text += SceneLog.get_one_log_text(log_dict)
+        text = str(log['date'])[:-3]
+        text += self.get_inside_label_log(log)
+        text += SceneLog.get_one_log_text(log)
         return text
 
     def do_modal_scene(self, id: int) -> None:
@@ -538,7 +540,7 @@ class SceneWorkTime(SceneTime):
         print('SceneWorkTime.do_modal_scene', file=sys.stderr)
         date = View.pipe[f'day_{self.week_str}'][id][0]
         filtered_logs = tuple(filter(lambda day: Model.is_same_day(date,
-            day[0][0]), View.pipe[self.week_str]))[0]
+            day[0]['date']), View.pipe[self.week_str]))[0]
         text_tuple = tuple(map(self.get_text_modal_row, filtered_logs)) 
         if self.week_str == 'current_week':
             time = 'time'

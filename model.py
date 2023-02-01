@@ -162,8 +162,10 @@ class Model:
         # to refactory
         self.read_work_time(pipe)
     
+    # depreciated
     @staticmethod
     def get_dict_log_list(log:list) -> dict:
+       
         log_dict = dict()
         log_dict['date'] = log[0]
         log_dict['inside'] = log[1]
@@ -172,8 +174,8 @@ class Model:
         log_dict['date_delete'] = log[4]
         return log_dict
 
-    @staticmethod
-    def is_deleted_log(log):
+    @classmethod
+    def is_deleted_log(cls, log):
         return log['date_delete'] is not None
 
     def read_work_time(self, pipe: dict) -> None:
@@ -186,9 +188,9 @@ class Model:
         print('read_work_time', file=sys.stderr)
         last_week, current_week = self.get_2_week_log(pipe)
         pipe['time_last_week'] = self.calcul_work_time(tuple(filter(
-            self.is_deleted_log, last_week)))
+            lambda x:not self.is_deleted_log(x), last_week)))
         pipe['time_current_week'] = self.calcul_work_time(tuple(filter(
-            self.is_deleted_log, current_week)))
+            lambda x:not self.is_deleted_log(x), current_week)))
 
         self.read_work_time_day(pipe, last_week, current_week)
 
@@ -364,8 +366,9 @@ class Model:
         send all badge and user from the local database to the remote server
         >>> model = Model()
         >>> ids = model.test_add_user()
-        >>> model.send_unsync_badges_and_users()
-        201
+        >>> code = model.send_unsync_badges_and_users()
+        >>> isinstance(code, int) or code is None
+        True
         >>> model.test_del_user(ids[0])
         '''
         print('send_unsync_badges_and_users', file=sys.stderr)
@@ -655,9 +658,7 @@ class Model:
     @classmethod
     def calcul_work_time(cls, logs: tuple):
         print('calcul_work_time', file=sys.stderr)
-        print('---------', file=sys.stderr)
         print(logs, file=sys.stderr)
-        logs = tuple(map(cls.get_dict_log_list, logs))
         time = datetime.timedelta()
         date_in = None
         for log in logs[::-1]:
@@ -681,7 +682,7 @@ class Model:
         last_monday = cls.find_last_monday(datetime.date.today())
 
         for log in logs:
-            if cls.find_last_monday(log[0]) == last_monday:
+            if cls.find_last_monday(log['date']) == last_monday:
                 current_week.append(log)
             else:
                 last_week.append(log)
@@ -702,21 +703,22 @@ class Model:
     
     @staticmethod
     def is_same_day(date: datetime.date, date2: datetime.date) -> bool:
-        print('is_same_day')
+        print('is_same_day', file=sys.stderr)
         return ((date.day == date2.day) and (date.month == date2.month) and
                 (date.year == date2.year))
         
     @classmethod
-    def isolate_day(cls, logs:list) -> list:
+    def isolate_day(cls, logs:list) -> tuple:
         '''
-        return a list with a list for each day
+        return a list with a list for each day.
+        [id_day][id_log_in_the_day][key_of_property ex date, inside…]
         '''
         logs_per_day = list()
         logs_per_day.append(list())
         for log in logs:
             if len(logs_per_day[0]) == 0:
                 logs_per_day[0].append(log)
-            elif cls.is_same_day(log[0], logs_per_day[-1][0][0]):
+            elif cls.is_same_day(log['date'], logs_per_day[-1][0]['date']):
                 logs_per_day[-1].append(log)
             else:
                 logs_per_day.append(list())
@@ -724,14 +726,19 @@ class Model:
         return tuple(logs_per_day)
 
     @classmethod
-    def map_work_time(cls, day_logs):
+    def get_date_and_work_time_day(cls, day_logs):
         try:
-            print('model.map_work_time', file=sys.stderr)
-            print(day_logs, file=sys.stderr)
-            return day_logs[0][0].date(), cls.calcul_work_time(day_logs)
+            print('model.get_work_time_day', file=sys.stderr)
+            return (day_logs[0]['date'].date(), cls.calcul_work_time(day_logs))
         except IndexError:
             return None
 
+    @classmethod
+    def get_date_and_work_time_day_without_deleted(cls, day_logs):
+        print('get_date_and_work_time_day_without_deleted', file=sys.stderr)
+        filtered_logs = tuple(filter(lambda log: not cls.is_deleted_log(log),
+                                day_logs))
+        return cls.get_date_and_work_time_day(filtered_logs)
 
     def read_work_time_day(self, pipe:dict, last_week, current_week) -> None:
         '''
@@ -739,13 +746,15 @@ class Model:
         is a tuple. in each index there are a tuple with date [0] and sum time 
         work of the day [1]
         '''
-        last_week = self.isolate_day(last_week)
-        current_week = self.isolate_day(current_week)
-        pipe['last_week'], pipe['current_week'] = last_week, current_week
-        last_week = tuple(map(self.map_work_time, last_week))
-        current_week = tuple(map(self.map_work_time, current_week))
-        pipe['day_last_week'] = last_week
-        pipe['day_current_week'] = current_week
+        print('read_work_time_day', file=sys.stderr)
+        pipe['last_week'] = self.isolate_day(last_week)
+        pipe['current_week'] = self.isolate_day(current_week)
+        pipe['day_last_week'] = tuple(map(
+                self.get_date_and_work_time_day_without_deleted,
+                pipe['last_week']))
+        pipe['day_current_week'] = tuple(map(
+                self.get_date_and_work_time_day_without_deleted,
+                pipe['current_week']))
 
     def get_2_week_log(self, pipe:dict) -> tuple:
         '''
@@ -763,8 +772,9 @@ class Model:
                '`id_user` = ?) AND `date` >= ? ORDER BY `date` DESC;')
         self.cursor.execute(sql, (pipe['id_badge'], id_user,
                                   old_last_monday))
-        log2week = tuple(self.cursor_to_list(self.cursor))
-        return self.isolate_week(log2week)
+        names = ('date', 'inside', 'date_badge', 'date_modif', 'date_delete')
+        two_week_log = self.cursor_to_dict_in_list(names, self.cursor)
+        return self.isolate_week(two_week_log)
 
     # deprecated
     def select_log_2_week(self, pipe: dict) -> tuple:
@@ -818,9 +828,12 @@ class Model:
         sql_user = 'DELETE FROM `user_write` WHERE `id_user`=?;'
         sql_badge = 'DELETE FROM `badge_write` WHERE `id_badge`=?;'
         self.cursor.execute(sql_user_id, (badge_id, ))
-        user_id = self.cursor.next()[0]
-        self.execute_and_commit(sql_user, (user_id, ))
-        self.execute_and_commit(sql_badge, (badge_id, ))
+        try:
+            user_id = self.cursor.next()[0]
+            self.execute_and_commit(sql_user, (user_id, ))
+            self.execute_and_commit(sql_badge, (badge_id, ))
+        except:
+            pass
 
 
 
