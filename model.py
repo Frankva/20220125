@@ -305,7 +305,7 @@ class Model:
         >>> # model.call_insert_sync_badge(tuple([88282828, 2, 3]))
         '''
         print('call_insert_sync_user', file=sys.stderr)
-        sql = 'CALL `insert_user_sync`(?, ?, ?);'
+        sql = 'CALL `insert_user_sync`(?, ?, ?, ?, ?);'
         self.execute_and_commit(sql, data)
 
     def call_insert_sync_badge(self, data:tuple) -> None:
@@ -315,10 +315,8 @@ class Model:
         >>> # model.call_insert_sync_badge(tuple([88282828, 2, 3]))
         '''
         print('call_insert_sync_badge', file=sys.stderr)
-        sql = 'CALL `insert_badge_sync`(?, ?, ?);'
+        sql = 'CALL `insert_badge_sync`(?, ?, ?, ?, ?);'
         self.execute_and_commit(sql, data)
-
-
 
     # will be renamed in select_unsync_logs
     def call_get_unsync_log(self) -> mariadb.connection.cursor:
@@ -496,16 +494,17 @@ class Model:
             print('user_id = ', user_id, file=sys.stderr)
             return user_id
 
-    def get_last_updated_log_datetime(self):
+    def get_last_updated_datetime(self, table:str):
         '''
         >>> model = Model()
-        >>> isinstance(model.get_last_updated_log_datetime(),
+        >>> isinstance(model.get_last_updated_datetime(),
         ...             datetime.datetime)
         True
         '''
-        print('get_last_updated_log_datetime', file=sys.stderr)
+        print('get_last_updated_datetime', file=sys.stderr)
         sql = ('SELECT MAX(`date_modif`) '
-               'FROM `log_sync`;')
+               'FROM `{0}`;')
+        sql = sql.format(table)
         self.cursor.execute(sql)
         try:
             last_datetime = self.cursor.next()[0]
@@ -517,7 +516,14 @@ class Model:
             print('last_datetime = ', last_datetime, file=sys.stderr)
             return last_datetime
 
-
+    def get_last_updated_log_datetime(self):
+        '''
+        >>> model = Model()
+        >>> isinstance(model.get_last_updated_log_datetime(),
+        ...             datetime.datetime)
+        True
+        '''   
+        return self.get_last_updated_datetime('log_sync')
 
     def invoke_receive_logs(self) -> None:
         '''
@@ -545,6 +551,11 @@ class Model:
             print(badge_and_user, file=sys.stderr)
             # insert one per one in local. can be better
             self.call_insert_sync_user_badge(tuple(badge_and_user.values()))
+    
+    def delete_badges_and_users_local(self) -> None:
+        sql = 'CALL `delete_badge_and_user_write`;'
+        self.cursor.execute(sql)
+
             
     def invoke_receive_users(self) -> None:
         '''
@@ -552,7 +563,7 @@ class Model:
         '''
         print('invoke_receive_users', file=sys.stderr)
         for user in self.api_client.receive_users(
-                self.get_last_user_id()):
+                self.get_last_updated_datetime('user_sync')):
             print(user, file=sys.stderr)
             # insert one per one in local. can be better
             self.call_insert_sync_user(tuple(user.values()))
@@ -566,7 +577,7 @@ class Model:
         '''
         print('invoke_receive_badges', file=sys.stderr)
         for badge in self.api_client.receive_badges(
-                self.get_last_badge_rowid()):
+                self.get_last_updated_datetime('badge_sync')):
             print(badge, file=sys.stderr)
             # insert one per one in local. can be better
             self.call_insert_sync_badge(tuple(badge.values()))

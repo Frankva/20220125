@@ -42,6 +42,7 @@ class App:
         # self.thread_receive_users_and_badges = None
         self.thread_receive_users = None
         self.thread_receive_badges = None
+        self.thread_delete_badges_and_users = None
 
     def load(self):
         self.turn_off_screen_interval(self.suspend_screen_time)
@@ -324,6 +325,9 @@ class App:
         self.invoke_join_thread('thread_receive_badges',
                                 self.model.invoke_receive_badges)
         self.invoke_receive_logs() 
+        self.invoke_join_thread('thread_delete_badges_and_users',
+                                self.model.delete_badges_and_users_local)
+
 
     def reconnect_local_db(self):
         try:
