@@ -126,8 +126,9 @@ class APIClient:
         '''
         print('receive_logs', file=sys.stderr)
         print(start_date, file=sys.stderr)
-        url = self.create_url_n(Controller.LOGS.value, Method.GET.value, 
-            quote(str(start_date)))
+        token = self.create_token_args(start_date)
+        arg = self.create_arg_args(start_date, token)
+        url = self.create_url_n(Controller.LOGS.value, Method.GET.value, arg)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         
@@ -169,34 +170,34 @@ class APIClient:
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())
 
-    def receive_users(self, start_user_id) -> list[dict]:
+    def receive_users(self, start_date) -> list[dict]:
         '''
         receive all users from the server
         >>> api_client = APIClient()
-        >>> users = api_client.receive_users(92)
+        >>> users = api_client.receive_users('2023-02-03 00:00:00')
         >>> isinstance(users, list)
         True
         '''
         print('receive_users', file=sys.stderr)
-        token = self.create_token_args(start_user_id)
-        arg = self.create_arg_args(start_user_id, token)
+        token = self.create_token_args(start_date)
+        arg = self.create_arg_args(start_date, token)
         url = self.create_url_n(Controller.USERS.value, Method.GET.value, arg)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]
         return json.loads(html_file.readline())
 
-    def receive_badges(self, start_badge_rowid):
+    def receive_badges(self, start_date):
         '''
         receive all badges from the server
         >>> api_client = APIClient()
-        >>> badges = api_client.receive_badges(92)
+        >>> badges = api_client.receive_badges('2023-02-03 00:00:00')
         >>> isinstance(badges, list)
         True
         '''
         print('receive_badges', file=sys.stderr)
-        print('start_badge_rowid', start_badge_rowid, file=sys.stderr)
-        token = self.create_token_args(start_badge_rowid)
-        arg = self.create_arg_args(start_badge_rowid, token)
+        print('start_date', start_date, file=sys.stderr)
+        token = self.create_token_args(start_date)
+        arg = self.create_arg_args(start_date, token)
         url = self.create_url_n(Controller.BADGES.value, Method.GET.value, arg)
         print(url, file=sys.stderr)
         html_file = self.send(url)[0]

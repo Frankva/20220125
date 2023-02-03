@@ -1,4 +1,5 @@
 from time import sleep
+import sys
 
 class Rfid:
     '''
@@ -16,3 +17,4 @@ class Rfid:
         #self.pipe['id_badge'] = 183985410385
         pipe['id_badge'] = 47 # Trois-Sept Un-Cinq
         pipe['id_badge'] = 53 # 
+        print('fake_badge', file=sys.stderr)

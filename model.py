@@ -246,8 +246,10 @@ class Model:
         self.connection.commit()
     
     def call_insert_user(self, value:tuple):
+        print('call_insert_user', file=sys.stderr)
         sql = 'CALL `insert_user`(?, ?);'
         self.execute_and_commit(sql, value)
+        print('end call_insert_user', file=sys.stderr)
     
     def select_new_user(self, value):
         sql = ('SELECT `id_user` FROM `user` WHERE name=? AND surname=? ORDER '
@@ -266,8 +268,10 @@ class Model:
         '''
         call a stored procedure that insert badge
         '''
+        print('call_insert_badge', file=sys.stderr)
         sql = 'CALL `insert_badge`(?, ?);'
         self.execute_and_commit(sql, value)
+        print('end call_insert_badge', file=sys.stderr)
 
     def call_insert_log(self, value:tuple):
         '''
@@ -812,11 +816,13 @@ class Model:
         model.insert_badge(select_name, table_name, value)
 
     def invoke_new_user(self, pipe: dict):
+        print('invoke_new_user', file=sys.stderr)
         value = (pipe['name'], pipe['surname'])
+        print(value, file=sys.stderr)
         self.call_insert_user(value)
-        id = self.select_new_user(value)
-        print(id)
-        value = (pipe['id_badge'], id)
+        user_id = self.select_new_user(value)
+        print('user id', user_id, file=sys.stderr)
+        value = (pipe['id_badge'], user_id)
         self.call_insert_badge(value)
 
     def test_add_user(self):
