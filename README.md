@@ -47,15 +47,13 @@ mariadb-server
 - [ ] les câbles ?
 - [ ] requête log quand le bouton est appuyé
 - [ ] ferme proprement le script quand la view est fermé
-- [ ] mettre le jeton d’identification aussi pour le get log de l’api 
-- [ ] enlever peut-être la contraint de clé étrangère sur les table sync sur la
- timbreuse
+- [x] mettre le jeton d’identification aussi pour le get log de l’api 
 
 ## bug
 - [ ] plus de 12 logs dans le détail d'un provoque un empilement des caractère
 - [ ] Utilisateur peut mettre un nom vide
 - [ ] Utilisateur peut mettre un nom à double
-- [ ] Un badge avec un user id à NULL provoque un dysfonctionnement de la 
+- [x] Un badge avec un user id à NULL provoque un dysfonctionnement de la 
 synchronisation
 
 ## À faire
@@ -64,6 +62,11 @@ synchronisation
 * [ ] changer la fonction python qui appelle la processure strocked utilisant log_sync
 
 ## À faire plus tard
-* [ ] mettre à jour la view log
+* [x] mettre à jour la view log
 * [ ] rajouter l’affichage des date de modification
 
+
+## À voir
+- [ ] voir pour remettre les contraintes de clé étrangère sur les tables _write
+- [ ] enlever peut-être la contraint de clé étrangère sur les table sync sur la
+ timbreuse
