@@ -252,7 +252,7 @@ class Model:
         print('end call_insert_user', file=sys.stderr)
     
     def select_new_user(self, value):
-        sql = ('SELECT `id_user` FROM `user` WHERE name=? AND surname=? ORDER '
+        sql = ('SELECT `id_user` FROM `user_write` WHERE name=? AND surname=? ORDER '
             'BY `id_user` DESC;')
         self.cursor.execute(sql, value)
         return self.cursor.next()[0]

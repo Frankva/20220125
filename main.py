@@ -67,7 +67,6 @@ class App:
         else:
             self.view.do_select_scene_dict(self.pipe)
 
-        # check unknown
         self.wait_choice()
         if self.pipe['quit']:
             quit()
@@ -207,6 +206,7 @@ class App:
         '''
         scanne rfid, put id in pipe
         with a thread
+        side effect, pipe['id_badge'] is mutable
         '''
         print('do_rfid()', file=sys.stderr)
         self.thread_rfid = threading.Thread(target=self.rfid.read_pipe,
