@@ -20,7 +20,7 @@ class Controller(Enum):
 
 class APIClient:
     def __init__(self) -> None:
-        local_test = False
+        local_test = True
         if local_test:
             self.base_url = 'http://localhost:8080'
         else:
