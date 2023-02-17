@@ -20,7 +20,7 @@ class Controller(Enum):
 
 class APIClient:
     def __init__(self) -> None:
-        local_test = True
+        local_test = False
         if local_test:
             self.base_url = 'http://localhost:8080'
         else:
@@ -68,6 +68,7 @@ class APIClient:
         print('send', file=sys.stderr)
         try:
             html_file = urlopen(url)
+            #html_file = urlopen(url, timeout=1)
         #    # print(html_file.read())
         #    # print()
         #    # print(html_file.url)

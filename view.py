@@ -409,7 +409,11 @@ class SceneLog(SceneTime):
         x, y = info['x'], info['y']
         text_inside, text_outside = info['text_inside'], info['text_outside']
 
-        text_log = str(log['date'])[:-3] + ' ' + self.change_text_bool(
+        
+        # text_log = str(log['date'])[:-3] + ' ' + self.change_text_bool(
+        #     log['inside'], text_inside, text_outside)
+
+        text_log = str(log['date']) + ' ' + self.change_text_bool(
             log['inside'], text_inside, text_outside)
         
         text_log += self.get_one_log_text(log)
@@ -528,7 +532,8 @@ class SceneWorkTime(SceneTime):
         return log_dict
 
     def get_text_modal_row(self, log):
-        text = str(log['date'])[:-3]
+        #text = str(log['date'])[:-3]
+        text = str(log['date'])
         text += self.get_inside_label_log(log)
         text += SceneLog.get_one_log_text(log)
         return text
@@ -555,7 +560,7 @@ class SceneWorkTime(SceneTime):
         hh, ss = divmod(timedelta.seconds, 3600)
         mm, ss = divmod(ss, 60)
         hh += timedelta.days*24
-        return f'{hh} h {mm} min'
+        return f"{hh}:{mm:02d}:{ss:02d}"
 
     def set_content(self):
         print('SceneWorkTime.set_content', file=sys.stderr)

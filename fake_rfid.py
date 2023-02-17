@@ -9,7 +9,7 @@ class Rfid:
         '''
         put a fake id in a dict in arg
         '''
-        sleep(3)
+        sleep(1)
         #pipe['id_badge'] = 483985410385
         #pipe['id_badge'] = 483985410398
         pipe['id_badge'] = 589402514225 # poma
@@ -17,4 +17,5 @@ class Rfid:
         #self.pipe['id_badge'] = 183985410385
         # pipe['id_badge'] = 47 # Trois-Sept Un-Cinq
         # pipe['id_badge'] = 53 # 
+        pipe['id_badge'] = 63 # 
         print('fake_badge', file=sys.stderr)

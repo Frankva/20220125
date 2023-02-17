@@ -21,9 +21,8 @@ class App:
     def __init__(self):
         self.HAS_REMOTE_SERVER = True
         self.suspend_screen_time = 10*60
-        self.view = view.View()
-        self.thread_view = threading.Thread(target=self.view.load)
-        #self.log = open("main_log.txt", "a")
+        self.view = None
+        self.thread_view = None
 
         self.rfid = rfid.Rfid()
 
@@ -39,29 +38,37 @@ class App:
         self.thread_send_log = None
         self.thread_send_badges_and_users = None
         self.thread_receive_log = None
-        # self.thread_receive_users_and_badges = None
         self.thread_receive_users = None
         self.thread_receive_badges = None
         self.thread_delete_badges_and_users = None
+        self.thread_synchronize_user_badge_log_with_remote = None
+        self.thread_Invoke_synchronize_before_rfid = None
+        self.thread_Invoke_synchronize_after_rfid = None
 
     def load(self):
+        self.view = view.View()
+        self.thread_view = threading.Thread(target=self.view.load)
         self.turn_off_screen_interval(self.suspend_screen_time)
         self.thread_view.start()
         self.thread_wait_quit.start()
         self.view.read_pipe(self.pipe)
+        if self.HAS_REMOTE_SERVER:
+            self.invoke_join_thread(
+                'thread_synchronize_user_badge_log_with_remote',
+                self.synchronize_user_badge_log_with_remote)
         while True:
             self.update()
 
     def update(self):
         if self.HAS_REMOTE_SERVER:
-            self.synchronize_user_badge_log_with_remote()
+            self.invoke_thread('thread_Invoke_synchronize_before_rfid',
+                self.Invoke_synchronize_before_rfid)
         self.do_rfid()
-        self.reconnect_local_db()
         if self.HAS_REMOTE_SERVER:
-            self.synchronize_user_badge_log_with_remote()
+            self.invoke_thread('thread_Invoke_synchronize_after_rfid',
+                self.Invoke_synchronize_after_rfid)
         self.turn_on_screen()
         self.do_model_request()
-        print('unknown', self.is_unknown(), file=sys.stderr)
         if self.is_unknown():
             self.view.do_unknown_badge_dict(self.pipe)
         else:
@@ -74,24 +81,26 @@ class App:
             self.reset()
             return
         if self.pipe['new_user_valid']:
-            self.do_model_new_user()
-            # self.invoke_send_unsync_badges_and_users()
+            self.invoke_join_thread('thread_model_new_user',
+                self.model.invoke_new_user, (self.pipe.copy(), ))
             self.reset()
             return
         self.invoke_insert()
         self.view.do_wait_scene()
-        # self.invoke_send_log()
-        # self.invoke_receive_logs()
         self.reset()
     
 
     def invoke_insert(self):
-        self.safe_wait_thread(self.thread_model_insert)
-        self.thread_model_insert = threading.Thread(
-            target=self.model.call_insert_log, args=((self.pipe['id_badge'],
-                                                      self.pipe['inside']), ))
-        self.thread_model_insert.start()
-        self.thread_model_insert.join()
+        '''
+        >>> main = App()
+        >>> main.pipe = dict()
+        >>> main.pipe['id_badge'] = 42
+        >>> main.pipe['inside'] = True
+        >>> main.invoke_insert()
+        '''
+        args = ((self.pipe['id_badge'], self.pipe['inside']), )
+        self.invoke_join_thread('thread_model_insert',
+            self.model.call_insert_log, args)
     
     def invoke_send_log(self) -> None:
         '''
@@ -127,26 +136,40 @@ class App:
         self.thread_receive_log.start()
         self.thread_receive_log.join()
 
-    def invoke_receive_users_and_badges(self) -> None:
-        '''
-        Deprecation
-        manage thread to receive all users and badges
-        '''
-        print('invoke_receive_users_and_badges', file=sys.stderr)
-        warnings.warn("use create_arg_args", DeprecationWarning)
-        self.safe_wait_thread(self.thread_receive_users_and_badges)
-        self.thread_receive_users_and_badges = threading.Thread(
-            target=self.model.invoke_receive_users_and_badges)
-        self.thread_receive_users_and_badges.start()
-        self.thread_receive_users_and_badges.join()
+    def Invoke_synchronize_after_rfid(self):
+        thread = threading.Thread(
+                target=self.synchronize_user_badge_log_with_remote)
+        self.safe_wait_thread(self.thread_Invoke_synchronize_before_rfid)
+        thread.start()
+        thread.join()
 
-    def invoke_join_thread(self, thread:str, function, args=()):
+    def Invoke_synchronize_before_rfid(self):
+        thread = threading.Thread(
+                target=self.synchronize_user_badge_log_with_remote)
+        self.safe_wait_thread(self.thread_Invoke_synchronize_after_rfid)
+        thread.start()
+        thread.join()
+
+    def invoke_thread(self, thread:str, function, args=()):
+        '''
+        manage thread in safe way
+        '''
+        print('invoke_thread', 'thread', thread, 'function', function,
+              file=sys.stderr)
+        if self.safe_is_alive(getattr(self, thread)):
+            return
+        setattr(self, thread, threading.Thread(target=function, args=args))
+        getattr(self, thread).start()
+
+    def invoke_join_thread(self, thread:str, function:'function',
+                           args:tuple=()):
         '''
         manage thread in procedural way
         '''
         print('invoke_join_thread', 'thread', thread, 'function', function,
               file=sys.stderr)
         self.safe_wait_thread(getattr(self, thread))
+        print('args', args, file=sys.stderr)
         setattr(self, thread, threading.Thread(target=function, args=args))
         print('before start invoke_join_thread', 'thread', thread, 'function',
               function, file=sys.stderr)
@@ -156,8 +179,6 @@ class App:
         getattr(self, thread).join()
         print('end invoke_join_thread', 'thread', thread, 'function', function,
               file=sys.stderr)
-
-
 
     @staticmethod
     def wait_quit(pipe):
@@ -169,7 +190,6 @@ class App:
         print('exit wait_quit', file=sys.stderr)
         _thread.interrupt_main() 
 
-
     def is_cancel(self):
         return self.pipe['cancel']
 
@@ -179,9 +199,6 @@ class App:
             # do it only on the Raspberry Pi
             if os.name != 'nt':
                 subprocess.run(['xset', 'dpms', 'force', 'on'])
-                # subprocess.run(['xset', 'dpms', 'force', 'on', 's', '60s'])
-                # subprocess.run(['xset', 'dpms', 'fp', 'default'])
-                # subprocess.run(['xset', 'dpms', 'force', 'off', 's', '30s'])
         except Exception:
             pass
 
@@ -195,9 +212,6 @@ class App:
         try:
             # do it only on the Raspberry Pi
             if os.name != 'nt':
-                # subprocess.run(['xset', 'dpms', 'force', 'standby', 's',
-                #                 str(interval) + 's'])
-
                 subprocess.run(['xset', 's', str(interval) + 's'])
         except Exception:
             pass
@@ -222,13 +236,9 @@ class App:
         print('do_model_request()', file=sys.stderr)
         self.invoke_join_thread('thread_model_request', 
                                 self.model.find_user_info, args=(self.pipe, ))
-        # self.safe_wait_thread(self.thread_model_request)
-        # self.thread_model_request = threading.Thread(
-        #     target=self.model.read_name_log, args=(self.pipe, ))
-        # self.thread_model_request.start()
-        # self.thread_model_request.join()
         print('end do_model_request', self.pipe, file=sys.stderr)
 
+    # deprecated
     def do_model_new_user(self):
         print('do_model_new_user()', file=sys.stderr)
         self.safe_wait_thread(self.thread_model_new_user)
@@ -236,25 +246,21 @@ class App:
             target=self.model.invoke_new_user, args=(self.pipe, ))
         self.thread_model_new_user.start()
         self.thread_model_new_user.join()
-    
 
-    def filterInsert(self):
-        name = list()
-        #name.append('date')
-        name.append('id_badge')
-        name.append('inside')
-        return dict(filter(lambda pipe: pipe[0] in name, self.pipe.items()))
+    def safe_is_alive(self, thread):
+        try:
+            print('tread is alive', thread.is_alive(), file=sys.stderr)
+            return thread.is_alive()
+        except:
+            return False
 
     def safe_wait_thread(self, thread):
         '''
         Wait (block the execution) the end of a thread.
         Check if the thread is running.
         '''
-        try:
-            if thread.is_alive():
-                thread.join()
-        except:
-            pass
+        if self.safe_is_alive(thread):
+            thread.join()
 
     def wait_choice(self):
         wait_thread = self.pipe['th_condition']
@@ -272,24 +278,10 @@ class App:
         self.view.current_scene = "select"
         self.view.pipe = self.pipe
 
-
-#    def create_dict_model(self):
-#        '''
-#        depreciated
-#
-#        create a dict to give to a sql request
-#        '''
-#        d = dict()
-#        d["id"] = self.id[0]
-#        d["date"] = "'" + str(self.choice["date"]) + "'"
-#        d["inside"] = self.choice["inside"]
-#        return d
-
-
     def reset_pipe(self):
         self.pipe = dict()
-#        self.pipe["id"] = None
-#        self.pipe["date"] = None
+        self.pipe["id"] = None
+        self.pipe["date"] = None
         self.pipe["inside"] = None
         self.pipe["log"] = list()
         self.pipe["name"] = ''
@@ -303,40 +295,33 @@ class App:
     def reset(self):
         print('reset()', file=sys.stderr)
         self.reset_pipe()
-        #self.model.disconnect()
-        #self.model.connect()
-        #self.view.do_wait_scene()
 
     def __del__(self):
         pass
-        #self.log.close()
-
 
     def is_unknown(self):
         print('name', self.pipe['name'], file=sys.stderr)
         return self.pipe['name'] == ''
 
+    def get_threads_and_functions_list(self):
+        threads_and_functions = list()
+        threads_and_functions.append(('thread_send_badges_and_users',
+                                self.model.send_unsync_badges_and_users))
+        threads_and_functions.append(('thread_send_log', self.model.send_logs))
+        threads_and_functions.append(('thread_receive_users',
+                                self.model.invoke_receive_users))
+        threads_and_functions.append(('thread_receive_badges',
+                                self.model.invoke_receive_badges))
+        threads_and_functions.append(('thread_receive_log',
+                                self.model.invoke_receive_logs))
+        threads_and_functions.append(('thread_delete_badges_and_users',
+                                self.model.delete_badges_and_users_local))
+        return threads_and_functions
+
     def synchronize_user_badge_log_with_remote(self):
         print('synchronize_user_badge_log_with_remote', file=sys.stderr)
-        self.invoke_send_unsync_badges_and_users()
-        self.invoke_send_log()
-        self.invoke_join_thread('thread_receive_users',
-                                self.model.invoke_receive_users)
-        self.invoke_join_thread('thread_receive_badges',
-                                self.model.invoke_receive_badges)
-        self.invoke_receive_logs() 
-        self.invoke_join_thread('thread_delete_badges_and_users',
-                                self.model.delete_badges_and_users_local)
-
-
-    def reconnect_local_db(self):
-        try:
-            self.model.disconnect()
-        except:
-            pass
-        finally:
-            self.model.connect()
-
+        for thread, function in self.get_threads_and_functions_list():
+            self.invoke_join_thread(thread, function)
 
 def main():
     app = App()

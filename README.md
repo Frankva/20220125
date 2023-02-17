@@ -70,3 +70,19 @@ synchronisation
 - [ ] voir pour remettre les contraintes de clé étrangère sur les tables _write
 - [ ] enlever peut-être la contraint de clé étrangère sur les table sync sur la
  timbreuse
+
+## truc à tester avec de mettre sur la production
+- [x] envoye log + pas de fuite de connection/mémoire avec SHOW PROCESSLIST;
+- [x] envoye badge user + fuite
+- [x] table write vide
+- [x] création db à zéro
+- [x] modification nom user
+- [x] modificatio log 
+- [x] suppretion log
+- [x] téléchargement log site
+- [x] temps cours si pas de connection
+- [x] sauvegarder la db du serveur distant
+- [x] mettre vrai url avant commit
+- [ ] commit
+- [ ] pull
+- [ ] mettre l’autorisation sur run.sh
