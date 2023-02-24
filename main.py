@@ -48,10 +48,12 @@ class App:
     def load(self):
         self.view = view.View()
         self.thread_view = threading.Thread(target=self.view.load)
-        self.turn_off_screen_interval(self.suspend_screen_time)
         self.thread_view.start()
         self.thread_wait_quit.start()
         self.view.read_pipe(self.pipe)
+
+        # turn off must be run after the opening of the window view
+        self.turn_off_screen_interval(self.suspend_screen_time)
         if self.HAS_REMOTE_SERVER:
             self.invoke_join_thread(
                 'thread_synchronize_user_badge_log_with_remote',

@@ -73,8 +73,8 @@ synchronisation
 
 ## truc à tester avec de mettre sur la production
 - [x] envoye log + pas de fuite de connection/mémoire avec SHOW PROCESSLIST;
-- [x] envoye badge user + fuite
-- [x] table write vide
+- [s] envoye badge user + fuite
+- [a] table write vide
 - [x] création db à zéro
 - [x] modification nom user
 - [x] modificatio log 
