@@ -11,7 +11,6 @@ except:
 import model
 import sys
 import warnings
-from time import sleep
 
 
 class App:
@@ -49,6 +48,7 @@ class App:
     def load(self):
         self.view = view.View()
         self.thread_view = threading.Thread(target=self.view.load)
+        self.turn_off_screen_interval(self.suspend_screen_time)
         self.thread_view.start()
         self.thread_wait_quit.start()
         self.view.read_pipe(self.pipe)
@@ -59,9 +59,6 @@ class App:
                 self.synchronize_user_badge_log_with_remote)
                 
         
-        sleep(10)
-        # turn off must be run after the opening of the window view
-        self.turn_off_screen_interval(self.suspend_screen_time)
         while True:
             self.update()
 
