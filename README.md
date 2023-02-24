@@ -74,15 +74,16 @@ synchronisation
 ## truc à tester avec de mettre sur la production
 - [x] envoye log + pas de fuite de connection/mémoire avec SHOW PROCESSLIST;
 - [s] envoye badge user + fuite
-- [a] table write vide
-- [x] création db à zéro
-- [x] modification nom user
-- [x] modificatio log 
-- [x] suppretion log
-- [x] téléchargement log site
-- [x] temps cours si pas de connection
-- [x] sauvegarder la db du serveur distant
+- [s] table write vide
+- [s] création db à zéro
+- [s] modification nom user
+- [s] modificatio log 
+- [s] suppretion log
+- [s] téléchargement log site
+- [s] temps cours si pas de connection
+- [s] sauvegarder la db du serveur distant
 - [x] mettre vrai url avant commit
 - [ ] commit
 - [ ] pull
 - [ ] mettre l’autorisation sur run.sh
+- [ ] mettre faux url sur version local du pc de bureau
