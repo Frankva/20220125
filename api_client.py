@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from urllib.request import urlopen
-from urllib.parse import quote
+from urllib.parse import quote_plus
 import hmac
 import json
 import urllib.error
@@ -39,11 +39,6 @@ class APIClient:
         token_text = hmac.new(key, text, 'sha256').hexdigest()
         return token_text
 
-    @staticmethod
-    def create_arg(date, badge_id, inside, token) -> str:
-        warnings.warn("use create_arg_args", DeprecationWarning)
-        return f'{quote(str(date))}/{badge_id}/{inside}/{token}'
-    
     @staticmethod
     def create_url(base_url, method, arg) -> str:
         warnings.warn("use create_url_n", DeprecationWarning)
@@ -213,7 +208,7 @@ class APIClient:
         '''
         print('create_arg_args', file=sys.stderr)
         text = reduce(lambda cumulator, word:f'{cumulator}/{word}', args)
-        return quote(text)
+        return quote_plus(text)
 
     @classmethod
     def create_token_args(cls, *args) -> str:
