@@ -208,7 +208,7 @@ class APIClient:
         '''
         print('create_arg_args', file=sys.stderr)
         text = reduce(lambda cumulator, word:f'{cumulator}/{word}', args)
-        return quote_plus(text)
+        return quote_plus(text, '/')
 
     @classmethod
     def create_token_args(cls, *args) -> str:
